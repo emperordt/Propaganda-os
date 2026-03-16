@@ -42,79 +42,104 @@
             line-height: 1.6;
         }
 
-        /* ===== NAV ===== */
-        .nav {
+        .sidebar {
             position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 60px;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 220px;
             background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
             z-index: 100;
+            transition: transform 0.2s ease;
         }
 
-        .nav-brand {
+        .sidebar-brand {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-section {
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+
+        .sidebar-link {
+            display: block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .sidebar-link.active {
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-toggle:hover {
+            border-color: var(--accent);
             color: var(--accent);
         }
 
-        .nav-toggle {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 8px 14px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            transition: all 0.15s ease;
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+            }
+            .sidebar-toggle {
+                display: block;
+            }
         }
-
-        .nav-toggle:hover { border-color: var(--accent); color: var(--accent); }
-        .nav-toggle.active { border-color: var(--accent); color: var(--accent); }
-
-        .nav-panel {
-            position: fixed;
-            top: 60px;
-            right: 0;
-            width: 200px;
-            background: var(--bg-secondary);
-            border-left: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            border-radius: 0 0 0 12px;
-            padding: 12px;
-            display: none;
-            flex-direction: column;
-            gap: 4px;
-            z-index: 99;
-            box-shadow: -4px 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .nav-panel.open { display: flex; }
-
-        .nav-link {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-
-        .nav-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
-        .nav-link.active { color: var(--accent); background: var(--accent-dim); }
 
         /* ===== LAYOUT ===== */
         .container {
-            padding: 92px 48px 48px;
+            padding: 48px 48px 48px;
             max-width: 1800px;
             margin: 0 auto;
+            margin-left: 220px;
         }
 
         .page-header {
@@ -769,27 +794,61 @@
                 padding: 92px 24px 24px;
             }
         }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <nav class="nav">
-        <div class="nav-brand">CONTENT_ENGINE//v1</div>
-        <button class="nav-toggle" id="nav-toggle">Menu</button>
-    </nav>
-    <div class="nav-panel" id="nav-panel">
-        <a href="01-generation-hub.html" class="nav-link">YT Generate</a>
-        <a href="02-swipe-file.html" class="nav-link">Swipe File</a>
-        <a href="08-twitter-generator.html" class="nav-link">TW Generate</a>
-        <a href="11-twitter-swipes.html" class="nav-link">TW Swipes</a>
-        <a href="09-twitter-scraper.html" class="nav-link">TW Scraper</a>
-        <a href="10-hook-bank.html" class="nav-link">TW Hooks</a>
-        <a href="06-ad-swipes.html" class="nav-link">Ad Video</a>
-        <a href="07-ad-generator.html" class="nav-link">Ad Gen</a>
-        <a href="12-brand-profiles.html" class="nav-link">Brands</a>
-        <a href="13-image-ad-generator.html" class="nav-link active">Img Ad Gen</a>
-        <a href="14-image-ad-review.html" class="nav-link">Img Ad Review</a>
-        <a href="05-history.html" class="nav-link">History</a>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+        
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">YOUTUBE</div>
+        <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+        <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+        <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+        <a href="04-output-review.html" class="sidebar-link">Output Review</a>
     </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">TWITTER</div>
+        <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+        <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+        <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+        <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">IMAGE ADS</div>
+        <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+        <a href="13-image-ad-generator.html" class="sidebar-link active">Generator</a>
+        <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">VIDEO ADS</div>
+        <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+        <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">TOOLS</div>
+        <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+        <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+        <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+    </div>
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">OTHER</div>
+        <a href="05-history.html" class="sidebar-link">History</a>
+    </div>
+    </aside>
+
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+    </button>
+
 
     <div class="container">
         <div class="page-header">
@@ -1044,17 +1103,13 @@
         let variants = [];
         let generatedImages = [];
 
-        // ==========================================
-        // NAV TOGGLE
-        // ==========================================
-        document.getElementById('nav-toggle').addEventListener('click', function() {
-            document.getElementById('nav-panel').classList.toggle('open');
-            this.classList.toggle('active');
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
         });
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.nav-panel') && !e.target.closest('.nav-toggle')) {
-                document.getElementById('nav-panel').classList.remove('open');
-                document.getElementById('nav-toggle').classList.remove('active');
+            if (window.innerWidth <= 768 && !e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+                document.getElementById('sidebar').classList.remove('open');
             }
         });
 
