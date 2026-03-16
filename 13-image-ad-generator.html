@@ -1034,6 +1034,7 @@
                             <button class="regen-send" onclick="regenerateSelected()">Send</button>
                         </div>
                         <div id="variant-cards"></div>
+                        <button class="generate-btn" id="score-copy-btn" style="background:var(--purple);margin-bottom:12px;display:none;" onclick="scoreSelectedCopy()">SCORE COPY BEFORE GENERATING</button>
                         <button class="generate-btn" id="generate-images-btn" disabled onclick="generateImages()">GENERATE IMAGES (0 selected) &rarr;</button>
                     </div>
                 </div>
@@ -1489,6 +1490,7 @@
                         <span class="variant-label">Variant ${i + 1}</span>
                         ${v.awareness_level ? `<span class="variant-angle-badge" style="background:var(--blue-dim,#3b82f620);color:var(--blue,#3b82f6);">${v.awareness_level.replace(/_/g, ' ').toUpperCase()}</span>` : ''}
                         <span class="variant-angle-badge">${(v.angle || 'general').replace(/_/g, ' ').toUpperCase()}</span>
+                        ${v._score ? `<span class="variant-angle-badge" style="background:${v._score >= 7 ? 'var(--accent-dim)' : v._score >= 5 ? 'var(--warning-dim)' : 'var(--danger-dim)'};color:${v._score >= 7 ? 'var(--accent)' : v._score >= 5 ? 'var(--warning)' : 'var(--danger)'};" title="${(v._top_fixes || []).join(' | ')}">${v._score.toFixed(1)} / 10</span>` : ''}
                     </div>
                     <div class="variant-field">
                         <div class="variant-field-label">Headline</div>
@@ -1544,6 +1546,65 @@
             const imgBtn = document.getElementById('generate-images-btn');
             imgBtn.textContent = `GENERATE IMAGES (${selectedCount} selected) \u2192`;
             imgBtn.disabled = selectedCount === 0;
+
+            // Show score button when variants exist
+            const scoreBtn = document.getElementById('score-copy-btn');
+            scoreBtn.style.display = variants.length > 0 ? 'block' : 'none';
+        }
+
+        // ==========================================
+        // COPY SCORING (CUB + FOUR STOOL)
+        // ==========================================
+        async function scoreSelectedCopy() {
+            const btn = document.getElementById('score-copy-btn');
+            const selected = variants.filter(v => v._selected);
+            if (selected.length === 0) { showToast('Select variants to score'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'SCORING...';
+
+            for (let i = 0; i < variants.length; i++) {
+                if (!variants[i]._selected) continue;
+
+                const copy = [variants[i].headline, variants[i].body_copy, variants[i].cta].filter(Boolean).join('\n\n');
+
+                try {
+                    const response = await fetch('https://n8n.dtthomas.cloud/webhook/copy-score', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ copy, copy_type: 'image_ad' })
+                    });
+                    const data = await response.json();
+
+                    if (data.overall_score) {
+                        variants[i]._score = data.overall_score;
+                        variants[i]._verdict = data.verdict;
+                        variants[i]._top_fixes = data.top_3_fixes || [];
+                        variants[i]._score_data = data;
+                    }
+                } catch (e) {
+                    console.log('Scoring failed for variant ' + i + ', using heuristic');
+                    // Fallback: basic heuristic scoring
+                    const h = variants[i].headline || '';
+                    const b = variants[i].body_copy || '';
+                    const c = variants[i].cta || '';
+                    let score = 5;
+                    if (h.length > 5 && h.length < 60) score += 1;
+                    if (b.length > 20) score += 1;
+                    if (c.length > 2) score += 1;
+                    if (/\d/.test(b)) score += 0.5; // has specificity
+                    if (b.includes('"')) score += 0.5; // has testimonial
+                    variants[i]._score = Math.min(score, 10);
+                    variants[i]._verdict = score >= 7 ? 'NEEDS POLISH' : 'MAJOR GAPS';
+                }
+
+                btn.textContent = `SCORING ${i + 1} of ${variants.length}...`;
+            }
+
+            renderVariants();
+            btn.disabled = false;
+            btn.textContent = 'SCORE COPY BEFORE GENERATING';
+            showToast('Copy scored — check badges on each variant');
         }
 
         // ==========================================
