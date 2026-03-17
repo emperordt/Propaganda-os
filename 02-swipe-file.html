@@ -987,15 +987,16 @@
 
                     <div style="margin-bottom:20px;">
                         <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Layout Description</p>
-                        <p id="adimg-modal-layout" style="font-size:14px;color:var(--text-secondary);background:var(--bg-tertiary);padding:16px;border-radius:8px;">-</p>
+                        <textarea id="adimg-modal-layout" style="font-size:14px;color:var(--text-secondary);background:var(--bg-tertiary);padding:16px;border-radius:8px;width:100%;min-height:100px;border:1px solid var(--border);font-family:'Space Grotesk',sans-serif;resize:vertical;">-</textarea>
                     </div>
 
                     <div style="margin-bottom:20px;">
                         <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Recreation Prompt</p>
-                        <p id="adimg-modal-prompt" style="font-size:13px;color:var(--text-muted);background:var(--bg-tertiary);padding:16px;border-radius:8px;max-height:150px;overflow-y:auto;">-</p>
+                        <textarea id="adimg-modal-prompt" style="font-size:13px;color:var(--text-muted);background:var(--bg-tertiary);padding:16px;border-radius:8px;width:100%;min-height:150px;border:1px solid var(--border);font-family:'Space Grotesk',sans-serif;resize:vertical;">-</textarea>
                     </div>
 
                     <div style="display:flex;gap:12px;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+                        <button onclick="saveAdImgEdits()" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 20px;border-radius:6px;cursor:pointer;background:var(--purple);border:none;color:white;transition:all 0.15s ease;">Save Edits</button>
                         <button onclick="copyAdImgHook()" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 20px;border-radius:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-secondary);transition:all 0.15s ease;">Copy Hook</button>
                         <button onclick="useAdImgAsTemplate()" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 20px;border-radius:6px;cursor:pointer;background:var(--accent);border:none;color:var(--bg-primary);transition:all 0.15s ease;">Use as Template →</button>
                         <button onclick="deleteAdImg()" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 20px;border-radius:6px;cursor:pointer;background:transparent;border:1px solid var(--danger);color:var(--danger);transition:all 0.15s ease;">Delete</button>
@@ -1620,8 +1621,8 @@
             document.getElementById('adimg-modal-headline').textContent = selectedAdImg.headline_text || '-';
             document.getElementById('adimg-modal-bodycopy').textContent = selectedAdImg.body_copy || '-';
             document.getElementById('adimg-modal-cta').textContent = selectedAdImg.cta_text || '-';
-            document.getElementById('adimg-modal-layout').textContent = selectedAdImg.layout_description || '-';
-            document.getElementById('adimg-modal-prompt').textContent = selectedAdImg.recreation_prompt || 'No recreation prompt generated yet';
+            document.getElementById('adimg-modal-layout').value = selectedAdImg.layout_description || '';
+            document.getElementById('adimg-modal-prompt').value = selectedAdImg.recreation_prompt || '';
 
             // Tags
             const tags = [
@@ -1678,6 +1679,24 @@
         document.getElementById('adimg-modal').addEventListener('click', (e) => {
             if (e.target.id === 'adimg-modal') closeAdImgModal();
         });
+
+        async function saveAdImgEdits() {
+            if (!selectedAdImg) return;
+            const newLayout = document.getElementById('adimg-modal-layout').value;
+            const newPrompt = document.getElementById('adimg-modal-prompt').value;
+            try {
+                await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/image_ad_swipes?id=eq.${selectedAdImg.id}`, {
+                    method: 'PATCH',
+                    headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ layout_description: newLayout, recreation_prompt: newPrompt })
+                });
+                selectedAdImg.layout_description = newLayout;
+                selectedAdImg.recreation_prompt = newPrompt;
+                const idx = allAdImages.findIndex(a => a.id === selectedAdImg.id);
+                if (idx >= 0) { allAdImages[idx].layout_description = newLayout; allAdImages[idx].recreation_prompt = newPrompt; }
+                showToast('Edits saved!');
+            } catch (e) { console.error(e); showToast('Save failed'); }
+        }
 
         function copyAdImgHook() {
             if (selectedAdImg?.headline_text) {
