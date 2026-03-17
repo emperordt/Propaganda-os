@@ -1073,7 +1073,7 @@
                 <!-- Overall CUB Score -->
                 <div class="overall-score-bar">
                     <div>
-                        <div class="overall-score-number" id="cub-overall">0</div>
+                        <div class="overall-score-number" id="cub-overall">-</div>
                         <div class="overall-score-label">CUB Score</div>
                     </div>
                     <div class="overall-score-bar-fill">
@@ -1096,8 +1096,8 @@
                     <div class="expandable-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider blue" id="confusing-slider" min="1" max="10" value="5" oninput="updateScore('confusing')">
-                            <div class="score-value blue" id="confusing-value">5</div>
+                            <input type="range" class="score-slider blue" id="confusing-slider" min="0" max="10" value="0" oninput="updateScore('confusing')">
+                            <div class="score-value blue" id="confusing-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">CONFUSING</span><span class="score-label-good">CRYSTAL CLEAR</span></div>
 
@@ -1132,8 +1132,8 @@
                     <div class="expandable-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider orange" id="unbelievable-slider" min="1" max="10" value="5" oninput="updateScore('unbelievable')">
-                            <div class="score-value orange" id="unbelievable-value">5</div>
+                            <input type="range" class="score-slider orange" id="unbelievable-slider" min="0" max="10" value="0" oninput="updateScore('unbelievable')">
+                            <div class="score-value orange" id="unbelievable-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">TOTAL BS</span><span class="score-label-good">FULLY PROVEN</span></div>
 
@@ -1168,8 +1168,8 @@
                     <div class="expandable-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider muted" id="boring-slider" min="1" max="10" value="5" oninput="updateScore('boring')">
-                            <div class="score-value muted" id="boring-value">5</div>
+                            <input type="range" class="score-slider muted" id="boring-slider" min="0" max="10" value="0" oninput="updateScore('boring')">
+                            <div class="score-value muted" id="boring-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">SNOOZEFEST</span><span class="score-label-good">CAN'T STOP READING</span></div>
 
@@ -1211,8 +1211,8 @@
                     <div class="stool-leg-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider purple" id="bigidea-slider" min="1" max="10" value="5" oninput="updateStoolScore('bigidea')">
-                            <div class="score-value purple" id="bigidea-value">5</div>
+                            <input type="range" class="score-slider purple" id="bigidea-slider" min="0" max="10" value="0" oninput="updateStoolScore('bigidea')">
+                            <div class="score-value purple" id="bigidea-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">NO BIG IDEA</span><span class="score-label-good">BREAKTHROUGH</span></div>
 
@@ -1250,8 +1250,8 @@
                     <div class="stool-leg-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider green" id="benefits-slider" min="1" max="10" value="5" oninput="updateStoolScore('benefits')">
-                            <div class="score-value green" id="benefits-value">5</div>
+                            <input type="range" class="score-slider green" id="benefits-slider" min="0" max="10" value="0" oninput="updateStoolScore('benefits')">
+                            <div class="score-value green" id="benefits-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">NO BENEFITS</span><span class="score-label-good">IRRESISTIBLE</span></div>
 
@@ -1319,8 +1319,8 @@
                     <div class="stool-leg-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider blue" id="proof-slider" min="1" max="10" value="5" oninput="updateStoolScore('proof')">
-                            <div class="score-value blue" id="proof-value">5</div>
+                            <input type="range" class="score-slider blue" id="proof-slider" min="0" max="10" value="0" oninput="updateStoolScore('proof')">
+                            <div class="score-value blue" id="proof-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">ZERO PROOF</span><span class="score-label-good">BULLETPROOF</span></div>
 
@@ -1354,8 +1354,8 @@
                     <div class="stool-leg-body">
                         <div class="score-row">
                             <div class="score-label">Score</div>
-                            <input type="range" class="score-slider warning" id="credibility-slider" min="1" max="10" value="5" oninput="updateStoolScore('credibility')">
-                            <div class="score-value warning" id="credibility-value">5</div>
+                            <input type="range" class="score-slider warning" id="credibility-slider" min="0" max="10" value="0" oninput="updateStoolScore('credibility')">
+                            <div class="score-value warning" id="credibility-value">-</div>
                         </div>
                         <div class="score-labels"><span class="score-label-bad">WHO ARE YOU?</span><span class="score-label-good">TRUSTED AUTHORITY</span></div>
 
