@@ -4,38 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copy QC & Scoring</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --border: #2a2a2d;
-            --border-hover: #3a3a3d;
-            --text-primary: #fafafa;
-            --text-secondary: #a0a0a5;
-            --text-muted: #606065;
-            --accent: #00ff88;
-            --accent-dim: #00ff8820;
-            --accent-hover: #00ffaa;
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
             --danger: #ff4444;
             --danger-dim: #ff444420;
-            --warning: #ffaa00;
-            --warning-dim: #ffaa0020;
-            --purple: #a855f7;
-            --purple-dim: #a855f720;
-            --blue: #3b82f6;
-            --blue-dim: #3b82f620;
-            --orange: #f97316;
-            --orange-dim: #f9731620;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -57,7 +59,7 @@
         }
 
         .sidebar-brand {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -72,7 +74,7 @@
         }
 
         .sidebar-section-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -83,7 +85,7 @@
 
         .sidebar-link {
             display: block;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
@@ -98,8 +100,8 @@
         }
 
         .sidebar-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
+            color: #fd5106;
+            background: #fd510615;
         }
 
         .sidebar-toggle {
@@ -117,7 +119,7 @@
         }
 
         .sidebar-toggle:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -167,7 +169,7 @@
         }
 
         .section-title {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
@@ -192,7 +194,7 @@
             border-radius: 8px;
             padding: 16px;
             color: var(--text-primary);
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 14px;
             line-height: 1.7;
             resize: vertical;
@@ -201,7 +203,7 @@
 
         .copy-textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .copy-textarea::placeholder {
@@ -216,7 +218,7 @@
             gap: 8px;
             padding: 12px 20px;
             border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -233,7 +235,7 @@
         }
 
         .btn-primary:hover {
-            background: var(--accent-hover);
+            background: #e5480a;
             box-shadow: 0 0 20px var(--accent-dim);
         }
 
@@ -285,7 +287,7 @@
         }
 
         .overall-score-number {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 36px;
             font-weight: 700;
             color: var(--accent);
@@ -294,7 +296,7 @@
         }
 
         .overall-score-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -345,7 +347,7 @@
         }
 
         .expandable-letter {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 18px;
             font-weight: 700;
             width: 36px;
@@ -361,7 +363,7 @@
         .expandable-letter.muted { background: rgba(96,96,101,0.15); color: var(--text-muted); }
 
         .expandable-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 600;
         }
@@ -371,7 +373,7 @@
         .expandable-label.muted { color: var(--text-muted); }
 
         .expandable-score {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 20px;
             font-weight: 700;
         }
@@ -405,7 +407,7 @@
         }
 
         .score-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -440,7 +442,7 @@
         .score-slider.warning::-webkit-slider-thumb { background: var(--warning); }
 
         .score-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 16px;
             font-weight: 700;
             min-width: 30px;
@@ -456,7 +458,7 @@
         }
 
         .score-label-bad {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 9px;
             color: var(--danger);
             text-transform: uppercase;
@@ -464,7 +466,7 @@
         }
 
         .score-label-good {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 9px;
             color: var(--accent);
             text-transform: uppercase;
@@ -521,9 +523,9 @@
         }
 
         .checklist-item.checked .check-box {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-            color: var(--accent);
+            border-color: #fd5106;
+            background: #fd510620;
+            color: #fd5106;
         }
 
         /* Flagged issues */
@@ -563,7 +565,7 @@
             border-radius: 6px;
             padding: 8px 10px;
             color: var(--text-primary);
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 12px;
             resize: vertical;
             min-height: 48px;
@@ -572,7 +574,7 @@
 
         .flagged-issue textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .flagged-issue textarea::placeholder {
@@ -585,7 +587,7 @@
             border-radius: 8px;
             padding: 10px;
             color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             cursor: pointer;
             transition: all 0.15s ease;
@@ -635,7 +637,7 @@
         }
 
         .stool-leg-number {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 700;
             padding: 4px 8px;
@@ -645,12 +647,12 @@
         }
 
         .stool-leg-number.purple { background: var(--purple-dim); color: var(--purple); }
-        .stool-leg-number.green { background: var(--accent-dim); color: var(--accent); }
+        .stool-leg-number.green { background: #fd510620; color: #fd5106; }
         .stool-leg-number.blue { background: var(--blue-dim); color: var(--blue); }
         .stool-leg-number.warning { background: var(--warning-dim); color: var(--warning); }
 
         .stool-leg-title {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 600;
         }
@@ -661,7 +663,7 @@
         .stool-leg-title.warning { color: var(--warning); }
 
         .stool-leg-score {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 20px;
             font-weight: 700;
         }
@@ -692,7 +694,7 @@
         }
 
         .field-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -707,14 +709,14 @@
             border-radius: 6px;
             padding: 10px 12px;
             color: var(--text-primary);
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             transition: border-color 0.15s ease;
         }
 
         .field-input:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .field-input::placeholder {
@@ -723,7 +725,7 @@
 
         /* Status badge */
         .status-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 600;
             padding: 4px 10px;
@@ -734,13 +736,13 @@
             margin-top: 8px;
         }
 
-        .status-badge.strong { background: var(--accent-dim); color: var(--accent); }
+        .status-badge.strong { background: #fd510620; color: #fd5106; }
         .status-badge.weak { background: var(--warning-dim); color: var(--warning); }
         .status-badge.missing { background: var(--danger-dim); color: var(--danger); }
 
         /* Proof count */
         .proof-count {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             color: var(--text-secondary);
             padding: 10px 14px;
@@ -796,7 +798,7 @@
         }
 
         .dashboard-title {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
@@ -826,7 +828,7 @@
         }
 
         .bar-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 14px;
             font-weight: 700;
         }
@@ -857,7 +859,7 @@
         .bar-fill.warning { background: var(--warning); }
 
         .bar-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -872,14 +874,14 @@
         }
 
         .big-score-number {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 72px;
             font-weight: 700;
             line-height: 1;
         }
 
         .big-score-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -893,7 +895,7 @@
         }
 
         .verdict-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 14px;
             font-weight: 700;
             padding: 10px 28px;
@@ -903,7 +905,7 @@
             letter-spacing: 1px;
         }
 
-        .verdict-badge.ready { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+        .verdict-badge.ready { background: #fd510620; color: #fd5106; border: 1px solid var(--accent); }
         .verdict-badge.polish { background: var(--warning-dim); color: var(--warning); border: 1px solid var(--warning); }
         .verdict-badge.gaps { background: var(--orange-dim); color: var(--orange); border: 1px solid var(--orange); }
         .verdict-badge.rewrite { background: var(--danger-dim); color: var(--danger); border: 1px solid var(--danger); }
@@ -915,7 +917,7 @@
             right: 32px;
             padding: 14px 24px;
             border-radius: 10px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             z-index: 200;
             opacity: 0;
@@ -930,8 +932,8 @@
         }
 
         .toast.success {
-            background: var(--accent-dim);
-            color: var(--accent);
+            background: #fd510620;
+            color: #fd5106;
             border: 1px solid var(--accent);
         }
 
@@ -1000,7 +1002,7 @@
 <body>
 
 <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+    <div class="sidebar-brand">PROPAGANDA//OS</div>
     
 <div class="sidebar-section">
     <div class="sidebar-section-label">YOUTUBE</div>
@@ -1026,6 +1028,15 @@
     <div class="sidebar-section-label">VIDEO ADS</div>
     <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
     <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-section-label">LANDING PAGES</div>
+    <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+    <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+    <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+    <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+    <a href="22-lp-history.html" class="sidebar-link">History</a>
 </div>
 <div class="sidebar-section">
     <div class="sidebar-section-label">TOOLS</div>

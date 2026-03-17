@@ -1,0 +1,88 @@
+{
+  "name": "13 - LP Section Regeneration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lp-section-regen",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Section Regen",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "method": "POST",
+        "headers": {
+          "x-api-key": "YOUR_ANTHROPIC_API_KEY",
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json"
+        },
+        "body": "={{ JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: `You are regenerating a SINGLE SECTION of a landing page. Keep the same overall page structure and design system intact.\n\n## CURRENT FULL HTML\n${$json.body.current_html}\n\n## SECTION TO REGENERATE\nSection Index: ${$json.body.section_index}\nSection Type: ${$json.body.section_type}\n\n## REFINEMENT INSTRUCTIONS\n${$json.body.refinement_prompt || 'Make it more compelling and persuasive'}\n\n## REQUIREMENTS\n1. Output ONLY the updated full HTML document — not just the section\n2. Keep ALL other sections exactly the same\n3. Only modify the section at index ${$json.body.section_index} (type: ${$json.body.section_type})\n4. Maintain the same CSS classes, structure, and design system\n5. Apply the refinement instructions to improve that section\n6. Output clean HTML with no markdown wrapping\n\nAfter the HTML, on a new line output:\n---SECTION_UPDATE---\n{\"index\":${$json.body.section_index},\"type\":\"${$json.body.section_type}\",\"headline\":\"new headline\",\"body\":\"new body copy summary\",\"cta\":\"new cta if any\"}` }] }) }}",
+        "options": {}
+      },
+      "name": "Claude: Regen Section",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 300],
+      "notes": "Claude regenerates a single section while preserving the rest of the page."
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $input.first().json;\nconst webhook = $node['Webhook: Section Regen'].json.body;\n\ntry {\n  const fullResponse = data.content[0].text;\n  \n  let htmlContent = fullResponse;\n  let sectionUpdate = null;\n  \n  const separatorIndex = fullResponse.indexOf('---SECTION_UPDATE---');\n  if (separatorIndex !== -1) {\n    htmlContent = fullResponse.substring(0, separatorIndex).trim();\n    const updateJson = fullResponse.substring(separatorIndex + 19).trim();\n    try {\n      sectionUpdate = JSON.parse(updateJson.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim());\n    } catch(e) { sectionUpdate = null; }\n  }\n  \n  htmlContent = htmlContent.replace(/^```html\\n?/g, '').replace(/\\n?```$/g, '').trim();\n  \n  return [{\n    json: {\n      generation_id: webhook.generation_id,\n      html_content: htmlContent,\n      section_update: sectionUpdate,\n      section_index: webhook.section_index\n    }\n  }];\n} catch (e) {\n  return [{\n    json: {\n      generation_id: webhook.generation_id,\n      error: e.message\n    }\n  }];\n}"
+      },
+      "name": "Parse Regen Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/landing_page_generations?id=eq.{{ $json.generation_id }}",
+        "method": "PATCH",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ html_content: $json.html_content, status: 'editing' }) }}",
+        "options": {}
+      },
+      "name": "Supabase: Update Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [950, 300],
+      "notes": "Update the generation record with new HTML content"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, html_content: $node['Parse Regen Result'].json.html_content, section_update: $node['Parse Regen Result'].json.section_update }) }}"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1150, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Section Regen": {
+      "main": [[{ "node": "Claude: Regen Section", "type": "main", "index": 0 }]]
+    },
+    "Claude: Regen Section": {
+      "main": [[{ "node": "Parse Regen Result", "type": "main", "index": 0 }]]
+    },
+    "Parse Regen Result": {
+      "main": [[{ "node": "Supabase: Update Generation", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Update Generation": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}

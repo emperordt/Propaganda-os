@@ -4,38 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ad Swipe Library</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --border: #2a2a2d;
-            --border-hover: #3a3a3d;
-            --text-primary: #fafafa;
-            --text-secondary: #a0a0a5;
-            --text-muted: #606065;
-            --accent: #00ff88;
-            --accent-dim: #00ff8820;
-            --accent-hover: #00ffaa;
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
             --danger: #ff4444;
             --danger-dim: #ff444420;
-            --warning: #ffaa00;
-            --warning-dim: #ffaa0020;
-            --purple: #a855f7;
-            --purple-dim: #a855f720;
-            --blue: #3b82f6;
-            --blue-dim: #3b82f620;
-            --orange: #f97316;
-            --orange-dim: #f9731620;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -57,7 +59,7 @@
         }
 
         .sidebar-brand {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -72,7 +74,7 @@
         }
 
         .sidebar-section-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -83,7 +85,7 @@
 
         .sidebar-link {
             display: block;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
@@ -98,8 +100,8 @@
         }
 
         .sidebar-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
+            color: #fd5106;
+            background: #fd510615;
         }
 
         .sidebar-toggle {
@@ -117,7 +119,7 @@
         }
 
         .sidebar-toggle:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -164,7 +166,7 @@
 
         .stat { display: flex; flex-direction: column; gap: 4px; }
         .stat-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 24px;
             font-weight: 700;
             color: var(--accent);
@@ -182,7 +184,7 @@
         }
 
         .upload-zone:hover, .upload-zone.dragover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             background: var(--accent-dim);
         }
 
@@ -223,7 +225,7 @@
         }
 
         .progress-text {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--text-muted);
             margin-top: 8px;
@@ -239,7 +241,7 @@
         .filter-search {
             flex: 1;
             min-width: 200px;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 14px;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -248,10 +250,10 @@
             color: var(--text-primary);
         }
 
-        .filter-search:focus { outline: none; border-color: var(--accent); }
+        .filter-search:focus { outline: none; border-color: #fd5106; }
 
         .filter-dropdown {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 14px;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -327,7 +329,7 @@
             position: absolute;
             bottom: 8px;
             right: 8px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             background: rgba(0,0,0,0.8);
             padding: 4px 8px;
@@ -354,7 +356,7 @@
         }
 
         .tag {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 500;
             padding: 4px 8px;
@@ -364,7 +366,7 @@
         .tag.hook-type { background: var(--purple-dim); color: var(--purple); }
         .tag.emotion { background: var(--orange-dim); color: var(--orange); }
         .tag.niche { background: var(--blue-dim); color: var(--blue); }
-        .tag.cta { background: var(--accent-dim); color: var(--accent); }
+        .tag.cta { background: #fd510620; color: #fd5106; }
 
         .ad-meta {
             display: flex;
@@ -375,7 +377,7 @@
         }
 
         .ad-source {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
         }
 
@@ -445,7 +447,7 @@
         .modal-section { margin-bottom: 24px; }
 
         .modal-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -496,7 +498,7 @@
         .structure-item:last-child { border-bottom: none; }
 
         .structure-time {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--accent);
             min-width: 50px;
@@ -516,7 +518,7 @@
         }
 
         .modal-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             padding: 12px 20px;
             border-radius: 6px;
@@ -611,7 +613,7 @@
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">YOUTUBE</div>
@@ -637,6 +639,15 @@
             <div class="sidebar-section-label">VIDEO ADS</div>
             <a href="06-ad-swipes.html" class="sidebar-link active">Swipe Library</a>
             <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
         </div>
         <div class="sidebar-section">
             <div class="sidebar-section-label">TOOLS</div>

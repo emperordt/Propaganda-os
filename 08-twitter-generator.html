@@ -4,32 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twitter Generator | Content Engine</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --border: #2a2a2d;
-            --border-hover: #3a3a3d;
-            --text-primary: #fafafa;
-            --text-secondary: #a0a0a5;
-            --text-muted: #606065;
-            --accent: #00ff88;
-            --accent-dim: #00ff8820;
-            --accent-hover: #00ffaa;
-            --blue: #3b82f6;
-            --blue-dim: #3b82f620;
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
             --danger: #ff4444;
-            --warning: #ffaa00;
+            --warning: #f8d47a;
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -51,7 +53,7 @@
         }
 
         .sidebar-brand {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -66,7 +68,7 @@
         }
 
         .sidebar-section-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -77,7 +79,7 @@
 
         .sidebar-link {
             display: block;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
@@ -92,8 +94,8 @@
         }
 
         .sidebar-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
+            color: #fd5106;
+            background: #fd510615;
         }
 
         .sidebar-toggle {
@@ -111,7 +113,7 @@
         }
 
         .sidebar-toggle:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -163,7 +165,7 @@
         }
 
         .form-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 600;
             color: var(--text-muted);
@@ -175,7 +177,7 @@
 
         .form-textarea {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 15px;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -189,7 +191,7 @@
 
         .form-textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .form-textarea::placeholder {
@@ -207,7 +209,7 @@
         }
 
         .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             background: var(--accent-dim);
         }
 
@@ -261,7 +263,7 @@
 
         .form-select {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 14px;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -277,7 +279,7 @@
 
         .form-select:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         /* Checkbox */
@@ -304,7 +306,7 @@
         /* Generate Button */
         .generate-btn {
             width: 100%;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 15px;
             font-weight: 600;
             background: var(--blue);
@@ -391,7 +393,7 @@
         }
 
         .tweet-card.selected {
-            border-color: var(--accent);
+            border-color: #fd5106;
             background: var(--accent-dim);
         }
 
@@ -414,7 +416,7 @@
         }
 
         .tweet-tag {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 4px 8px;
             border-radius: 4px;
@@ -423,8 +425,8 @@
         }
 
         .tweet-tag.hook {
-            background: var(--accent-dim);
-            color: var(--accent);
+            background: #fd510620;
+            color: #fd5106;
         }
 
         .tweet-actions {
@@ -433,7 +435,7 @@
         }
 
         .tweet-action-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             padding: 8px 16px;
             border-radius: 6px;
@@ -451,7 +453,7 @@
 
         .tweet-action-btn.primary {
             background: var(--accent);
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--bg-primary);
         }
 
@@ -461,7 +463,7 @@
 
         /* Character count */
         .char-count {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
         }
@@ -493,7 +495,7 @@
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">YOUTUBE</div>
@@ -519,6 +521,15 @@
             <div class="sidebar-section-label">VIDEO ADS</div>
             <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
             <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
         </div>
         <div class="sidebar-section">
             <div class="sidebar-section-label">TOOLS</div>

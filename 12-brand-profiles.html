@@ -4,38 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brand & Offer Context Manager</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --border: #2a2a2d;
-            --border-hover: #3a3a3d;
-            --text-primary: #fafafa;
-            --text-secondary: #a0a0a5;
-            --text-muted: #606065;
-            --accent: #00ff88;
-            --accent-dim: #00ff8820;
-            --accent-hover: #00ffaa;
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
             --danger: #ff4444;
             --danger-dim: #ff444420;
-            --warning: #ffaa00;
-            --warning-dim: #ffaa0020;
-            --purple: #a855f7;
-            --purple-dim: #a855f720;
-            --blue: #3b82f6;
-            --blue-dim: #3b82f620;
-            --orange: #f97316;
-            --orange-dim: #f9731620;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -57,7 +59,7 @@
         }
 
         .sidebar-brand {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -72,7 +74,7 @@
         }
 
         .sidebar-section-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -83,7 +85,7 @@
 
         .sidebar-link {
             display: block;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
@@ -98,8 +100,8 @@
         }
 
         .sidebar-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
+            color: #fd5106;
+            background: #fd510615;
         }
 
         .sidebar-toggle {
@@ -117,7 +119,7 @@
         }
 
         .sidebar-toggle:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -163,7 +165,7 @@
 
         .stat { display: flex; flex-direction: column; gap: 4px; }
         .stat-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 24px;
             font-weight: 700;
             color: var(--accent);
@@ -197,11 +199,11 @@
         }
 
         .btn-new {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             font-weight: 600;
-            background: var(--accent);
-            color: var(--bg-primary);
+            background: #fd5106;
+            color: #fff;
             border: none;
             border-radius: 6px;
             padding: 10px 16px;
@@ -215,7 +217,7 @@
         }
 
         .filter-dropdown {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -225,7 +227,7 @@
             cursor: pointer;
         }
 
-        .filter-dropdown:focus { outline: none; border-color: var(--accent); }
+        .filter-dropdown:focus { outline: none; border-color: #fd5106; }
 
         /* Cards */
         .card-grid {
@@ -262,7 +264,7 @@
         .card:hover .card-actions { opacity: 1; }
 
         .card-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 5px 10px;
             border-radius: 4px;
@@ -277,7 +279,7 @@
         }
 
         .card-btn.edit:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -324,7 +326,7 @@
         }
 
         .brand-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -355,7 +357,7 @@
         }
 
         .awareness-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             padding: 4px 10px;
@@ -368,10 +370,10 @@
         .awareness-badge.problem_aware { background: var(--orange-dim); color: var(--orange); }
         .awareness-badge.solution_aware { background: var(--warning-dim); color: var(--warning); }
         .awareness-badge.product_aware { background: var(--blue-dim); color: var(--blue); }
-        .awareness-badge.most_aware { background: var(--accent-dim); color: var(--accent); }
+        .awareness-badge.most_aware { background: #fd510620; color: #fd5106; }
 
         .pain-tag {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 3px 8px;
             border-radius: 4px;
@@ -380,7 +382,7 @@
         }
 
         .offer-brand-link {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             margin-top: 8px;
@@ -457,7 +459,7 @@
         .form-group { margin-bottom: 24px; }
 
         .form-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 600;
             color: var(--text-muted);
@@ -469,7 +471,7 @@
 
         .form-input {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 15px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -481,14 +483,14 @@
 
         .form-input:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .form-input::placeholder { color: var(--text-muted); }
 
         .form-textarea {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 15px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -501,14 +503,14 @@
 
         .form-textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .form-textarea::placeholder { color: var(--text-muted); }
 
         .form-select {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 15px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -520,7 +522,7 @@
 
         .form-select:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .form-row {
@@ -540,7 +542,7 @@
         }
 
         .color-input-group label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -577,7 +579,7 @@
         }
 
         .color-hex {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--text-primary);
             background: transparent;
@@ -606,7 +608,7 @@
         }
 
         .tag-input-container:focus-within {
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .tag-input-container input {
@@ -614,7 +616,7 @@
             min-width: 100px;
             background: transparent;
             border: none;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 14px;
             color: var(--text-primary);
             outline: none;
@@ -626,7 +628,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             padding: 4px 10px;
             background: var(--purple-dim);
@@ -651,7 +653,7 @@
         }
 
         .file-input-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -663,7 +665,7 @@
         }
 
         .file-input-btn:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -689,7 +691,7 @@
         }
 
         .modal-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 600;
             padding: 14px 24px;
@@ -736,7 +738,7 @@
         }
 
         .toast {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             padding: 14px 20px;
             border-radius: 8px;
@@ -806,7 +808,7 @@
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
         
     <div class="sidebar-section">
         <div class="sidebar-section-label">YOUTUBE</div>
@@ -832,6 +834,15 @@
         <div class="sidebar-section-label">VIDEO ADS</div>
         <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
         <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">LANDING PAGES</div>
+        <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+        <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+        <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+        <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+        <a href="22-lp-history.html" class="sidebar-link">History</a>
     </div>
     <div class="sidebar-section">
         <div class="sidebar-section-label">TOOLS</div>
@@ -930,8 +941,8 @@
                         <div class="color-input-group">
                             <label>Primary</label>
                             <div class="color-input-wrapper">
-                                <input type="color" id="brand-color-primary" value="#00ff88" onchange="updateColorHex(this)">
-                                <input type="text" class="color-hex" id="hex-primary" value="#00ff88" oninput="updateColorFromHex(this, 'brand-color-primary')" placeholder="#000000">
+                                <input type="color" id="brand-color-primary" value="#f5f5f5" onchange="updateColorHex(this)">
+                                <input type="text" class="color-hex" id="hex-primary" value="#f5f5f5" oninput="updateColorFromHex(this, 'brand-color-primary')" placeholder="#000000">
                             </div>
                         </div>
                         <div class="color-input-group">
@@ -1419,7 +1430,7 @@
                     id: 'sample-brand-2',
                     name: 'NeuroPeak Labs',
                     brand_colors: { primary: '#1a1a2e', secondary: '#e8e8ff', accent: '#7c3aed' },
-                    fonts: 'Space Grotesk, JetBrains Mono',
+                    fonts: 'Geist, JetBrains Mono',
                     tone: 'authoritative, cutting-edge, direct',
                     voice_guidelines: 'Speak with confidence and precision. Use data and specifics. Avoid fluffy language. Talk to sophisticated biohackers.',
                     visual_style: 'Dark UI, neon accents, neural network imagery, clean data visualizations',
@@ -1599,8 +1610,8 @@
             // Reset form
             document.getElementById('brand-id').value = '';
             document.getElementById('brand-name').value = '';
-            document.getElementById('brand-color-primary').value = '#00ff88';
-            document.getElementById('hex-primary').textContent = '#00ff88';
+            document.getElementById('brand-color-primary').value = '#f5f5f5';
+            document.getElementById('hex-primary').textContent = '#f5f5f5';
             document.getElementById('brand-color-secondary').value = '#111113';
             document.getElementById('hex-secondary').textContent = '#111113';
             document.getElementById('brand-color-accent').value = '#a855f7';
@@ -1624,8 +1635,8 @@
                 document.getElementById('brand-id').value = brand.id;
                 document.getElementById('brand-name').value = brand.name || '';
                 if (brand.brand_colors) {
-                    document.getElementById('brand-color-primary').value = brand.brand_colors.primary || '#00ff88';
-                    document.getElementById('hex-primary').textContent = brand.brand_colors.primary || '#00ff88';
+                    document.getElementById('brand-color-primary').value = brand.brand_colors.primary || '#f5f5f5';
+                    document.getElementById('hex-primary').textContent = brand.brand_colors.primary || '#f5f5f5';
                     document.getElementById('brand-color-secondary').value = brand.brand_colors.secondary || '#111113';
                     document.getElementById('hex-secondary').textContent = brand.brand_colors.secondary || '#111113';
                     document.getElementById('brand-color-accent').value = brand.brand_colors.accent || '#a855f7';

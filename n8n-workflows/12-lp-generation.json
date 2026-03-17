@@ -1,0 +1,161 @@
+{
+  "name": "12 - LP Generation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lp-generate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: LP Generate",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/brand_profiles?id=eq.{{ $json.body.brand_id }}",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Fetch Brand",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 200],
+      "notes": "Fetch brand profile for context"
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/offer_contexts?id=eq.{{ $node['Webhook: LP Generate'].json.body.offer_id }}",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Fetch Offer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 400],
+      "notes": "Fetch offer context for content generation"
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/landing_page_swipes?id=eq.{{ $node['Webhook: LP Generate'].json.body.swipe_id }}",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Fetch Swipe",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 600],
+      "notes": "Fetch swipe template for structure reference"
+    },
+    {
+      "parameters": {
+        "functionCode": "const webhook = $node['Webhook: LP Generate'].json.body;\nconst brand = $node['Fetch Brand'].json[0] || {};\nconst offer = $node['Fetch Offer'].json[0] || {};\nconst swipe = $node['Fetch Swipe'].json[0] || {};\n\nreturn [{\n  json: {\n    webhook,\n    brand,\n    offer,\n    swipe\n  }\n}];"
+      },
+      "name": "Merge Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [750, 400],
+      "notes": "Merge all fetched data into single context object"
+    },
+    {
+      "parameters": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "method": "POST",
+        "headers": {
+          "x-api-key": "YOUR_ANTHROPIC_API_KEY",
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json"
+        },
+        "body": "={{ JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages: [{ role: 'user', content: `You are an elite direct response copywriter and landing page architect. Generate a COMPLETE, self-contained HTML landing page.\n\n## BRAND CONTEXT\nBrand: ${$json.brand.name || 'N/A'}\nTone: ${$json.brand.tone || 'professional'}\nVoice: ${$json.brand.voice_guidelines || 'Clear, compelling, trustworthy'}\nTarget Audience: ${$json.brand.target_audience || 'General'}\nBrand Colors: ${JSON.stringify($json.brand.brand_colors || {})}\n\n## OFFER CONTEXT\nProduct: ${$json.offer.product_name || 'N/A'}\nDescription: ${$json.offer.product_description || 'N/A'}\nOffer: ${$json.offer.offer_details || 'N/A'}\nPrice: ${$json.offer.price_point || 'N/A'}\nPain Points: ${($json.offer.pain_points || []).join(', ')}\nDesires: ${($json.offer.desires || []).join(', ')}\nUnique Mechanism: ${$json.offer.unique_mechanism || 'N/A'}\nProof Points: ${($json.offer.proof_points || []).join(', ')}\nObjections: ${($json.offer.objections || []).join(', ')}\nICP: ${$json.offer.icp || 'N/A'}\n\n## SWIPE REFERENCE (match this structure & style)\nPage Type: ${$json.webhook.page_type}\nSection Structure: ${JSON.stringify($json.swipe.section_structure || [])}\nDesign Patterns: ${JSON.stringify($json.swipe.design_patterns || {})}\nColor Scheme: ${JSON.stringify($json.swipe.color_scheme || {})}\nTypography: ${JSON.stringify($json.swipe.typography || {})}\nCTA Placements: ${JSON.stringify($json.swipe.cta_placements || [])}\nRecreation Prompt: ${$json.swipe.recreation_prompt || 'Create a high-converting landing page'}\n\n## CONFIGURATION\nAwareness Level: ${$json.webhook.awareness_level || $json.offer.awareness_level || 'solution_aware'}\nTone Override: ${$json.webhook.tone || ''}\nExtra Instructions: ${$json.webhook.extra_instructions || 'None'}\n\n## REQUIREMENTS\n1. Output a COMPLETE HTML document (<!DOCTYPE html> through </html>)\n2. ALL CSS must be inline in a <style> tag — no external stylesheets except Google Fonts\n3. Use Google Fonts for typography (pick fonts that match the swipe reference)\n4. Page must be fully responsive (mobile-first)\n5. Include these placeholder comments for tracking pixel injection:\n   - <!-- TRACKING_HEAD --> just before </head>\n   - <!-- TRACKING_BODY --> just before </body>\n6. All images should use placeholder URLs (https://placehold.co/WIDTHxHEIGHT)\n7. Use the brand colors from the brand profile\n8. Match the section structure from the swipe reference\n9. Write REAL, compelling copy — not lorem ipsum\n10. Include proper meta tags, Open Graph tags\n\nAfter the HTML, on a NEW LINE, output a JSON object with section data:\n---SECTIONS---\n[{\"index\":0,\"type\":\"hero\",\"headline\":\"...\",\"body\":\"...\",\"cta\":\"...\"},...]\n\nOutput the complete HTML first, then the section data separator and JSON.` }] }) }}",
+        "options": {}
+      },
+      "name": "Claude: Generate LP HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1000, 400],
+      "notes": "Claude generates a complete self-contained HTML landing page based on brand, offer, and swipe reference."
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $input.first().json;\nconst webhook = $node['Webhook: LP Generate'].json.body;\n\ntry {\n  const fullResponse = data.content[0].text;\n  \n  // Split HTML from section data\n  let htmlContent = fullResponse;\n  let sectionData = [];\n  \n  const separatorIndex = fullResponse.indexOf('---SECTIONS---');\n  if (separatorIndex !== -1) {\n    htmlContent = fullResponse.substring(0, separatorIndex).trim();\n    const sectionJson = fullResponse.substring(separatorIndex + 14).trim();\n    try {\n      sectionData = JSON.parse(sectionJson.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim());\n    } catch(e) { sectionData = []; }\n  }\n  \n  // Clean up HTML if wrapped in markdown code blocks\n  htmlContent = htmlContent.replace(/^```html\\n?/g, '').replace(/\\n?```$/g, '').trim();\n  \n  return [{\n    json: {\n      brand_id: webhook.brand_id,\n      offer_id: webhook.offer_id,\n      swipe_id: webhook.swipe_id,\n      page_type: webhook.page_type,\n      html_content: htmlContent,\n      section_data: sectionData,\n      generation_config: {\n        awareness_level: webhook.awareness_level,\n        tone: webhook.tone,\n        extra_instructions: webhook.extra_instructions\n      },\n      status: 'draft',\n      title: `${webhook.page_type} — Generated ${new Date().toISOString().split('T')[0]}`\n    }\n  }];\n} catch (e) {\n  return [{\n    json: {\n      brand_id: webhook.brand_id,\n      offer_id: webhook.offer_id,\n      swipe_id: webhook.swipe_id,\n      page_type: webhook.page_type,\n      html_content: '<html><body><h1>Generation failed</h1><p>' + e.message + '</p></body></html>',\n      section_data: [],\n      status: 'draft',\n      title: 'Failed generation'\n    }\n  }];\n}"
+      },
+      "name": "Parse LP Generation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/landing_page_generations",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Supabase: Insert Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, generation: $json }) }}"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1650, 400]
+    }
+  ],
+  "connections": {
+    "Webhook: LP Generate": {
+      "main": [[
+        { "node": "Fetch Brand", "type": "main", "index": 0 },
+        { "node": "Fetch Offer", "type": "main", "index": 0 },
+        { "node": "Fetch Swipe", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch Brand": {
+      "main": [[{ "node": "Merge Context", "type": "main", "index": 0 }]]
+    },
+    "Fetch Offer": {
+      "main": [[{ "node": "Merge Context", "type": "main", "index": 0 }]]
+    },
+    "Fetch Swipe": {
+      "main": [[{ "node": "Merge Context", "type": "main", "index": 0 }]]
+    },
+    "Merge Context": {
+      "main": [[{ "node": "Claude: Generate LP HTML", "type": "main", "index": 0 }]]
+    },
+    "Claude: Generate LP HTML": {
+      "main": [[{ "node": "Parse LP Generation", "type": "main", "index": 0 }]]
+    },
+    "Parse LP Generation": {
+      "main": [[{ "node": "Supabase: Insert Generation", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Insert Generation": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}

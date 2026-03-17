@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP Generator</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --danger: #ff4444;
+            --danger-dim: #ff444420;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border); padding: 20px 0; overflow-y: auto; z-index: 100; transition: transform 0.2s ease; }
+        .sidebar-brand { font-family: 'Geist Mono', monospace; font-weight: 700; font-size: 13px; color: var(--accent); padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-section-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 8px 8px 4px; }
+        .sidebar-link { display: block; font-family: 'Geist', Arial, sans-serif; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 8px 12px; border-radius: 6px; transition: all 0.15s ease; }
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: #fd5106; background: #fd510615; }
+        .sidebar-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 101; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 8px; cursor: pointer; color: var(--text-secondary); }
+        .sidebar-toggle:hover { border-color: #fd5106; color: var(--accent); }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.5); } .sidebar-toggle { display: block; } }
+
+        /* ===== LAYOUT ===== */
+        .container {
+            padding: 48px 48px 48px;
+            max-width: 1800px;
+            margin: 0 auto;
+            margin-left: 220px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-title { font-size: 36px; font-weight: 600; }
+        .page-subtitle { font-size: 15px; color: var(--text-secondary); margin-top: 8px; }
+
+        .three-panel-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 380px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel.left-panel {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .panel.center-panel {
+            min-height: 600px;
+        }
+
+        .panel.right-panel {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 2;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .panel-badge {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #fd510620;
+            color: #fd5106;
+        }
+
+        .panel-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-group { margin-bottom: 20px; }
+
+        .form-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-select {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .form-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-input {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            transition: border-color 0.15s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .form-input::placeholder { color: var(--text-muted); }
+
+        .form-textarea {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .form-textarea::placeholder { color: var(--text-muted); }
+
+        /* ===== BRAND SUMMARY ===== */
+        .brand-summary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .brand-summary-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .color-swatches {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .brand-tone {
+            font-size: 12px;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ===== OFFER SUMMARY ===== */
+        .offer-summary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .offer-product {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .offer-awareness {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            background: var(--purple-dim);
+            color: var(--purple);
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .offer-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .offer-tag {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: var(--orange-dim);
+            color: var(--orange);
+        }
+
+        /* ===== SWIPE PREVIEW ===== */
+        .swipe-preview {
+            margin-top: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .swipe-preview-empty {
+            padding: 20px 12px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .swipe-preview-img {
+            width: 100%;
+            max-height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .swipe-preview-info {
+            padding: 10px 12px;
+        }
+
+        .swipe-preview-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .swipe-preview-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ===== GENERATE BUTTON ===== */
+        .generate-btn {
+            width: 100%;
+            font-family: 'Geist Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            background: #fd5106;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 16px 32px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .generate-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== TAB BAR ===== */
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 14px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ===== PREVIEW PANEL ===== */
+        .preview-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        .preview-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff;
+            min-height: 500px;
+        }
+
+        .html-view {
+            display: none;
+            flex: 1;
+            position: relative;
+        }
+
+        .html-view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .html-code {
+            flex: 1;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 16px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+            min-height: 500px;
+            max-height: calc(100vh - 280px);
+        }
+
+        .copy-html-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+            z-index: 5;
+        }
+
+        .copy-html-btn:hover {
+            border-color: #fd5106;
+            color: var(--accent);
+        }
+
+        .preview-empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 14px;
+            min-height: 500px;
+        }
+
+        .preview-empty-icon {
+            width: 48px;
+            height: 48px;
+            stroke: var(--text-muted);
+        }
+
+        .preview-loading {
+            display: none;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 500px;
+        }
+
+        .preview-loading.active {
+            display: flex;
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== SECTIONS PANEL ===== */
+        .sections-empty {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .section-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: border-color 0.15s ease;
+        }
+
+        .section-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .section-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-type {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-index {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--purple-dim);
+            color: var(--purple);
+        }
+
+        .section-card-body {
+            padding: 14px;
+        }
+
+        .section-textarea {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.15s ease;
+        }
+
+        .section-textarea:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .section-regen-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .section-regen-input {
+            flex: 1;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-primary);
+        }
+
+        .section-regen-input:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .section-regen-input::placeholder { color: var(--text-muted); }
+
+        .section-regen-btn {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: var(--purple);
+            border: none;
+            color: #fff;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .section-regen-btn:hover {
+            background: #b06af7;
+        }
+
+        .section-regen-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== BOTTOM ACTIONS ===== */
+        .panel-actions {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-secondary);
+        }
+
+        .action-btn {
+            flex: 1;
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .action-btn.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .action-btn.secondary:hover {
+            border-color: #fd5106;
+            color: var(--accent);
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            border: none;
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .action-btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== TOAST ===== */
+        #toast-container {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-primary);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .three-panel-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .panel.left-panel,
+            .panel.right-panel {
+                max-height: none;
+            }
+
+            .container {
+                padding: 92px 24px 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YOUTUBE</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TWITTER</div>
+            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">IMAGE ADS</div>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
+            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">VIDEO ADS</div>
+            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link active">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TOOLS</div>
+            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">OTHER</div>
+            <a href="05-history.html" class="sidebar-link">History</a>
+        </div>
+    </aside>
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">LP Generator</h1>
+            <p class="page-subtitle">Select brand, offer & swipe &rarr; generate complete landing pages</p>
+        </div>
+
+        <div class="three-panel-layout">
+            <!-- ========== LEFT PANEL: Configuration ========== -->
+            <div class="panel left-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Configuration</h3>
+                </div>
+                <div class="panel-body">
+                    <!-- 1. Brand -->
+                    <div class="form-group">
+                        <label class="form-label">Brand</label>
+                        <select class="form-select" id="brand-select">
+                            <option value="">Select a brand...</option>
+                        </select>
+                        <div id="brand-summary" style="display: none;"></div>
+                    </div>
+
+                    <!-- 2. Offer -->
+                    <div class="form-group">
+                        <label class="form-label">Offer</label>
+                        <select class="form-select" id="offer-select" disabled>
+                            <option value="">Select a brand first...</option>
+                        </select>
+                        <div id="offer-summary" style="display: none;"></div>
+                    </div>
+
+                    <!-- 3. Page Type -->
+                    <div class="form-group">
+                        <label class="form-label">Page Type</label>
+                        <select class="form-select" id="page-type-select">
+                            <option value="">Select page type...</option>
+                            <option value="advertorial">Advertorial</option>
+                            <option value="vsl">VSL</option>
+                            <option value="optin">Opt-in</option>
+                            <option value="checkout">Checkout</option>
+                        </select>
+                    </div>
+
+                    <!-- 4. Swipe -->
+                    <div class="form-group">
+                        <label class="form-label">Swipe</label>
+                        <select class="form-select" id="swipe-select" disabled>
+                            <option value="">Select a page type first...</option>
+                        </select>
+                        <div id="swipe-preview" style="display: none;"></div>
+                    </div>
+
+                    <!-- 5. Awareness Level Override -->
+                    <div class="form-group">
+                        <label class="form-label">Awareness Level Override</label>
+                        <select class="form-select" id="awareness-select">
+                            <option value="">Use offer default</option>
+                            <option value="unaware">Unaware</option>
+                            <option value="problem_aware">Problem Aware</option>
+                            <option value="solution_aware">Solution Aware</option>
+                            <option value="product_aware">Product Aware</option>
+                            <option value="most_aware">Most Aware</option>
+                        </select>
+                    </div>
+
+                    <!-- 6. Tone -->
+                    <div class="form-group">
+                        <label class="form-label">Tone</label>
+                        <input type="text" class="form-input" id="tone-input" placeholder="e.g., authoritative, conversational, urgent...">
+                    </div>
+
+                    <!-- 7. Extra Instructions -->
+                    <div class="form-group">
+                        <label class="form-label">Extra Instructions</label>
+                        <textarea class="form-textarea" id="extra-instructions" placeholder="Optional custom instructions for generation..."></textarea>
+                    </div>
+
+                    <!-- 8. Generate -->
+                    <button class="generate-btn" id="generate-btn">GENERATE PAGE &rarr;</button>
+                </div>
+            </div>
+
+            <!-- ========== CENTER PANEL: Preview ========== -->
+            <div class="panel center-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Preview</h3>
+                </div>
+                <div class="tab-bar">
+                    <button class="tab-btn active" data-tab="preview" id="tab-preview">Preview</button>
+                    <button class="tab-btn" data-tab="html" id="tab-html">HTML</button>
+                </div>
+                <div class="preview-container">
+                    <!-- Empty State -->
+                    <div class="preview-empty" id="preview-empty">
+                        <svg class="preview-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M3 9h18"/>
+                            <circle cx="7" cy="6" r="1" fill="currentColor"/>
+                            <circle cx="10" cy="6" r="1" fill="currentColor"/>
+                        </svg>
+                        <p>Generate a page to see preview</p>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="preview-loading" id="preview-loading">
+                        <div class="loading-spinner"></div>
+                        <p style="color: var(--text-muted); font-size: 14px;">Generating your landing page...</p>
+                        <p style="color: var(--text-muted); font-size: 12px;" id="poll-status">Waiting for response...</p>
+                    </div>
+
+                    <!-- Preview Tab -->
+                    <iframe class="preview-iframe" id="preview-iframe" style="display: none;" sandbox="allow-scripts allow-same-origin"></iframe>
+
+                    <!-- HTML Tab -->
+                    <div class="html-view" id="html-view">
+                        <button class="copy-html-btn" onclick="copyHtml()">Copy HTML</button>
+                        <pre class="html-code" id="html-code"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== RIGHT PANEL: Sections ========== -->
+            <div class="panel right-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Sections</h3>
+                    <span class="panel-badge" id="section-count">0 SECTIONS</span>
+                </div>
+                <div class="panel-body" id="sections-body">
+                    <div class="sections-empty" id="sections-empty">
+                        Sections will appear here after generation
+                    </div>
+                    <div id="sections-container" style="display: none;"></div>
+                </div>
+                <div class="panel-actions" id="panel-actions" style="display: none;">
+                    <button class="action-btn secondary" id="save-draft-btn" onclick="saveDraft()">Save Draft</button>
+                    <a class="action-btn primary" id="open-editor-btn" href="#" onclick="openInEditor(event)">Open in Editor</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // ==========================================
+        // CONFIG
+        // ==========================================
+        const CONFIG = {
+            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
+            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
+            WEBHOOK_LP_GENERATE: 'https://n8n.dtthomas.cloud/webhook/lp-generate',
+            WEBHOOK_LP_SECTION_REGEN: 'https://n8n.dtthomas.cloud/webhook/lp-section-regen'
+        };
+
+        const HEADERS = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        };
+
+        const HEADERS_READ = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        };
+
+        // ==========================================
+        // SUPABASE HELPERS
+        // ==========================================
+        async function sbGet(table, query = '') {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}?order=created_at.desc${query ? '&' + query : ''}`;
+            const res = await fetch(url, { headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
+            return res.json();
+        }
+
+        async function sbPost(table, body) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}`, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`POST ${table} failed: ${await res.text()}`);
+            return res.json();
+        }
+
+        async function sbPatch(table, id, body) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`PATCH failed: ${await res.text()}`);
+            return res.json();
+        }
+
+        // ==========================================
+        // TOAST
+        // ==========================================
+        function showToast(msg, isError = false) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast' + (isError ? ' error' : '');
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        function escHtml(s) {
+            return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ==========================================
+        // STATE
+        // ==========================================
+        let brands = [];
+        let offers = [];
+        let allSwipes = [];
+        let filteredSwipes = [];
+        let selectedBrand = null;
+        let selectedOffer = null;
+        let selectedSwipe = null;
+        let currentGeneration = null;
+        let currentTab = 'preview';
+
+        // ==========================================
+        // SIDEBAR TOGGLE
+        // ==========================================
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && !e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+
+        // ==========================================
+        // TAB SWITCHING
+        // ==========================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentTab = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updatePreviewDisplay();
+            });
+        });
+
+        function updatePreviewDisplay() {
+            const iframe = document.getElementById('preview-iframe');
+            const htmlView = document.getElementById('html-view');
+            const empty = document.getElementById('preview-empty');
+            const loading = document.getElementById('preview-loading');
+
+            if (!currentGeneration) {
+                // No generation yet: show empty or loading
+                iframe.style.display = 'none';
+                htmlView.classList.remove('active');
+                return;
+            }
+
+            if (currentTab === 'preview') {
+                iframe.style.display = 'block';
+                htmlView.classList.remove('active');
+            } else {
+                iframe.style.display = 'none';
+                htmlView.classList.add('active');
+            }
+        }
+
+        // ==========================================
+        // LOAD BRANDS
+        // ==========================================
+        async function loadBrands() {
+            try {
+                brands = await sbGet('brand_profiles', 'select=*&order=name.asc');
+                const select = document.getElementById('brand-select');
+                brands.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.id;
+                    opt.textContent = b.name;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error('Failed to load brands:', e);
+            }
+        }
+
+        // ==========================================
+        // LOAD SWIPES
+        // ==========================================
+        async function loadSwipes() {
+            try {
+                allSwipes = await sbGet('landing_page_swipes', 'select=*');
+            } catch (e) {
+                console.error('Failed to load swipes:', e);
+            }
+        }
+
+        // ==========================================
+        // BRAND CHANGE
+        // ==========================================
+        document.getElementById('brand-select').addEventListener('change', async function() {
+            const brandId = this.value;
+            const summaryEl = document.getElementById('brand-summary');
+            const offerSelect = document.getElementById('offer-select');
+            const offerSummary = document.getElementById('offer-summary');
+
+            // Clear offer
+            offerSelect.innerHTML = '<option value="">Select an offer...</option>';
+            offerSummary.style.display = 'none';
+            selectedOffer = null;
+
+            if (!brandId) {
+                summaryEl.style.display = 'none';
+                offerSelect.disabled = true;
+                offerSelect.innerHTML = '<option value="">Select a brand first...</option>';
+                selectedBrand = null;
+                document.getElementById('tone-input').value = '';
+                return;
+            }
+
+            selectedBrand = brands.find(b => b.id === brandId);
+            if (!selectedBrand) return;
+
+            // Show brand summary
+            const colors = selectedBrand.colors || selectedBrand.brand_colors || [];
+            const colorsArr = Array.isArray(colors) ? colors : (typeof colors === 'string' ? colors.split(',').map(c => c.trim()) : []);
+            const tone = selectedBrand.tone || selectedBrand.voice_tone || '';
+
+            summaryEl.innerHTML = `
+                <div class="brand-summary">
+                    <div class="brand-summary-name">${escHtml(selectedBrand.name)}</div>
+                    ${colorsArr.length ? `<div class="color-swatches">${colorsArr.map(c => `<div class="color-swatch" style="background: ${c};"></div>`).join('')}</div>` : ''}
+                    <div class="brand-tone">${escHtml(tone) || 'No tone specified'}</div>
+                </div>
+            `;
+            summaryEl.style.display = 'block';
+
+            // Set default tone from brand
+            if (tone && !document.getElementById('tone-input').value) {
+                document.getElementById('tone-input').value = tone;
+            }
+
+            // Load offers for this brand
+            offerSelect.disabled = false;
+            try {
+                offers = await sbGet('offer_contexts', `select=*&brand_id=eq.${brandId}`);
+                offers.forEach(o => {
+                    const opt = document.createElement('option');
+                    opt.value = o.id;
+                    opt.textContent = o.product || o.name || o.id.substring(0, 8);
+                    offerSelect.appendChild(opt);
+                });
+            } catch (e) {
+                console.error('Failed to load offers:', e);
+            }
+        });
+
+        // ==========================================
+        // OFFER CHANGE
+        // ==========================================
+        document.getElementById('offer-select').addEventListener('change', function() {
+            const offerId = this.value;
+            const summaryEl = document.getElementById('offer-summary');
+
+            if (!offerId) {
+                summaryEl.style.display = 'none';
+                selectedOffer = null;
+                document.getElementById('awareness-select').value = '';
+                return;
+            }
+
+            selectedOffer = offers.find(o => o.id === offerId);
+            if (!selectedOffer) return;
+
+            const painPoints = selectedOffer.pain_points || [];
+            const painArr = Array.isArray(painPoints) ? painPoints : (typeof painPoints === 'string' ? painPoints.split(',').map(p => p.trim()) : []);
+
+            summaryEl.innerHTML = `
+                <div class="offer-summary">
+                    <div class="offer-product">${escHtml(selectedOffer.product || selectedOffer.name || 'Unnamed')}</div>
+                    ${selectedOffer.awareness_level ? `<span class="offer-awareness">${escHtml(selectedOffer.awareness_level.replace(/_/g, ' ').toUpperCase())}</span>` : ''}
+                    ${painArr.length ? `<div class="offer-tags">${painArr.map(p => `<span class="offer-tag">${escHtml(p)}</span>`).join('')}</div>` : ''}
+                </div>
+            `;
+            summaryEl.style.display = 'block';
+
+            // Default awareness to offer's level
+            if (selectedOffer.awareness_level && !document.getElementById('awareness-select').value) {
+                document.getElementById('awareness-select').value = selectedOffer.awareness_level;
+            }
+        });
+
+        // ==========================================
+        // PAGE TYPE CHANGE -> FILTER SWIPES
+        // ==========================================
+        document.getElementById('page-type-select').addEventListener('change', function() {
+            const pageType = this.value;
+            const swipeSelect = document.getElementById('swipe-select');
+            const swipePreview = document.getElementById('swipe-preview');
+
+            swipeSelect.innerHTML = '<option value="">Select a swipe...</option>';
+            swipePreview.style.display = 'none';
+            selectedSwipe = null;
+
+            if (!pageType) {
+                swipeSelect.disabled = true;
+                swipeSelect.innerHTML = '<option value="">Select a page type first...</option>';
+                return;
+            }
+
+            swipeSelect.disabled = false;
+
+            // Filter swipes by page_type
+            filteredSwipes = allSwipes.filter(s => s.page_type === pageType);
+
+            if (filteredSwipes.length === 0) {
+                swipeSelect.innerHTML = '<option value="">No swipes for this type</option>';
+                return;
+            }
+
+            filteredSwipes.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name || s.title || s.id.substring(0, 12);
+                swipeSelect.appendChild(opt);
+            });
+        });
+
+        // ==========================================
+        // SWIPE CHANGE
+        // ==========================================
+        document.getElementById('swipe-select').addEventListener('change', function() {
+            const swipeId = this.value;
+            const previewEl = document.getElementById('swipe-preview');
+
+            if (!swipeId) {
+                selectedSwipe = null;
+                previewEl.style.display = 'none';
+                return;
+            }
+
+            selectedSwipe = filteredSwipes.find(s => s.id === swipeId);
+            if (!selectedSwipe) {
+                previewEl.style.display = 'none';
+                return;
+            }
+
+            const sectionCount = selectedSwipe.section_data ? (Array.isArray(selectedSwipe.section_data) ? selectedSwipe.section_data.length : 0) : 0;
+
+            let html = '';
+            if (selectedSwipe.screenshot_url || selectedSwipe.image_url) {
+                html += `<img class="swipe-preview-img" src="${selectedSwipe.screenshot_url || selectedSwipe.image_url}" alt="Swipe preview" onerror="this.style.display='none'">`;
+            }
+            html += '<div class="swipe-preview-info">';
+            html += `<div class="swipe-preview-name">${escHtml(selectedSwipe.name || selectedSwipe.title || 'Untitled')}</div>`;
+            html += `<div class="swipe-preview-meta">${sectionCount} sections</div>`;
+            html += '</div>';
+
+            previewEl.innerHTML = html;
+            previewEl.style.display = 'block';
+        });
+
+        // ==========================================
+        // GENERATE PAGE
+        // ==========================================
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const brandId = document.getElementById('brand-select').value;
+            const offerId = document.getElementById('offer-select').value;
+            const pageType = document.getElementById('page-type-select').value;
+            const swipeId = document.getElementById('swipe-select').value;
+            const awarenessLevel = document.getElementById('awareness-select').value || (selectedOffer ? selectedOffer.awareness_level : '') || '';
+            const tone = document.getElementById('tone-input').value.trim();
+            const extraInstructions = document.getElementById('extra-instructions').value.trim();
+
+            // Validate
+            if (!brandId) { showToast('Select a brand', true); return; }
+            if (!offerId) { showToast('Select an offer', true); return; }
+            if (!pageType) { showToast('Select a page type', true); return; }
+            if (!swipeId) { showToast('Select a swipe', true); return; }
+
+            const btn = document.getElementById('generate-btn');
+            btn.disabled = true;
+            btn.textContent = 'GENERATING...';
+
+            // Show loading in center panel
+            document.getElementById('preview-empty').style.display = 'none';
+            document.getElementById('preview-loading').classList.add('active');
+            document.getElementById('preview-iframe').style.display = 'none';
+            document.getElementById('html-view').classList.remove('active');
+
+            // Clear sections
+            document.getElementById('sections-empty').style.display = 'block';
+            document.getElementById('sections-container').style.display = 'none';
+            document.getElementById('panel-actions').style.display = 'none';
+            document.getElementById('section-count').textContent = '0 SECTIONS';
+
+            // Reset generation
+            currentGeneration = null;
+
+            try {
+                // POST to webhook
+                const payload = {
+                    brand_id: brandId,
+                    offer_id: offerId,
+                    swipe_id: swipeId,
+                    page_type: pageType,
+                    awareness_level: awarenessLevel,
+                    tone: tone,
+                    extra_instructions: extraInstructions
+                };
+
+                const webhookRes = await fetch(CONFIG.WEBHOOK_LP_GENERATE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!webhookRes.ok) {
+                    throw new Error(`Webhook returned ${webhookRes.status}`);
+                }
+
+                // Poll for the generation result
+                document.getElementById('poll-status').textContent = 'Polling for results...';
+                const generation = await pollForGeneration(brandId, offerId);
+
+                if (generation) {
+                    currentGeneration = generation;
+                    displayGeneration(generation);
+                    showToast('Landing page generated successfully');
+                } else {
+                    throw new Error('Generation timed out');
+                }
+            } catch (error) {
+                console.error('Generation failed:', error);
+                showToast('Generation failed: ' + error.message, true);
+                document.getElementById('preview-loading').classList.remove('active');
+                document.getElementById('preview-empty').style.display = 'flex';
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'GENERATE PAGE \u2192';
+        });
+
+        // ==========================================
+        // POLL FOR GENERATION
+        // ==========================================
+        async function pollForGeneration(brandId, offerId) {
+            const startTime = Date.now();
+            const maxWait = 120000; // 120s
+            const interval = 3000; // 3s
+            let attempt = 0;
+
+            while (Date.now() - startTime < maxWait) {
+                attempt++;
+                document.getElementById('poll-status').textContent = `Polling... attempt ${attempt} (${Math.round((Date.now() - startTime) / 1000)}s)`;
+
+                try {
+                    const results = await sbGet(
+                        'landing_page_generations',
+                        `select=*&brand_id=eq.${brandId}&offer_id=eq.${offerId}&order=created_at.desc&limit=1`
+                    );
+
+                    if (results.length > 0) {
+                        const gen = results[0];
+                        // Check if this is a fresh generation (created within last 2 minutes)
+                        const created = new Date(gen.created_at).getTime();
+                        if (created > startTime - 10000 && gen.html_content) {
+                            return gen;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Poll error:', e);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, interval));
+            }
+
+            return null;
+        }
+
+        // ==========================================
+        // DISPLAY GENERATION
+        // ==========================================
+        function displayGeneration(generation) {
+            // Hide loading
+            document.getElementById('preview-loading').classList.remove('active');
+            document.getElementById('preview-empty').style.display = 'none';
+
+            // Set iframe content
+            const iframe = document.getElementById('preview-iframe');
+            iframe.srcdoc = generation.html_content;
+
+            // Set HTML code view
+            document.getElementById('html-code').textContent = generation.html_content;
+
+            // Show appropriate view based on current tab
+            if (currentTab === 'preview') {
+                iframe.style.display = 'block';
+                document.getElementById('html-view').classList.remove('active');
+            } else {
+                iframe.style.display = 'none';
+                document.getElementById('html-view').classList.add('active');
+            }
+
+            // Populate sections
+            const sectionData = generation.section_data || [];
+            const sections = Array.isArray(sectionData) ? sectionData : [];
+            renderSections(sections);
+
+            // Show actions
+            document.getElementById('panel-actions').style.display = 'flex';
+        }
+
+        // ==========================================
+        // RENDER SECTIONS
+        // ==========================================
+        function renderSections(sections) {
+            const container = document.getElementById('sections-container');
+            const emptyEl = document.getElementById('sections-empty');
+
+            if (!sections.length) {
+                emptyEl.style.display = 'block';
+                container.style.display = 'none';
+                document.getElementById('section-count').textContent = '0 SECTIONS';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            container.style.display = 'block';
+            document.getElementById('section-count').textContent = `${sections.length} SECTIONS`;
+
+            container.innerHTML = sections.map((section, i) => `
+                <div class="section-card" data-index="${i}">
+                    <div class="section-card-header">
+                        <span class="section-type">${escHtml(section.type || section.name || 'Section ' + (i + 1))}</span>
+                        <span class="section-index">#${i + 1}</span>
+                    </div>
+                    <div class="section-card-body">
+                        <textarea class="section-textarea" id="section-copy-${i}" oninput="updateSectionCopy(${i}, this.value)">${escHtml(section.copy || section.content || section.text || '')}</textarea>
+                        <div class="section-regen-row">
+                            <input type="text" class="section-regen-input" id="section-prompt-${i}" placeholder="Refinement instructions...">
+                            <button class="section-regen-btn" id="section-regen-btn-${i}" onclick="regenerateSection(${i})">Regen</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // UPDATE SECTION COPY
+        // ==========================================
+        function updateSectionCopy(index, value) {
+            if (currentGeneration && currentGeneration.section_data && currentGeneration.section_data[index]) {
+                const section = currentGeneration.section_data[index];
+                if (section.copy !== undefined) section.copy = value;
+                else if (section.content !== undefined) section.content = value;
+                else if (section.text !== undefined) section.text = value;
+                else section.copy = value;
+            }
+        }
+
+        // ==========================================
+        // REGENERATE SECTION
+        // ==========================================
+        async function regenerateSection(index) {
+            if (!currentGeneration) return;
+
+            const section = currentGeneration.section_data[index];
+            if (!section) return;
+
+            const prompt = document.getElementById(`section-prompt-${index}`).value.trim();
+            const btn = document.getElementById(`section-regen-btn-${index}`);
+            const textarea = document.getElementById(`section-copy-${index}`);
+
+            btn.disabled = true;
+            btn.textContent = '...';
+
+            try {
+                const payload = {
+                    generation_id: currentGeneration.id,
+                    section_index: index,
+                    section_type: section.type || section.name || `section_${index}`,
+                    refinement_prompt: prompt,
+                    current_html: currentGeneration.html_content
+                };
+
+                const res = await fetch(CONFIG.WEBHOOK_LP_SECTION_REGEN, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error(`Section regen failed: ${res.status}`);
+
+                const data = await res.json();
+
+                // Update the section data and HTML
+                if (data.html_content) {
+                    currentGeneration.html_content = data.html_content;
+                    document.getElementById('preview-iframe').srcdoc = data.html_content;
+                    document.getElementById('html-code').textContent = data.html_content;
+                }
+
+                if (data.section_data && data.section_data[index]) {
+                    currentGeneration.section_data[index] = data.section_data[index];
+                    const newCopy = data.section_data[index].copy || data.section_data[index].content || data.section_data[index].text || '';
+                    textarea.value = newCopy;
+                } else if (data.section_copy) {
+                    textarea.value = data.section_copy;
+                    updateSectionCopy(index, data.section_copy);
+                }
+
+                showToast(`Section ${index + 1} regenerated`);
+            } catch (error) {
+                console.error('Section regen failed:', error);
+                showToast('Section regeneration failed', true);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Regen';
+        }
+
+        // ==========================================
+        // COPY HTML
+        // ==========================================
+        function copyHtml() {
+            if (!currentGeneration || !currentGeneration.html_content) {
+                showToast('No HTML to copy', true);
+                return;
+            }
+            navigator.clipboard.writeText(currentGeneration.html_content).then(() => {
+                showToast('HTML copied to clipboard');
+            }).catch(() => {
+                showToast('Failed to copy', true);
+            });
+        }
+
+        // ==========================================
+        // SAVE DRAFT
+        // ==========================================
+        async function saveDraft() {
+            if (!currentGeneration) {
+                showToast('Nothing to save', true);
+                return;
+            }
+
+            const btn = document.getElementById('save-draft-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                await sbPatch('landing_page_generations', currentGeneration.id, {
+                    status: 'draft',
+                    section_data: currentGeneration.section_data,
+                    html_content: currentGeneration.html_content
+                });
+                showToast('Draft saved');
+            } catch (error) {
+                console.error('Save draft failed:', error);
+                // Try creating new if patch fails
+                try {
+                    const result = await sbPost('landing_page_generations', {
+                        brand_id: document.getElementById('brand-select').value,
+                        offer_id: document.getElementById('offer-select').value,
+                        swipe_id: document.getElementById('swipe-select').value || null,
+                        page_type: document.getElementById('page-type-select').value,
+                        html_content: currentGeneration.html_content,
+                        section_data: currentGeneration.section_data,
+                        status: 'draft'
+                    });
+                    if (result && result[0]) {
+                        currentGeneration = result[0];
+                    }
+                    showToast('Draft saved');
+                } catch (e2) {
+                    showToast('Failed to save draft', true);
+                }
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Save Draft';
+        }
+
+        // ==========================================
+        // OPEN IN EDITOR
+        // ==========================================
+        function openInEditor(e) {
+            e.preventDefault();
+            if (!currentGeneration) {
+                showToast('Generate a page first', true);
+                return;
+            }
+            window.location.href = `21-lp-editor.html?generation_id=${currentGeneration.id}`;
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        async function init() {
+            await Promise.all([loadBrands(), loadSwipes()]);
+        }
+
+        init();
+    </script>
+</body>
+</html>

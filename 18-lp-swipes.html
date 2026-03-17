@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP Swipe Library</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --danger: #ff4444;
+            --danger-dim: #ff444420;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 220px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-section {
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-section-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+
+        .sidebar-link {
+            display: block;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .sidebar-link.active {
+            color: #fd5106;
+            background: #fd510615;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-toggle:hover {
+            border-color: #fd5106;
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+
+        .container {
+            padding: 48px;
+            max-width: 1800px;
+            margin: 0 auto;
+            margin-left: 220px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+                padding: 24px 16px;
+                padding-top: 60px;
+            }
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .page-title { font-size: 32px; font-weight: 600; }
+        .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+
+        .stat { display: flex; flex-direction: column; gap: 4px; }
+        .stat-value {
+            font-family: 'Geist Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label { font-size: 12px; color: var(--text-muted); }
+
+        /* Upload Zone */
+        .upload-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .upload-section-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .upload-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .upload-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #fd5106;
+            background: var(--accent-dim);
+        }
+
+        .upload-zone.has-file {
+            border-color: var(--purple);
+            border-style: solid;
+            padding: 16px;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            stroke: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .upload-text { font-size: 16px; color: var(--text-secondary); margin-bottom: 8px; }
+        .upload-hint { font-size: 13px; color: var(--text-muted); }
+
+        .upload-preview {
+            display: none;
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .upload-zone.has-file .upload-preview { display: block; }
+        .upload-zone.has-file .upload-icon,
+        .upload-zone.has-file .upload-text,
+        .upload-zone.has-file .upload-hint { display: none; }
+
+        .upload-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+        .field-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .field-input,
+        .field-select {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            width: 100%;
+        }
+
+        .field-input:focus, .field-select:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .field-select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23606065' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        .btn-analyze {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 14px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #fd5106;
+            color: #fff;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .btn-analyze:hover { background: var(--accent-hover); }
+
+        .btn-analyze:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-analyze:disabled:hover {
+            background: var(--accent);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-search {
+            flex: 1;
+            min-width: 200px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+        }
+
+        .filter-search:focus { outline: none; border-color: #fd5106; }
+
+        .filter-dropdown {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        /* Card Grid */
+        .swipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .swipe-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .swipe-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .swipe-thumb-container {
+            position: relative;
+            aspect-ratio: 3/4;
+            background: var(--bg-tertiary);
+            overflow: hidden;
+        }
+
+        .swipe-thumb-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        .swipe-thumb-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .swipe-type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .swipe-type-badge.advertorial { background: var(--purple-dim); color: var(--purple); }
+        .swipe-type-badge.vsl { background: var(--blue-dim); color: var(--blue); }
+        .swipe-type-badge.optin { background: var(--orange-dim); color: var(--orange); }
+        .swipe-type-badge.checkout { background: #fd510620; color: #fd5106; }
+
+        .swipe-sections-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            background: rgba(0,0,0,0.8);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .swipe-body { padding: 16px; }
+
+        .swipe-niche-tag {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .swipe-source-url {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 8px;
+        }
+
+        .swipe-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .swipe-date {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            stroke: var(--border);
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .empty-state .hint {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            z-index: 200;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .modal-overlay.active { display: block; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            overflow: hidden;
+        }
+
+        .modal-image-panel {
+            background: var(--bg-primary);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+            max-height: 85vh;
+            padding: 16px;
+        }
+
+        .modal-image-panel img {
+            width: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .modal-content {
+            padding: 32px;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-title { font-size: 20px; font-weight: 600; }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .modal-close:hover { color: var(--text-primary); }
+
+        .modal-section { margin-bottom: 24px; }
+
+        .modal-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .modal-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .modal-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .tag {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .tag.type-advertorial { background: var(--purple-dim); color: var(--purple); }
+        .tag.type-vsl { background: var(--blue-dim); color: var(--blue); }
+        .tag.type-optin { background: var(--orange-dim); color: var(--orange); }
+        .tag.type-checkout { background: #fd510620; color: #fd5106; }
+        .tag.niche { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+        /* Section Structure */
+        .modal-structure {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .structure-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .structure-item:last-child { border-bottom: none; }
+
+        .structure-number {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            min-width: 28px;
+            font-weight: 600;
+        }
+
+        .structure-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .structure-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Copy Blocks */
+        .copy-block-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .copy-block-item {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .copy-block-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Design Patterns */
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .pattern-item {
+            background: var(--bg-tertiary);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Color Swatches */
+        .swatch-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .swatch {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .swatch:hover::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Geist Mono', monospace;
+            font-size: 9px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* CTA Placements */
+        .cta-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .cta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .cta-position {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 3px 8px;
+            border-radius: 4px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Recreation Prompt */
+        .recreation-prompt {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .copy-btn {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .copy-btn:hover {
+            border-color: #fd5106;
+            color: var(--accent);
+        }
+
+        .copy-btn.copied {
+            border-color: #fd5106;
+            color: var(--accent);
+        }
+
+        /* Masterson Mapping */
+        .masterson-mapping {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .masterson-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .masterson-item:last-child { border-bottom: none; }
+
+        .masterson-key {
+            color: var(--text-muted);
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+        }
+
+        .masterson-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Modal Actions */
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .modal-btn {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex: 1;
+            text-align: center;
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .modal-btn.danger {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .modal-btn.danger:hover { background: var(--danger-dim); }
+
+        @media (max-width: 900px) {
+            .modal {
+                grid-template-columns: 1fr;
+            }
+            .modal-image-panel {
+                max-height: 50vh;
+            }
+        }
+
+        /* Processing Overlay */
+        .processing-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+        }
+
+        .processing-overlay.active { display: flex; }
+
+        .processing-content {
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .processing-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .processing-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .processing-subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            background: #fd5106;
+            color: #fff;
+            font-weight: 600;
+            animation: slideIn 0.2s ease, fadeOut 0.3s ease 2.7s;
+            box-shadow: 0 4px 20px rgba(0,255,136,0.2);
+        }
+
+        .toast.error {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 4px 20px rgba(255,68,68,0.2);
+        }
+
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YOUTUBE</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TWITTER</div>
+            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">IMAGE ADS</div>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
+            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">VIDEO ADS</div>
+            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link active">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TOOLS</div>
+            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">OTHER</div>
+            <a href="05-history.html" class="sidebar-link">History</a>
+        </div>
+    </aside>
+
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">LP Swipe Library</h1>
+                <p class="page-subtitle">Upload & analyze landing page screenshots for recreation</p>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-value" id="stat-total">0</span>
+                <span class="stat-label">Total Swipes</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-advertorial">0</span>
+                <span class="stat-label">Advertorials</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-vsl">0</span>
+                <span class="stat-label">VSL Pages</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-optin">0</span>
+                <span class="stat-label">Opt-ins</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-checkout">0</span>
+                <span class="stat-label">Checkouts</span>
+            </div>
+        </div>
+
+        <!-- Clone from URL Section -->
+        <div class="upload-section" style="margin-bottom: 16px;">
+            <div class="upload-section-title" style="display: flex; align-items: center; gap: 12px;">
+                <span>Clone from URL</span>
+                <span style="font-family: 'Geist Mono', monospace; font-size: 10px; background: #fd510620; color: #fd5106; padding: 3px 8px; border-radius: 4px;">FAST</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <label class="field-label">Page URL *</label>
+                    <input type="text" class="field-input" id="clone-url" placeholder="https://example.com/landing-page">
+                </div>
+                <div style="min-width: 150px;">
+                    <label class="field-label">Page Type *</label>
+                    <select class="field-select" id="clone-page-type">
+                        <option value="">Type...</option>
+                        <option value="advertorial">Advertorial</option>
+                        <option value="vsl">VSL</option>
+                        <option value="optin">Opt-in</option>
+                        <option value="checkout">Checkout</option>
+                        <option value="upsell">Upsell</option>
+                        <option value="downsell">Downsell</option>
+                        <option value="thank-you">Thank You</option>
+                        <option value="booking">Booking</option>
+                        <option value="application">Application</option>
+                    </select>
+                </div>
+                <div style="min-width: 140px;">
+                    <label class="field-label">Niche</label>
+                    <input type="text" class="field-input" id="clone-niche" placeholder="e.g. saas">
+                </div>
+                <div style="min-width: 180px;">
+                    <label class="field-label">Funnel Group</label>
+                    <input type="text" class="field-input" id="clone-funnel-group" placeholder="e.g. QB Spring Funnel" list="funnel-groups-list">
+                    <datalist id="funnel-groups-list"></datalist>
+                </div>
+                <button class="btn-analyze" id="btn-clone" disabled style="white-space: nowrap;">Clone & Analyze</button>
+            </div>
+            <div id="clone-batch" style="margin-top: 12px; display: none;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span class="field-label" style="margin: 0;">Batch Queue</span>
+                    <button class="btn-analyze" id="btn-clone-all" style="font-size: 11px; padding: 6px 14px;">Clone All</button>
+                    <button style="font-size: 11px; padding: 6px 10px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); cursor: pointer;" onclick="clearBatch()">Clear</button>
+                </div>
+                <div id="batch-list" style="display: flex; flex-direction: column; gap: 4px;"></div>
+            </div>
+        </div>
+
+        <!-- Upload Section (Screenshot) -->
+        <details class="upload-section" style="cursor: pointer;">
+            <summary class="upload-section-title" style="list-style: none; display: flex; align-items: center; gap: 8px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                Upload Screenshot Instead
+            </summary>
+            <div class="upload-layout" style="margin-top: 12px;">
+                <div class="upload-zone" id="upload-zone">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="upload-text">Drop screenshot here or click to upload</p>
+                    <p class="upload-hint">PNG, JPG, WebP — landing page screenshots</p>
+                    <img class="upload-preview" id="upload-preview" alt="Preview">
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                </div>
+                <div class="upload-fields">
+                    <div class="field-group">
+                        <label class="field-label">Page Type *</label>
+                        <select class="field-select" id="upload-page-type">
+                            <option value="">Select type...</option>
+                            <option value="advertorial">Advertorial</option>
+                            <option value="vsl">VSL Page</option>
+                            <option value="optin">Opt-in</option>
+                            <option value="checkout">Checkout</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Niche</label>
+                        <input type="text" class="field-input" id="upload-niche" placeholder="e.g. health, saas, finance...">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Source URL</label>
+                        <input type="text" class="field-input" id="upload-source-url" placeholder="https://...">
+                    </div>
+                    <button class="btn-analyze" id="btn-analyze" disabled>Analyze Swipe</button>
+                </div>
+            </div>
+        </details>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" class="filter-search" id="search-input" placeholder="Search by niche, source, funnel group...">
+            <select class="filter-dropdown" id="type-filter">
+                <option value="">All Page Types</option>
+                <option value="advertorial">Advertorial</option>
+                <option value="vsl">VSL</option>
+                <option value="optin">Opt-in</option>
+                <option value="checkout">Checkout</option>
+                <option value="upsell">Upsell</option>
+                <option value="downsell">Downsell</option>
+                <option value="thank-you">Thank You</option>
+                <option value="booking">Booking</option>
+                <option value="application">Application</option>
+            </select>
+            <select class="filter-dropdown" id="group-filter">
+                <option value="">All Funnel Groups</option>
+            </select>
+        </div>
+
+        <!-- Swipe Grid -->
+        <div class="swipe-grid" id="swipe-grid"></div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-image-panel">
+                <img id="modal-image" src="" alt="Landing page screenshot">
+            </div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">LP Analysis</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+
+                <div class="modal-section">
+                    <p class="modal-label">Classification</p>
+                    <div class="modal-tags" id="modal-tags"></div>
+                </div>
+
+                <div class="modal-section" id="section-structure-section">
+                    <p class="modal-label">Section Structure</p>
+                    <div class="modal-structure" id="modal-structure"></div>
+                </div>
+
+                <div class="modal-section" id="copy-blocks-section">
+                    <p class="modal-label">Copy Blocks</p>
+                    <div class="copy-block-list" id="modal-copy-blocks"></div>
+                </div>
+
+                <div class="modal-section" id="design-patterns-section">
+                    <p class="modal-label">Design Patterns</p>
+                    <div class="pattern-grid" id="modal-design-patterns"></div>
+                </div>
+
+                <div class="modal-section" id="color-scheme-section">
+                    <p class="modal-label">Color Scheme</p>
+                    <div class="swatch-row" id="modal-color-scheme"></div>
+                </div>
+
+                <div class="modal-section" id="cta-section">
+                    <p class="modal-label">CTA Placements</p>
+                    <div class="cta-list" id="modal-cta-placements"></div>
+                </div>
+
+                <div class="modal-section" id="recreation-prompt-section">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <p class="modal-label" style="margin-bottom: 0;">Recreation Prompt</p>
+                        <button class="copy-btn" onclick="copyRecreationPrompt()">COPY</button>
+                    </div>
+                    <div class="recreation-prompt" id="modal-recreation-prompt"></div>
+                </div>
+
+                <div class="modal-section" id="masterson-section">
+                    <p class="modal-label">Masterson Mapping</p>
+                    <div class="masterson-mapping" id="modal-masterson"></div>
+                </div>
+
+                <div class="modal-section" id="source-url-section">
+                    <p class="modal-label">Source URL</p>
+                    <p class="modal-text" id="modal-source-url" style="word-break: break-all;"></p>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="modal-btn secondary" onclick="copyRecreationPrompt()">Copy Prompt</button>
+                    <button class="modal-btn danger" onclick="deleteSwipe()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processing">
+        <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <p class="processing-text" id="processing-text">Analyzing landing page...</p>
+            <p class="processing-subtext" id="processing-subtext">Extracting sections and patterns</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && !e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+
+        // Configuration
+        const CONFIG = {
+            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
+            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
+            WEBHOOK_LP_SWIPE: 'https://n8n.dtthomas.cloud/webhook/lp-swipe'
+        };
+
+        const HEADERS = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        };
+        const HEADERS_READ = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        };
+
+        async function sbGet(table, query = '') {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}?order=created_at.desc${query ? '&' + query : ''}`;
+            const res = await fetch(url, { headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
+            return res.json();
+        }
+        async function sbPost(table, body) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}`, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`POST ${table} failed: ${await res.text()}`);
+            return res.json();
+        }
+        async function sbDelete(table, id) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+        }
+
+        function showToast(msg, isError = false) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast' + (isError ? ' error' : '');
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        // State
+        let swipes = [];
+        let selectedSwipe = null;
+        let uploadFile = null;
+        let batchQueue = [];
+
+        // ── Clone from URL ──
+        const cloneUrl = document.getElementById('clone-url');
+        const clonePageType = document.getElementById('clone-page-type');
+        const btnClone = document.getElementById('btn-clone');
+        const btnCloneAll = document.getElementById('btn-clone-all');
+
+        function updateCloneButton() {
+            btnClone.disabled = !(cloneUrl.value.trim() && clonePageType.value);
+        }
+        cloneUrl.addEventListener('input', updateCloneButton);
+        clonePageType.addEventListener('change', updateCloneButton);
+
+        // Add to batch on Enter key
+        cloneUrl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && cloneUrl.value.trim() && clonePageType.value) {
+                e.preventDefault();
+                addToBatch();
+            }
+        });
+
+        function addToBatch() {
+            const url = cloneUrl.value.trim();
+            const pageType = clonePageType.value;
+            const niche = document.getElementById('clone-niche').value.trim();
+            const funnelGroup = document.getElementById('clone-funnel-group').value.trim();
+            if (!url || !pageType) return;
+
+            batchQueue.push({ url, pageType, niche, funnelGroup });
+            cloneUrl.value = '';
+            updateCloneButton();
+            renderBatch();
+        }
+
+        function renderBatch() {
+            const wrap = document.getElementById('clone-batch');
+            const list = document.getElementById('batch-list');
+            if (batchQueue.length === 0) {
+                wrap.style.display = 'none';
+                return;
+            }
+            wrap.style.display = 'block';
+            list.innerHTML = batchQueue.map((item, i) => `
+                <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--bg-tertiary); border-radius: 6px; font-size: 12px;">
+                    <span style="font-family: 'Geist Mono', monospace; color: #fd5106; font-size: 10px; text-transform: uppercase;">${item.pageType}</span>
+                    <span style="flex: 1; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.url}</span>
+                    ${item.funnelGroup ? `<span style="font-family: 'Geist Mono', monospace; font-size: 10px; background: #a78bfa20; color: #a78bfa; padding: 2px 6px; border-radius: 3px;">${item.funnelGroup}</span>` : ''}
+                    <button onclick="batchQueue.splice(${i},1); renderBatch();" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function clearBatch() {
+            batchQueue = [];
+            renderBatch();
+        }
+
+        // Clone single URL
+        btnClone.addEventListener('click', async () => {
+            const url = cloneUrl.value.trim();
+            const pageType = clonePageType.value;
+            const niche = document.getElementById('clone-niche').value.trim();
+            const funnelGroup = document.getElementById('clone-funnel-group').value.trim();
+
+            if (!url || !pageType) return;
+            await cloneSingleUrl(url, pageType, niche, funnelGroup);
+        });
+
+        // Clone all in batch
+        btnCloneAll.addEventListener('click', async () => {
+            if (batchQueue.length === 0) return;
+            const queue = [...batchQueue];
+            batchQueue = [];
+            renderBatch();
+
+            showProcessing('Cloning batch...', `0 / ${queue.length} pages`);
+            let done = 0;
+            for (const item of queue) {
+                updateProcessing('Cloning batch...', `${done} / ${queue.length} — ${item.url}`);
+                await cloneSingleUrl(item.url, item.pageType, item.niche, item.funnelGroup, true);
+                done++;
+            }
+            hideProcessing();
+            showToast(`Cloned ${done} pages!`);
+            await loadSwipes();
+        });
+
+        async function cloneSingleUrl(url, pageType, niche, funnelGroup, silent = false) {
+            if (!silent) {
+                btnClone.disabled = true;
+                btnClone.textContent = 'Cloning...';
+                showProcessing('Cloning page...', url);
+            }
+
+            try {
+                // Fetch HTML via a CORS proxy or direct
+                let html = '';
+                try {
+                    const res = await fetch(url);
+                    html = await res.text();
+                } catch (corsError) {
+                    // Try via allorigins proxy
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    const res = await fetch(proxyUrl);
+                    html = await res.text();
+                }
+
+                if (!html || html.length < 100) throw new Error('Empty or invalid page');
+
+                // Extract title from HTML
+                const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+                const title = titleMatch ? titleMatch[1].trim() : '';
+
+                if (!silent) updateProcessing('Sending to AI...', 'Analyzing page structure');
+
+                // Send to webhook for AI analysis (with the URL, not screenshot)
+                const webhookPayload = {
+                    screenshot_url: url,
+                    page_type: pageType,
+                    niche: niche || null,
+                    source_url: url
+                };
+
+                fetch(CONFIG.WEBHOOK_LP_SWIPE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(webhookPayload)
+                }).catch(() => {}); // Fire and forget — we save immediately below
+
+                // Save directly to Supabase with the HTML
+                const record = {
+                    page_type: pageType,
+                    cloned_from_url: url,
+                    source_url: url,
+                    html_content: html,
+                    niche: niche || null,
+                    funnel_group: funnelGroup || null,
+                    notes: title ? `Cloned: ${title}` : `Cloned from ${url}`
+                };
+
+                await sbPost('landing_page_swipes', record);
+
+                if (!silent) {
+                    hideProcessing();
+                    showToast('Page cloned & saved!');
+                    cloneUrl.value = '';
+                    clonePageType.value = '';
+                    updateCloneButton();
+                    await loadSwipes();
+                }
+            } catch (err) {
+                console.error('Clone failed:', err);
+                if (!silent) {
+                    hideProcessing();
+                    showToast('Clone failed: ' + err.message, true);
+                    btnClone.disabled = false;
+                    btnClone.textContent = 'Clone & Analyze';
+                }
+            }
+
+            if (!silent) {
+                btnClone.disabled = false;
+                btnClone.textContent = 'Clone & Analyze';
+            }
+        }
+
+        // Funnel group filter
+        const groupFilter = document.getElementById('group-filter');
+        groupFilter.addEventListener('change', renderGrid);
+
+        function updateFunnelGroups() {
+            const groups = [...new Set(swipes.map(s => s.funnel_group).filter(Boolean))].sort();
+            const current = groupFilter.value;
+            groupFilter.innerHTML = '<option value="">All Funnel Groups</option>' +
+                groups.map(g => `<option value="${g}" ${g === current ? 'selected' : ''}>${g}</option>`).join('');
+
+            // Also update the datalist for clone input
+            const datalist = document.getElementById('funnel-groups-list');
+            datalist.innerHTML = groups.map(g => `<option value="${g}">`).join('');
+        }
+
+        // Upload handling
+        const uploadZone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('file-input');
+        const uploadPreview = document.getElementById('upload-preview');
+        const btnAnalyze = document.getElementById('btn-analyze');
+
+        uploadZone.addEventListener('click', (e) => {
+            if (!e.target.closest('.upload-preview')) fileInput.click();
+        });
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+        });
+
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload an image file', true);
+                return;
+            }
+            uploadFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadPreview.src = e.target.result;
+                uploadZone.classList.add('has-file');
+            };
+            reader.readAsDataURL(file);
+            updateAnalyzeButton();
+        }
+
+        document.getElementById('upload-page-type').addEventListener('change', updateAnalyzeButton);
+
+        function updateAnalyzeButton() {
+            const pageType = document.getElementById('upload-page-type').value;
+            btnAnalyze.disabled = !(uploadFile && pageType);
+        }
+
+        // Upload screenshot to Supabase Storage
+        async function uploadScreenshot(file) {
+            const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            const uploadUrl = `${CONFIG.SUPABASE_URL}/storage/v1/object/lp-swipes/${filename}`;
+            const res = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'apikey': CONFIG.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+                    'Content-Type': file.type
+                },
+                body: file
+            });
+            if (!res.ok) throw new Error('Upload failed');
+            return `${CONFIG.SUPABASE_URL}/storage/v1/object/public/lp-swipes/${filename}`;
+        }
+
+        // Analyze swipe
+        btnAnalyze.addEventListener('click', async () => {
+            if (!uploadFile) return;
+
+            const pageType = document.getElementById('upload-page-type').value;
+            const niche = document.getElementById('upload-niche').value.trim();
+            const sourceUrl = document.getElementById('upload-source-url').value.trim();
+
+            if (!pageType) {
+                showToast('Please select a page type', true);
+                return;
+            }
+
+            btnAnalyze.disabled = true;
+            btnAnalyze.textContent = 'Uploading...';
+
+            try {
+                // Upload image to Supabase Storage
+                const screenshotUrl = await uploadScreenshot(uploadFile);
+
+                btnAnalyze.textContent = 'Sending to AI...';
+                showProcessing('Analyzing landing page...', 'Sending screenshot to AI for analysis');
+
+                // POST to webhook
+                const payload = {
+                    screenshot_url: screenshotUrl,
+                    page_type: pageType,
+                };
+                if (niche) payload.niche = niche;
+                if (sourceUrl) payload.source_url = sourceUrl;
+
+                await fetch(CONFIG.WEBHOOK_LP_SWIPE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                showToast('Analyzing... checking for results');
+                updateProcessing('Analyzing...', 'AI is extracting sections, copy, and design patterns');
+
+                // Poll for new entry
+                const beforeCount = swipes.length;
+                let found = false;
+                for (let i = 0; i < 30; i++) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    updateProcessing('Analyzing...', `Checking for results... (${(i + 1) * 2}s)`);
+                    try {
+                        const results = await sbGet('landing_page_swipes', `screenshot_url=eq.${encodeURIComponent(screenshotUrl)}`);
+                        if (results && results.length > 0) {
+                            found = true;
+                            hideProcessing();
+                            showToast('Swipe analyzed successfully!');
+                            resetUploadForm();
+                            await loadSwipes();
+                            break;
+                        }
+                    } catch (e) {
+                        // Keep polling
+                    }
+                }
+
+                if (!found) {
+                    hideProcessing();
+                    showToast('Analysis is taking longer than expected. Refresh to check.', true);
+                    resetUploadForm();
+                }
+
+            } catch (error) {
+                console.error('Upload failed:', error);
+                hideProcessing();
+                showToast('Upload failed: ' + error.message, true);
+                btnAnalyze.disabled = false;
+                btnAnalyze.textContent = 'Analyze Swipe';
+            }
+        });
+
+        function resetUploadForm() {
+            uploadFile = null;
+            fileInput.value = '';
+            uploadPreview.src = '';
+            uploadZone.classList.remove('has-file');
+            document.getElementById('upload-page-type').value = '';
+            document.getElementById('upload-niche').value = '';
+            document.getElementById('upload-source-url').value = '';
+            btnAnalyze.disabled = true;
+            btnAnalyze.textContent = 'Analyze Swipe';
+        }
+
+        // Processing overlay helpers
+        function showProcessing(text, subtext) {
+            document.getElementById('processing-text').textContent = text;
+            document.getElementById('processing-subtext').textContent = subtext;
+            document.getElementById('processing').classList.add('active');
+        }
+        function updateProcessing(text, subtext) {
+            document.getElementById('processing-text').textContent = text;
+            document.getElementById('processing-subtext').textContent = subtext;
+        }
+        function hideProcessing() {
+            document.getElementById('processing').classList.remove('active');
+        }
+
+        // Load swipes
+        async function loadSwipes() {
+            try {
+                swipes = await sbGet('landing_page_swipes');
+                updateStats();
+                updateFunnelGroups();
+                renderGrid();
+            } catch (error) {
+                console.error('Failed to load swipes:', error);
+                showToast('Failed to load swipes', true);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').textContent = swipes.length;
+            document.getElementById('stat-advertorial').textContent = swipes.filter(s => s.page_type === 'advertorial').length;
+            document.getElementById('stat-vsl').textContent = swipes.filter(s => s.page_type === 'vsl').length;
+            document.getElementById('stat-optin').textContent = swipes.filter(s => s.page_type === 'optin').length;
+            document.getElementById('stat-checkout').textContent = swipes.filter(s => s.page_type === 'checkout').length;
+        }
+
+        // Filtering
+        const searchInput = document.getElementById('search-input');
+        const typeFilter = document.getElementById('type-filter');
+
+        searchInput.addEventListener('input', renderGrid);
+        typeFilter.addEventListener('change', renderGrid);
+
+        function getFilteredSwipes() {
+            const search = searchInput.value.toLowerCase().trim();
+            const type = typeFilter.value;
+            const group = groupFilter.value;
+
+            return swipes.filter(s => {
+                if (type && s.page_type !== type) return false;
+                if (group && s.funnel_group !== group) return false;
+                if (search) {
+                    const haystack = [
+                        s.niche || '',
+                        s.source_url || '',
+                        s.cloned_from_url || '',
+                        s.funnel_group || '',
+                        s.page_type || '',
+                        s.notes || '',
+                        s.recreation_prompt || ''
+                    ].join(' ').toLowerCase();
+                    if (!haystack.includes(search)) return false;
+                }
+                return true;
+            });
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('swipe-grid');
+            const filtered = getFilteredSwipes();
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <p>${swipes.length === 0 ? 'No swipes yet' : 'No matching swipes'}</p>
+                        <p class="hint">${swipes.length === 0 ? 'Upload a landing page screenshot to get started' : 'Try adjusting your filters'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(s => {
+                const sectionCount = getSectionCount(s);
+                const date = new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const pageType = s.page_type || 'unknown';
+                const hasHtml = !!s.html_content;
+                const domain = s.cloned_from_url ? new URL(s.cloned_from_url).hostname.replace('www.', '') : '';
+
+                return `
+                    <div class="swipe-card" onclick="openModal('${s.id}')">
+                        <div class="swipe-thumb-container">
+                            ${s.screenshot_url
+                                ? `<img src="${s.screenshot_url}" alt="LP Screenshot" loading="lazy">`
+                                : hasHtml
+                                    ? `<div class="swipe-thumb-placeholder" style="background: #1e1e1e; color: #fd5106; font-family: 'Geist Mono', monospace; font-size: 11px;">HTML CLONED</div>`
+                                    : `<div class="swipe-thumb-placeholder">No screenshot</div>`
+                            }
+                            <span class="swipe-type-badge ${pageType}">${pageType}</span>
+                            ${hasHtml ? '<span class="swipe-sections-badge" style="background: #22c55e; color: #fff;">CLONED</span>' : ''}
+                            ${!hasHtml && sectionCount > 0 ? `<span class="swipe-sections-badge">${sectionCount} sections</span>` : ''}
+                        </div>
+                        <div class="swipe-body">
+                            ${s.funnel_group ? `<span class="swipe-niche-tag" style="background: #a78bfa20; color: #a78bfa;">${escapeHtml(s.funnel_group)}</span>` : ''}
+                            ${s.niche ? `<span class="swipe-niche-tag">${escapeHtml(s.niche)}</span>` : ''}
+                            ${domain ? `<p class="swipe-source-url">${domain}</p>` : s.source_url ? `<p class="swipe-source-url">${escapeHtml(s.source_url)}</p>` : ''}
+                            <div class="swipe-meta">
+                                <span class="swipe-date">${date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getSectionCount(swipe) {
+            if (!swipe.section_structure) return 0;
+            const structure = typeof swipe.section_structure === 'string'
+                ? JSON.parse(swipe.section_structure)
+                : swipe.section_structure;
+            return Array.isArray(structure) ? structure.length : 0;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Modal
+        function openModal(id) {
+            selectedSwipe = swipes.find(s => s.id === id);
+            if (!selectedSwipe) return;
+
+            const modal = document.getElementById('modal');
+
+            // Image
+            const img = document.getElementById('modal-image');
+            img.src = selectedSwipe.screenshot_url || '';
+
+            // Tags
+            const tagsEl = document.getElementById('modal-tags');
+            let tagsHtml = '';
+            if (selectedSwipe.page_type) {
+                tagsHtml += `<span class="tag type-${selectedSwipe.page_type}">${selectedSwipe.page_type}</span>`;
+            }
+            if (selectedSwipe.niche) {
+                tagsHtml += `<span class="tag niche">${escapeHtml(selectedSwipe.niche)}</span>`;
+            }
+            tagsEl.innerHTML = tagsHtml;
+
+            // Section Structure
+            renderSectionStructure(selectedSwipe.section_structure);
+
+            // Copy Blocks
+            renderCopyBlocks(selectedSwipe.copy_blocks);
+
+            // Design Patterns
+            renderDesignPatterns(selectedSwipe.design_patterns);
+
+            // Color Scheme
+            renderColorScheme(selectedSwipe.color_scheme);
+
+            // CTA Placements
+            renderCtaPlacements(selectedSwipe.cta_placements);
+
+            // Recreation Prompt
+            const promptSection = document.getElementById('recreation-prompt-section');
+            const promptEl = document.getElementById('modal-recreation-prompt');
+            if (selectedSwipe.recreation_prompt) {
+                promptSection.style.display = '';
+                promptEl.textContent = selectedSwipe.recreation_prompt;
+            } else {
+                promptSection.style.display = 'none';
+            }
+
+            // Masterson Mapping
+            renderMastersonMapping(selectedSwipe.masterson_mapping);
+
+            // Source URL
+            const sourceSection = document.getElementById('source-url-section');
+            const sourceEl = document.getElementById('modal-source-url');
+            if (selectedSwipe.source_url) {
+                sourceSection.style.display = '';
+                sourceEl.innerHTML = `<a href="${escapeHtml(selectedSwipe.source_url)}" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">${escapeHtml(selectedSwipe.source_url)}</a>`;
+            } else {
+                sourceSection.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function renderSectionStructure(data) {
+            const section = document.getElementById('section-structure-section');
+            const el = document.getElementById('modal-structure');
+            const parsed = parseJsonField(data);
+
+            if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+
+            const items = Array.isArray(parsed) ? parsed : [parsed];
+            el.innerHTML = items.map((item, i) => {
+                const name = item.name || item.section || item.title || item.label || `Section ${i + 1}`;
+                const desc = item.description || item.desc || item.content || item.purpose || '';
+                return `
+                    <div class="structure-item">
+                        <span class="structure-number">${String(i + 1).padStart(2, '0')}</span>
+                        <div>
+                            <div class="structure-name">${escapeHtml(name)}</div>
+                            ${desc ? `<div class="structure-desc">${escapeHtml(desc)}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCopyBlocks(data) {
+            const section = document.getElementById('copy-blocks-section');
+            const el = document.getElementById('modal-copy-blocks');
+            const parsed = parseJsonField(data);
+
+            if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+
+            const items = Array.isArray(parsed) ? parsed : [parsed];
+            el.innerHTML = items.map(item => {
+                if (typeof item === 'string') {
+                    return `<div class="copy-block-item">${escapeHtml(item)}</div>`;
+                }
+                const label = item.type || item.label || item.section || '';
+                const text = item.text || item.content || item.copy || JSON.stringify(item);
+                return `<div class="copy-block-item">${label ? `<strong>${escapeHtml(label)}:</strong> ` : ''}${escapeHtml(text)}</div>`;
+            }).join('');
+        }
+
+        function renderDesignPatterns(data) {
+            const section = document.getElementById('design-patterns-section');
+            const el = document.getElementById('modal-design-patterns');
+            const parsed = parseJsonField(data);
+
+            if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+
+            const items = Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.entries(parsed).map(([k, v]) => `${k}: ${v}`) : [String(parsed)]);
+            el.innerHTML = items.map(item => {
+                const text = typeof item === 'string' ? item : (item.name || item.pattern || item.label || JSON.stringify(item));
+                return `<div class="pattern-item">${escapeHtml(text)}</div>`;
+            }).join('');
+        }
+
+        function renderColorScheme(data) {
+            const section = document.getElementById('color-scheme-section');
+            const el = document.getElementById('modal-color-scheme');
+            const parsed = parseJsonField(data);
+
+            if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+
+            const colors = Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.values(parsed) : []);
+            el.innerHTML = colors.map(c => {
+                const color = typeof c === 'string' ? c : (c.hex || c.color || c.value || '');
+                if (!color) return '';
+                return `<div class="swatch" style="background: ${escapeHtml(color)};" data-color="${escapeHtml(color)}" onclick="navigator.clipboard.writeText('${escapeHtml(color)}'); showToast('Copied ${escapeHtml(color)}')"></div>`;
+            }).join('');
+        }
+
+        function renderCtaPlacements(data) {
+            const section = document.getElementById('cta-section');
+            const el = document.getElementById('modal-cta-placements');
+            const parsed = parseJsonField(data);
+
+            if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+
+            const items = Array.isArray(parsed) ? parsed : [parsed];
+            el.innerHTML = items.map(item => {
+                if (typeof item === 'string') {
+                    return `<div class="cta-item"><span>${escapeHtml(item)}</span></div>`;
+                }
+                const position = item.position || item.location || item.placement || '';
+                const text = item.text || item.label || item.cta || item.copy || '';
+                return `
+                    <div class="cta-item">
+                        ${position ? `<span class="cta-position">${escapeHtml(position)}</span>` : ''}
+                        <span>${escapeHtml(text)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMastersonMapping(data) {
+            const section = document.getElementById('masterson-section');
+            const el = document.getElementById('modal-masterson');
+            const parsed = parseJsonField(data);
+
+            if (!parsed || (typeof parsed === 'object' && Object.keys(parsed).length === 0)) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+
+            if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+                el.innerHTML = Object.entries(parsed).map(([key, value]) => `
+                    <div class="masterson-item">
+                        <span class="masterson-key">${escapeHtml(key)}</span>
+                        <span class="masterson-value">${escapeHtml(typeof value === 'object' ? JSON.stringify(value) : String(value))}</span>
+                    </div>
+                `).join('');
+            } else if (Array.isArray(parsed)) {
+                el.innerHTML = parsed.map(item => {
+                    if (typeof item === 'string') {
+                        return `<div class="masterson-item"><span class="masterson-value">${escapeHtml(item)}</span></div>`;
+                    }
+                    const key = item.stage || item.level || item.label || '';
+                    const value = item.description || item.value || item.text || '';
+                    return `
+                        <div class="masterson-item">
+                            <span class="masterson-key">${escapeHtml(key)}</span>
+                            <span class="masterson-value">${escapeHtml(value)}</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        function parseJsonField(data) {
+            if (!data) return null;
+            if (typeof data === 'string') {
+                try { return JSON.parse(data); } catch { return null; }
+            }
+            return data;
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            selectedSwipe = null;
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Copy recreation prompt
+        function copyRecreationPrompt() {
+            if (!selectedSwipe || !selectedSwipe.recreation_prompt) return;
+            navigator.clipboard.writeText(selectedSwipe.recreation_prompt).then(() => {
+                showToast('Recreation prompt copied!');
+            });
+        }
+
+        // Delete swipe
+        async function deleteSwipe() {
+            if (!selectedSwipe) return;
+            if (!confirm('Delete this swipe? This cannot be undone.')) return;
+
+            try {
+                await sbDelete('landing_page_swipes', selectedSwipe.id);
+                showToast('Swipe deleted');
+                closeModal();
+                await loadSwipes();
+            } catch (error) {
+                console.error('Delete failed:', error);
+                showToast('Delete failed: ' + error.message, true);
+            }
+        }
+
+        // Initialize
+        loadSwipes();
+    </script>
+</body>
+</html>

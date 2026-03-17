@@ -4,38 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Ad Generator</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --border: #2a2a2d;
-            --border-hover: #3a3a3d;
-            --text-primary: #fafafa;
-            --text-secondary: #a0a0a5;
-            --text-muted: #606065;
-            --accent: #00ff88;
-            --accent-dim: #00ff8820;
-            --accent-hover: #00ffaa;
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
             --danger: #ff4444;
             --danger-dim: #ff444420;
-            --warning: #ffaa00;
-            --warning-dim: #ffaa0020;
-            --purple: #a855f7;
-            --purple-dim: #a855f720;
-            --blue: #3b82f6;
-            --blue-dim: #3b82f620;
-            --orange: #f97316;
-            --orange-dim: #f9731620;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -57,7 +59,7 @@
         }
 
         .sidebar-brand {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -72,7 +74,7 @@
         }
 
         .sidebar-section-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -83,7 +85,7 @@
 
         .sidebar-link {
             display: block;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
@@ -98,8 +100,8 @@
         }
 
         .sidebar-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
+            color: #fd5106;
+            background: #fd510615;
         }
 
         .sidebar-toggle {
@@ -117,7 +119,7 @@
         }
 
         .sidebar-toggle:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -180,12 +182,12 @@
         }
 
         .panel-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 4px 8px;
             border-radius: 4px;
-            background: var(--accent-dim);
-            color: var(--accent);
+            background: #fd510620;
+            color: #fd5106;
         }
 
         .panel-body {
@@ -198,7 +200,7 @@
         .form-group { margin-bottom: 20px; }
 
         .form-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 600;
             color: var(--text-muted);
@@ -210,7 +212,7 @@
 
         .form-select {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 15px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -223,12 +225,12 @@
 
         .form-select:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .form-textarea {
             width: 100%;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 14px;
             background: var(--bg-primary);
             border: 1px solid var(--border);
@@ -241,7 +243,7 @@
 
         .form-textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .form-textarea::placeholder { color: var(--text-muted); }
@@ -298,7 +300,7 @@
         }
 
         .offer-awareness {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 3px 6px;
             border-radius: 4px;
@@ -316,7 +318,7 @@
         }
 
         .offer-tag {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 2px 6px;
             border-radius: 3px;
@@ -394,8 +396,9 @@
 
         .checkbox-item:hover { border-color: var(--border-hover); }
         .checkbox-item.selected {
-            border-color: var(--accent);
-            background: var(--accent-dim);
+            border-color: #fd5106;
+            background: #fd510615;
+            color: #fd5106;
         }
 
         .checkbox-item input { display: none; }
@@ -403,11 +406,11 @@
         /* ===== GENERATE BUTTON ===== */
         .generate-btn {
             width: 100%;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 15px;
             font-weight: 600;
-            background: var(--accent);
-            color: var(--bg-primary);
+            background: #fd5106;
+            color: #fff;
             border: none;
             border-radius: 8px;
             padding: 18px 32px;
@@ -462,7 +465,7 @@
 
         .variant-checkbox.checked {
             background: var(--accent);
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .variant-checkbox.checked::after {
@@ -475,7 +478,7 @@
         }
 
         .variant-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 600;
             color: var(--text-secondary);
@@ -484,7 +487,7 @@
         }
 
         .variant-angle-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 3px 8px;
             border-radius: 4px;
@@ -497,7 +500,7 @@
         .variant-field:last-child { margin-bottom: 0; }
 
         .variant-field-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -524,7 +527,7 @@
         }
 
         .action-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             padding: 10px 16px;
             border-radius: 6px;
@@ -536,7 +539,7 @@
         }
 
         .action-btn:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -567,7 +570,7 @@
 
         .regen-input {
             flex: 1;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             background: var(--bg-primary);
             border: 1px solid var(--border);
@@ -576,10 +579,10 @@
             color: var(--text-primary);
         }
 
-        .regen-input:focus { outline: none; border-color: var(--accent); }
+        .regen-input:focus { outline: none; border-color: #fd5106; }
 
         .regen-send {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             padding: 10px 14px;
             border-radius: 6px;
@@ -664,7 +667,7 @@
         }
 
         .perf-tag {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             padding: 4px 10px;
             border-radius: 4px;
@@ -675,11 +678,11 @@
 
         .perf-tag.untested { background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border); }
         .perf-tag.testing { background: var(--warning-dim); color: var(--warning); border: 1px solid var(--warning); }
-        .perf-tag.winner { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+        .perf-tag.winner { background: #fd510620; color: #fd5106; border: 1px solid var(--accent); }
         .perf-tag.loser { background: var(--danger-dim); color: var(--danger); border: 1px solid var(--danger); }
 
         .img-action-btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             padding: 6px 12px;
             border-radius: 4px;
@@ -694,7 +697,7 @@
             color: var(--text-secondary);
         }
 
-        .img-action-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .img-action-btn.secondary:hover { border-color: #fd5106; color: var(--accent); }
 
         .img-action-btn.primary {
             background: var(--accent);
@@ -708,7 +711,7 @@
             display: block;
             text-align: center;
             padding: 16px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             color: var(--accent);
             text-decoration: none;
@@ -740,7 +743,7 @@
         }
 
         .progress-text {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--text-muted);
         }
@@ -781,7 +784,7 @@
             transform: translateY(0);
         }
 
-        .toast.success { border-color: var(--accent); }
+        .toast.success { border-color: #fd5106; }
         .toast.error { border-color: var(--danger); }
 
         /* ===== RESPONSIVE ===== */
@@ -804,7 +807,7 @@
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
         
     <div class="sidebar-section">
         <div class="sidebar-section-label">YOUTUBE</div>
@@ -830,6 +833,15 @@
         <div class="sidebar-section-label">VIDEO ADS</div>
         <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
         <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">LANDING PAGES</div>
+        <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+        <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+        <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+        <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+        <a href="22-lp-history.html" class="sidebar-link">History</a>
     </div>
     <div class="sidebar-section">
         <div class="sidebar-section-label">TOOLS</div>

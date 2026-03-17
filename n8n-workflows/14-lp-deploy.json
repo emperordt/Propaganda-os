@@ -1,0 +1,181 @@
+{
+  "name": "14 - LP Deploy to Vercel",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lp-deploy",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: LP Deploy",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/vercel_projects?id=eq.{{ $json.body.vercel_project_id }}",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Fetch Vercel Project",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 200],
+      "notes": "Fetch project config including tracking pixels"
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/landing_page_generations?id=eq.{{ $node['Webhook: LP Deploy'].json.body.generation_id }}",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Fetch Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 400],
+      "notes": "Fetch the HTML content to deploy"
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/deployed_pages?vercel_project_id=eq.{{ $node['Webhook: LP Deploy'].json.body.vercel_project_id }}&is_live=eq.true",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Fetch Existing Live Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 600],
+      "notes": "Fetch all currently live pages for this project (Vercel replaces entire deployment)"
+    },
+    {
+      "parameters": {
+        "functionCode": "const webhook = $node['Webhook: LP Deploy'].json.body;\nconst project = $node['Fetch Vercel Project'].json[0] || {};\nconst generation = $node['Fetch Generation'].json[0] || {};\nconst existingPages = $node['Fetch Existing Live Pages'].json || [];\nconst pixels = project.tracking_pixels || {};\n\n// Inject tracking pixels into HTML\nfunction injectPixels(html) {\n  let result = html;\n  \n  // Build head tracking code\n  let headCode = '';\n  if (pixels.fb_pixel_id) {\n    headCode += `\\n<!-- Facebook Pixel -->\\n<script>\\n!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');\\nfbq('init','${pixels.fb_pixel_id}');\\nfbq('track','PageView');\\n</script>\\n<noscript><img height=\"1\" width=\"1\" style=\"display:none\" src=\"https://www.facebook.com/tr?id=${pixels.fb_pixel_id}&ev=PageView&noscript=1\"/></noscript>`;\n  }\n  if (pixels.gtm_id) {\n    headCode += `\\n<!-- Google Tag Manager -->\\n<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${pixels.gtm_id}');</script>`;\n  }\n  if (pixels.custom_head) {\n    headCode += '\\n' + pixels.custom_head;\n  }\n  \n  // Build body tracking code\n  let bodyCode = '';\n  if (pixels.gtm_id) {\n    bodyCode += `\\n<!-- Google Tag Manager (noscript) -->\\n<noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=${pixels.gtm_id}\" height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>`;\n  }\n  if (pixels.hyros_script) {\n    bodyCode += '\\n<!-- Hyros -->\\n' + pixels.hyros_script;\n  }\n  if (pixels.custom_body) {\n    bodyCode += '\\n' + pixels.custom_body;\n  }\n  \n  // Replace placeholders or inject before closing tags\n  if (result.includes('<!-- TRACKING_HEAD -->')) {\n    result = result.replace('<!-- TRACKING_HEAD -->', headCode);\n  } else {\n    result = result.replace('</head>', headCode + '\\n</head>');\n  }\n  \n  if (result.includes('<!-- TRACKING_BODY -->')) {\n    result = result.replace('<!-- TRACKING_BODY -->', bodyCode);\n  } else {\n    result = result.replace('</body>', bodyCode + '\\n</body>');\n  }\n  \n  return result;\n}\n\n// Build files object for Vercel Files API\n// Include all existing live pages + the new page\nconst files = [];\n\n// Add existing live pages\nfor (const page of existingPages) {\n  if (page.route === webhook.route) continue; // Skip if we're replacing same route\n  const route = page.route.startsWith('/') ? page.route : '/' + page.route;\n  files.push({\n    file: route === '/' ? 'index.html' : route.slice(1) + '/index.html',\n    data: page.html_content\n  });\n}\n\n// Add the new page with pixels injected\nconst newHtml = injectPixels(generation.html_content || '<html><body>No content</body></html>');\nconst newRoute = webhook.route.startsWith('/') ? webhook.route : '/' + webhook.route;\nfiles.push({\n  file: newRoute === '/' ? 'index.html' : newRoute.slice(1) + '/index.html',\n  data: newHtml\n});\n\nreturn [{\n  json: {\n    vercel_project_id: project.vercel_project_id,\n    vercel_token: project.vercel_token,\n    project_name: project.project_name,\n    team_id: project.team_id,\n    files: files,\n    newPageHtml: newHtml,\n    route: webhook.route,\n    variant_label: webhook.variant_label,\n    variant_group: webhook.variant_group,\n    generation_id: webhook.generation_id,\n    db_project_id: webhook.vercel_project_id,\n    default_domain: project.default_domain\n  }\n}];"
+      },
+      "name": "Build Deployment Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [800, 400],
+      "notes": "Inject tracking pixels into HTML and build the files array for Vercel deployment. Includes all existing live pages (Vercel replaces entire project per deploy)."
+    },
+    {
+      "parameters": {
+        "url": "https://api.vercel.com/v13/deployments",
+        "method": "POST",
+        "headers": {
+          "Authorization": "=Bearer {{ $json.vercel_token }}",
+          "Content-Type": "application/json"
+        },
+        "body": "={{ JSON.stringify({ name: $json.project_name, project: $json.vercel_project_id, target: 'production', files: $json.files.map(f => ({ file: f.file, data: Buffer.from(f.data).toString('base64'), encoding: 'base64' })), teamId: $json.team_id || undefined }) }}",
+        "options": {}
+      },
+      "name": "Vercel: Deploy Files",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 400],
+      "notes": "Deploy all pages to Vercel using the Files API. Each deployment replaces the entire project."
+    },
+    {
+      "parameters": {
+        "functionCode": "const deployResult = $input.first().json;\nconst buildData = $node['Build Deployment Files'].json;\n\nconst deploymentUrl = deployResult.url || deployResult.alias?.[0] || `${buildData.default_domain}${buildData.route}`;\n\nreturn [{\n  json: {\n    generation_id: buildData.generation_id,\n    vercel_project_id: buildData.db_project_id,\n    route: buildData.route,\n    html_content: buildData.newPageHtml,\n    variant_label: buildData.variant_label || null,\n    variant_group: buildData.variant_group || null,\n    deployment_url: deploymentUrl.startsWith('http') ? deploymentUrl : 'https://' + deploymentUrl,\n    deployment_id: deployResult.id || null,\n    is_live: true\n  }\n}];"
+      },
+      "name": "Build Deployed Page Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1300, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/deployed_pages",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Supabase: Insert Deployed Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1500, 400]
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/landing_page_generations?id=eq.{{ $node['Build Deployment Files'].json.generation_id }}",
+        "method": "PATCH",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json"
+        },
+        "body": "{\"status\": \"deployed\"}",
+        "options": {}
+      },
+      "name": "Supabase: Update Gen Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1500, 600],
+      "notes": "Mark the generation as deployed"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, deployment_url: $node['Build Deployed Page Record'].json.deployment_url, deployed_page: $json }) }}"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1700, 400]
+    }
+  ],
+  "connections": {
+    "Webhook: LP Deploy": {
+      "main": [[
+        { "node": "Fetch Vercel Project", "type": "main", "index": 0 },
+        { "node": "Fetch Generation", "type": "main", "index": 0 },
+        { "node": "Fetch Existing Live Pages", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch Vercel Project": {
+      "main": [[{ "node": "Build Deployment Files", "type": "main", "index": 0 }]]
+    },
+    "Fetch Generation": {
+      "main": [[{ "node": "Build Deployment Files", "type": "main", "index": 0 }]]
+    },
+    "Fetch Existing Live Pages": {
+      "main": [[{ "node": "Build Deployment Files", "type": "main", "index": 0 }]]
+    },
+    "Build Deployment Files": {
+      "main": [[{ "node": "Vercel: Deploy Files", "type": "main", "index": 0 }]]
+    },
+    "Vercel: Deploy Files": {
+      "main": [[{ "node": "Build Deployed Page Record", "type": "main", "index": 0 }]]
+    },
+    "Build Deployed Page Record": {
+      "main": [[
+        { "node": "Supabase: Insert Deployed Page", "type": "main", "index": 0 },
+        { "node": "Supabase: Update Gen Status", "type": "main", "index": 0 }
+      ]]
+    },
+    "Supabase: Insert Deployed Page": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}

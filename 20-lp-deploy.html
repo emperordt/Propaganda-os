@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP Deploy</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --danger: #ff4444;
+            --danger-dim: #ff444420;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border); padding: 20px 0; overflow-y: auto; z-index: 100; transition: transform 0.2s ease; }
+        .sidebar-brand { font-family: 'Geist Mono', monospace; font-weight: 700; font-size: 13px; color: var(--accent); padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-section-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 8px 8px 4px; }
+        .sidebar-link { display: block; font-family: 'Geist', Arial, sans-serif; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 8px 12px; border-radius: 6px; transition: all 0.15s ease; }
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: #fd5106; background: #fd510615; }
+        .sidebar-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 101; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 8px; cursor: pointer; color: var(--text-secondary); }
+        .sidebar-toggle:hover { border-color: #fd5106; color: var(--accent); }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.5); } .sidebar-toggle { display: block; } }
+
+        /* ── Main ── */
+        .main { margin-left: 220px; padding: 32px; }
+        @media (max-width: 768px) { .main { margin-left: 0; padding: 16px; padding-top: 60px; } }
+
+        .page-header { margin-bottom: 32px; }
+        .page-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Two-panel grid ── */
+        .deploy-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 1024px) {
+            .deploy-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Panels ── */
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .panel-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .panel-body {
+            padding: 16px 20px;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #fd5106;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #e5480a; }
+        .btn-success { background: #22c55e; color: #fff; }
+        .btn-success:hover { background: #1aad52; }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--border-hover); background: var(--border); }
+        .btn-danger {
+            background: var(--danger-dim);
+            color: var(--danger);
+            border: 1px solid transparent;
+        }
+        .btn-danger:hover { border-color: var(--danger); }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        .btn-icon {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+        /* ── Form elements ── */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: border-color 0.15s ease;
+            outline: none;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #fd5106;
+        }
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23606065' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+        }
+
+        /* ── Inline form (New Project) ── */
+        .inline-form {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .inline-form.visible { display: block; }
+        .inline-form .form-group { margin-bottom: 12px; }
+        .inline-form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        /* ── Project cards ── */
+        .project-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .project-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .project-card:hover {
+            border-color: var(--border-hover);
+        }
+        .project-card.selected {
+            border-color: #fd5106;
+            background: var(--accent-dim);
+        }
+        .project-card-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .project-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .project-card-domain {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .project-card-count {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-block;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-accent { background: #22c55e20; color: #22c55e; }
+        .badge-purple { background: var(--purple-dim); color: var(--purple); }
+        .badge-blue { background: var(--blue-dim); color: var(--blue); }
+        .badge-orange { background: var(--orange-dim); color: var(--orange); }
+        .badge-danger { background: var(--danger-dim); color: var(--danger); }
+        .badge-muted { background: var(--bg-tertiary); color: var(--text-muted); }
+        .badge-live { background: #22c55e20; color: #22c55e; }
+        .badge-offline { background: var(--bg-tertiary); color: var(--text-muted); }
+
+        /* ── Section dividers inside right panel ── */
+        .detail-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .detail-section:last-child { border-bottom: none; }
+        .detail-section-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        /* ── Settings grid ── */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 900px) { .settings-grid { grid-template-columns: 1fr; } }
+        .settings-grid .full-width { grid-column: 1 / -1; }
+
+        /* ── Tag input (custom domains) ── */
+        .tag-input-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 42px;
+            align-items: center;
+            cursor: text;
+            transition: border-color 0.15s ease;
+        }
+        .tag-input-wrap:focus-within { border-color: #fd5106; }
+        .tag-input-wrap input {
+            flex: 1;
+            min-width: 120px;
+            background: none;
+            border: none;
+            outline: none;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .tag-input-wrap input::placeholder { color: var(--text-muted); }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            background: var(--blue-dim);
+            color: var(--blue);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .tag-remove:hover { opacity: 1; }
+
+        /* ── Deployed pages table ── */
+        .deployed-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .deployed-table th {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .deployed-table td {
+            font-size: 13px;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .deployed-table tr:last-child td { border-bottom: none; }
+        .deployed-table .route-cell {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+        }
+        .deployed-table .url-link {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--blue);
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .deployed-table .url-link:hover { text-decoration: underline; }
+        .deployed-table .actions-cell {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        /* ── Deploy form ── */
+        .deploy-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 900px) { .deploy-form-grid { grid-template-columns: 1fr; } }
+        .deploy-form-grid .full-width { grid-column: 1 / -1; }
+
+        /* ── Empty state ── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+        .empty-state-text {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .empty-state-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ── Loading spinner ── */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Toast ── */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            background: #22c55e;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            animation: toast-in 0.2s ease;
+            max-width: 400px;
+        }
+        .toast.error {
+            background: var(--danger);
+            color: #fff;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Inline-edit field ── */
+        .inline-edit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .inline-edit-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .inline-edit-input {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 4px 10px;
+            outline: none;
+            display: none;
+        }
+
+        /* ── Domain display ── */
+        .domain-display {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* ── Deploying overlay ── */
+        .deploying-overlay {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 24px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .deploying-overlay.visible { display: flex; }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YOUTUBE</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TWITTER</div>
+            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">IMAGE ADS</div>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
+            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">VIDEO ADS</div>
+            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link active">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TOOLS</div>
+            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">OTHER</div>
+            <a href="05-history.html" class="sidebar-link">History</a>
+        </div>
+    </aside>
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="page-header">
+            <div class="page-title">LP Deploy</div>
+            <div class="page-subtitle">Manage Vercel projects, tracking pixels & deployments</div>
+        </div>
+
+        <div class="deploy-grid">
+            <!-- LEFT PANEL — Projects -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Projects</div>
+                    <button class="btn btn-primary btn-sm" id="btn-new-project" onclick="toggleNewProjectForm()">+ New Project</button>
+                </div>
+                <div class="panel-body">
+                    <!-- Inline New Project Form -->
+                    <div class="inline-form" id="new-project-form">
+                        <div class="form-group">
+                            <label class="form-label">Project Name</label>
+                            <input type="text" class="form-input" id="new-project-name" placeholder="e.g., quantum-botanics-lp">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Brand</label>
+                            <select class="form-select" id="new-project-brand">
+                                <option value="">Select brand...</option>
+                            </select>
+                        </div>
+                        <div class="inline-form-actions">
+                            <button class="btn btn-primary btn-sm" id="btn-create-project" onclick="createProject()">Create Project</button>
+                            <button class="btn btn-secondary btn-sm" onclick="toggleNewProjectForm()">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Project List -->
+                    <div class="project-list" id="project-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                            </div>
+                            <div class="empty-state-text">Loading projects...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL — Project Details -->
+            <div id="right-panel">
+                <div class="panel" id="empty-detail-panel">
+                    <div class="empty-state" style="padding: 80px 20px;">
+                        <div class="empty-state-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+                        </div>
+                        <div class="empty-state-text">Select a project to manage</div>
+                        <div class="empty-state-sub">Or create a new Vercel project to get started</div>
+                    </div>
+                </div>
+
+                <div class="panel" id="detail-panel" style="display: none;">
+                    <!-- Project Settings -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">Project Settings</div>
+
+                        <div class="inline-edit" style="margin-bottom: 12px;">
+                            <span class="inline-edit-value" id="detail-project-name"></span>
+                            <input type="text" class="inline-edit-input" id="detail-project-name-input">
+                            <button class="btn-icon" id="btn-edit-name" onclick="toggleNameEdit()" title="Edit name">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                        </div>
+                        <div class="domain-display" id="detail-domain"></div>
+
+                        <div class="form-group">
+                            <label class="form-label">Custom Domains</label>
+                            <div class="tag-input-wrap" id="custom-domains-wrap" onclick="document.getElementById('custom-domain-input').focus()">
+                                <input type="text" id="custom-domain-input" placeholder="Type domain and press Enter...">
+                            </div>
+                        </div>
+
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label class="form-label">Facebook Pixel ID</label>
+                                <input type="text" class="form-input" id="setting-fb-pixel" placeholder="e.g., 123456789012345">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GTM Container ID</label>
+                                <input type="text" class="form-input" id="setting-gtm" placeholder="e.g., GTM-XXXXXXX">
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Hyros Script</label>
+                                <textarea class="form-textarea" id="setting-hyros" placeholder="Paste Hyros tracking script..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Custom Head Code</label>
+                                <textarea class="form-textarea" id="setting-head-code" placeholder="Custom &lt;head&gt; code (analytics, meta tags, etc.)"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Custom Body Code</label>
+                                <textarea class="form-textarea" id="setting-body-code" placeholder="Custom code injected before &lt;/body&gt;"></textarea>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                        </div>
+                    </div>
+
+                    <!-- Deployed Pages -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">Deployed Pages</div>
+                        <div id="deployed-pages-container">
+                            <div class="empty-state">
+                                <div class="empty-state-text">No pages deployed yet</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deploy New Page -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">Deploy New Page</div>
+
+                        <div class="deploying-overlay" id="deploying-overlay">
+                            <div class="spinner"></div>
+                            <span>Deploying... waiting for confirmation</span>
+                        </div>
+
+                        <div id="deploy-form">
+                            <div class="deploy-form-grid">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Generation</label>
+                                    <select class="form-select" id="deploy-generation">
+                                        <option value="">Select a generation...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Route</label>
+                                    <input type="text" class="form-input" id="deploy-route" placeholder="/offer-spring-2024">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Variant Label</label>
+                                    <input type="text" class="form-input" id="deploy-variant-label" placeholder="e.g., Control, Variant A">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Variant Group</label>
+                                    <input type="text" class="form-input" id="deploy-variant-group" placeholder="e.g., spring-2024-test">
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                                <button class="btn btn-primary" id="btn-deploy" onclick="deployPage()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                    Deploy Page
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // ── Config ──
+        const CONFIG = {
+            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
+            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
+            WEBHOOK_LP_DEPLOY: 'https://n8n.dtthomas.cloud/webhook/lp-deploy',
+            WEBHOOK_VERCEL_PROJECT: 'https://n8n.dtthomas.cloud/webhook/vercel-project-create'
+        };
+
+        // ── Supabase Helpers ──
+        const HEADERS = { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+        const HEADERS_READ = { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` };
+
+        async function sbGet(table, query = '') {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}?order=created_at.desc${query ? '&' + query : ''}`;
+            const res = await fetch(url, { headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
+            return res.json();
+        }
+
+        async function sbPost(table, body) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}`, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`POST ${table} failed: ${await res.text()}`);
+            return res.json();
+        }
+
+        async function sbPatch(table, id, body) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`PATCH failed: ${await res.text()}`);
+            return res.json();
+        }
+
+        async function sbDelete(table, id) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+        }
+
+        // ── Toast ──
+        function showToast(msg, isError = false) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast' + (isError ? ' error' : '');
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        // ── State ──
+        let projects = [];
+        let brands = [];
+        let generations = [];
+        let deployedPages = [];
+        let selectedProject = null;
+        let customDomains = [];
+
+        // ── URL Params ──
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectedGenerationId = urlParams.get('generation_id');
+
+        // ── Sidebar Toggle ──
+        document.getElementById('sidebar-toggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // ── Init ──
+        async function init() {
+            try {
+                const [projectsData, brandsData, generationsData] = await Promise.all([
+                    sbGet('vercel_projects'),
+                    sbGet('brand_profiles'),
+                    sbGet('landing_page_generations', 'status=in.(ready,editing)')
+                ]);
+                projects = projectsData || [];
+                brands = brandsData || [];
+                generations = generationsData || [];
+
+                populateBrandsDropdown();
+                populateGenerationsDropdown();
+                await loadDeployedPageCounts();
+                renderProjects();
+            } catch (err) {
+                console.error('Init error:', err);
+                showToast('Failed to load data: ' + err.message, true);
+            }
+        }
+
+        // ── Load deployed page counts for all projects ──
+        async function loadDeployedPageCounts() {
+            try {
+                const allPages = await sbGet('deployed_pages', 'select=id,vercel_project_id');
+                // Build count map
+                const countMap = {};
+                (allPages || []).forEach(p => {
+                    countMap[p.vercel_project_id] = (countMap[p.vercel_project_id] || 0) + 1;
+                });
+                projects.forEach(proj => {
+                    proj._pageCount = countMap[proj.id] || 0;
+                });
+            } catch (err) {
+                console.error('Failed to load page counts:', err);
+            }
+        }
+
+        // ── Brands dropdown ──
+        function populateBrandsDropdown() {
+            const sel = document.getElementById('new-project-brand');
+            sel.innerHTML = '<option value="">Select brand...</option>';
+            brands.forEach(b => {
+                sel.innerHTML += `<option value="${b.id}">${escHtml(b.brand_name || b.name || 'Unnamed')}</option>`;
+            });
+        }
+
+        // ── Generations dropdown ──
+        function populateGenerationsDropdown() {
+            const sel = document.getElementById('deploy-generation');
+            sel.innerHTML = '<option value="">Select a generation...</option>';
+            generations.forEach(g => {
+                const title = g.title || g.page_title || 'Untitled';
+                const type = g.page_type || '';
+                const date = g.created_at ? new Date(g.created_at).toLocaleDateString() : '';
+                const label = `${title}${type ? ' [' + type + ']' : ''}${date ? ' - ' + date : ''}`;
+                const option = document.createElement('option');
+                option.value = g.id;
+                option.textContent = label;
+                if (preselectedGenerationId && g.id == preselectedGenerationId) {
+                    option.selected = true;
+                }
+                sel.appendChild(option);
+            });
+        }
+
+        // ── Render Projects ──
+        function renderProjects() {
+            const container = document.getElementById('project-list');
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg></div>
+                        <div class="empty-state-text">No projects yet</div>
+                        <div class="empty-state-sub">Create a new Vercel project to get started</div>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = projects.map(proj => {
+                const brand = brands.find(b => b.id === proj.brand_id);
+                const brandName = brand ? (brand.brand_name || brand.name || 'Unknown') : '';
+                const isSelected = selectedProject && selectedProject.id === proj.id;
+                return `
+                    <div class="project-card ${isSelected ? 'selected' : ''}" onclick="selectProject('${proj.id}')">
+                        <div class="project-card-name">${escHtml(proj.project_name || proj.name || 'Unnamed')}</div>
+                        <div class="project-card-meta">
+                            ${brandName ? `<span class="badge badge-purple">${escHtml(brandName)}</span>` : ''}
+                            <span class="project-card-domain">${escHtml(proj.default_domain || 'No domain')}</span>
+                            <span class="project-card-count">${proj._pageCount || 0} page${(proj._pageCount || 0) !== 1 ? 's' : ''}</span>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── Select Project ──
+        async function selectProject(projectId) {
+            selectedProject = projects.find(p => p.id == projectId);
+            if (!selectedProject) return;
+
+            renderProjects();
+
+            document.getElementById('empty-detail-panel').style.display = 'none';
+            document.getElementById('detail-panel').style.display = 'block';
+
+            // Populate settings
+            document.getElementById('detail-project-name').textContent = selectedProject.project_name || selectedProject.name || '';
+            document.getElementById('detail-project-name-input').value = selectedProject.project_name || selectedProject.name || '';
+            document.getElementById('detail-domain').textContent = selectedProject.default_domain || 'No default domain';
+
+            // Tracking pixels (stored in tracking_pixels JSONB)
+            const tp = selectedProject.tracking_pixels || {};
+            document.getElementById('setting-fb-pixel').value = tp.fb_pixel_id || '';
+            document.getElementById('setting-gtm').value = tp.gtm_id || '';
+            document.getElementById('setting-hyros').value = tp.hyros_script || '';
+            document.getElementById('setting-head-code').value = tp.custom_head || '';
+            document.getElementById('setting-body-code').value = tp.custom_body || '';
+
+            // Custom domains
+            customDomains = selectedProject.custom_domains || [];
+            if (typeof customDomains === 'string') {
+                try { customDomains = JSON.parse(customDomains); } catch { customDomains = []; }
+            }
+            renderDomainTags();
+
+            // Load deployed pages
+            await loadDeployedPages();
+        }
+
+        // ── Custom Domain Tags ──
+        function renderDomainTags() {
+            const wrap = document.getElementById('custom-domains-wrap');
+            const input = document.getElementById('custom-domain-input');
+            // Remove all tags (keep input)
+            wrap.querySelectorAll('.tag').forEach(t => t.remove());
+            // Add tags before input
+            customDomains.forEach((domain, i) => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.innerHTML = `${escHtml(domain)}<span class="tag-remove" onclick="removeDomain(${i})">&times;</span>`;
+                wrap.insertBefore(tag, input);
+            });
+        }
+
+        document.getElementById('custom-domain-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = e.target.value.trim();
+                if (val && !customDomains.includes(val)) {
+                    customDomains.push(val);
+                    renderDomainTags();
+                }
+                e.target.value = '';
+            }
+        });
+
+        function removeDomain(index) {
+            customDomains.splice(index, 1);
+            renderDomainTags();
+        }
+
+        // ── Toggle name edit ──
+        function toggleNameEdit() {
+            const span = document.getElementById('detail-project-name');
+            const input = document.getElementById('detail-project-name-input');
+            const isEditing = input.style.display === 'block';
+
+            if (isEditing) {
+                // Save
+                const newName = input.value.trim();
+                if (newName) {
+                    span.textContent = newName;
+                }
+                span.style.display = 'inline';
+                input.style.display = 'none';
+            } else {
+                // Edit
+                input.value = span.textContent;
+                span.style.display = 'none';
+                input.style.display = 'block';
+                input.focus();
+            }
+        }
+
+        document.getElementById('detail-project-name-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') toggleNameEdit();
+            if (e.key === 'Escape') {
+                e.target.style.display = 'none';
+                document.getElementById('detail-project-name').style.display = 'inline';
+            }
+        });
+
+        // ── Save Settings ──
+        async function saveSettings() {
+            if (!selectedProject) return;
+
+            const nameInput = document.getElementById('detail-project-name-input');
+            const nameSpan = document.getElementById('detail-project-name');
+            const projectName = nameInput.style.display === 'block' ? nameInput.value.trim() : nameSpan.textContent.trim();
+
+            const payload = {
+                project_name: projectName,
+                tracking_pixels: {
+                    fb_pixel_id: document.getElementById('setting-fb-pixel').value.trim() || null,
+                    gtm_id: document.getElementById('setting-gtm').value.trim() || null,
+                    hyros_script: document.getElementById('setting-hyros').value.trim() || null,
+                    custom_head: document.getElementById('setting-head-code').value.trim() || null,
+                    custom_body: document.getElementById('setting-body-code').value.trim() || null
+                },
+                custom_domains: customDomains
+            };
+
+            try {
+                await sbPatch('vercel_projects', selectedProject.id, payload);
+                // Update local state
+                Object.assign(selectedProject, payload);
+                nameSpan.textContent = projectName;
+                nameSpan.style.display = 'inline';
+                nameInput.style.display = 'none';
+                renderProjects();
+                showToast('Settings saved');
+            } catch (err) {
+                console.error('Save failed:', err);
+                showToast('Failed to save settings: ' + err.message, true);
+            }
+        }
+
+        // ── Load Deployed Pages ──
+        async function loadDeployedPages() {
+            if (!selectedProject) return;
+
+            try {
+                deployedPages = await sbGet('deployed_pages', `vercel_project_id=eq.${selectedProject.id}`);
+                renderDeployedPages();
+            } catch (err) {
+                console.error('Failed to load deployed pages:', err);
+            }
+        }
+
+        function renderDeployedPages() {
+            const container = document.getElementById('deployed-pages-container');
+
+            if (!deployedPages || deployedPages.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-text">No pages deployed yet</div></div>`;
+                return;
+            }
+
+            const rows = deployedPages.map(page => {
+                const isLive = page.is_live !== false;
+                const deployUrl = page.deployment_url || '';
+                const deployDate = page.deployed_at || page.created_at;
+                const dateStr = deployDate ? new Date(deployDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+                return `
+                    <tr>
+                        <td class="route-cell">${escHtml(page.route || '/')}</td>
+                        <td>${escHtml(page.variant_label || '-')}</td>
+                        <td><span class="badge ${isLive ? 'badge-live' : 'badge-offline'}">${isLive ? 'Live' : 'Offline'}</span></td>
+                        <td>${deployUrl ? `<a href="${escHtml(deployUrl)}" target="_blank" rel="noopener" class="url-link">${escHtml(deployUrl)}</a>` : '-'}</td>
+                        <td style="color: var(--text-muted); font-size: 12px;">${dateStr}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn-icon" onclick="togglePageLive('${page.id}', ${!isLive})" title="${isLive ? 'Take offline' : 'Set live'}">
+                                    ${isLive
+                                        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64A9 9 0 010 12"/><path d="M1 1l22 22"/><path d="M10.29 13.72A3 3 0 009 12a3 3 0 010-6"/></svg>'
+                                        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+                                    }
+                                </button>
+                                <button class="btn-icon danger" onclick="deletePage('${page.id}')" title="Delete page">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="overflow-x: auto;">
+                    <table class="deployed-table">
+                        <thead>
+                            <tr>
+                                <th>Route</th>
+                                <th>Variant</th>
+                                <th>Status</th>
+                                <th>URL</th>
+                                <th>Deployed</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        }
+
+        // ── Toggle Page Live/Offline ──
+        async function togglePageLive(pageId, setLive) {
+            try {
+                await sbPatch('deployed_pages', pageId, { is_live: setLive });
+                showToast(setLive ? 'Page set to live' : 'Page taken offline');
+                await loadDeployedPages();
+            } catch (err) {
+                showToast('Failed to update page: ' + err.message, true);
+            }
+        }
+
+        // ── Delete Page ──
+        async function deletePage(pageId) {
+            if (!confirm('Delete this deployed page? This cannot be undone.')) return;
+            try {
+                await sbDelete('deployed_pages', pageId);
+                showToast('Page deleted');
+                await loadDeployedPages();
+                // Update count
+                if (selectedProject) {
+                    selectedProject._pageCount = Math.max(0, (selectedProject._pageCount || 1) - 1);
+                    renderProjects();
+                }
+            } catch (err) {
+                showToast('Failed to delete page: ' + err.message, true);
+            }
+        }
+
+        // ── Toggle New Project Form ──
+        function toggleNewProjectForm() {
+            const form = document.getElementById('new-project-form');
+            form.classList.toggle('visible');
+            if (form.classList.contains('visible')) {
+                document.getElementById('new-project-name').focus();
+            }
+        }
+
+        // ── Create Project ──
+        async function createProject() {
+            const name = document.getElementById('new-project-name').value.trim();
+            const brandId = document.getElementById('new-project-brand').value;
+
+            if (!name) {
+                showToast('Project name is required', true);
+                return;
+            }
+
+            const btn = document.getElementById('btn-create-project');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Creating...';
+
+            try {
+                // POST to webhook
+                await fetch(CONFIG.WEBHOOK_VERCEL_PROJECT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        project_name: name,
+                        brand_id: brandId || null
+                    })
+                });
+
+                // Poll for new project
+                const found = await pollForNewProject(name);
+
+                if (found) {
+                    showToast('Project created successfully');
+                    document.getElementById('new-project-name').value = '';
+                    document.getElementById('new-project-brand').value = '';
+                    toggleNewProjectForm();
+                    selectProject(found.id);
+                } else {
+                    showToast('Project creation sent but not yet confirmed. Refresh to check.', true);
+                }
+            } catch (err) {
+                console.error('Create project error:', err);
+                showToast('Failed to create project: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Project';
+            }
+        }
+
+        async function pollForNewProject(projectName, interval = 2000, maxWait = 30000) {
+            const start = Date.now();
+            const existingIds = new Set(projects.map(p => p.id));
+
+            while (Date.now() - start < maxWait) {
+                await sleep(interval);
+                try {
+                    const fresh = await sbGet('vercel_projects');
+                    const newProj = fresh.find(p => !existingIds.has(p.id));
+                    if (newProj) {
+                        projects = fresh;
+                        await loadDeployedPageCounts();
+                        renderProjects();
+                        return newProj;
+                    }
+                } catch { /* continue polling */ }
+            }
+            return null;
+        }
+
+        // ── Auto-slugify route ──
+        document.getElementById('deploy-route').addEventListener('input', (e) => {
+            let val = e.target.value;
+            // Ensure starts with /
+            if (val && !val.startsWith('/')) {
+                val = '/' + val;
+            }
+            // Slugify: lowercase, replace spaces/special chars with dashes
+            val = val.toLowerCase().replace(/[^a-z0-9\-\/]/g, '-').replace(/-+/g, '-');
+            e.target.value = val;
+        });
+
+        // ── Deploy Page ──
+        async function deployPage() {
+            if (!selectedProject) {
+                showToast('No project selected', true);
+                return;
+            }
+
+            const generationId = document.getElementById('deploy-generation').value;
+            const route = document.getElementById('deploy-route').value.trim();
+            const variantLabel = document.getElementById('deploy-variant-label').value.trim();
+            const variantGroup = document.getElementById('deploy-variant-group').value.trim();
+
+            if (!generationId) {
+                showToast('Select a generation to deploy', true);
+                return;
+            }
+            if (!route) {
+                showToast('Route is required', true);
+                return;
+            }
+
+            const btn = document.getElementById('btn-deploy');
+            const form = document.getElementById('deploy-form');
+            const overlay = document.getElementById('deploying-overlay');
+
+            btn.disabled = true;
+            form.style.display = 'none';
+            overlay.classList.add('visible');
+
+            try {
+                await fetch(CONFIG.WEBHOOK_LP_DEPLOY, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        vercel_project_id: selectedProject.id,
+                        generation_id: generationId,
+                        route: route,
+                        variant_label: variantLabel || null,
+                        variant_group: variantGroup || null
+                    })
+                });
+
+                // Poll for new deployed page
+                const newPage = await pollForNewDeployedPage(route, 3000, 60000);
+
+                if (newPage) {
+                    const url = newPage.deployment_url || '';
+                    showToast(`Deployed successfully${url ? ': ' + url : ''}`);
+                    // Update page count
+                    selectedProject._pageCount = (selectedProject._pageCount || 0) + 1;
+                    renderProjects();
+                    // Clear form
+                    document.getElementById('deploy-generation').value = '';
+                    document.getElementById('deploy-route').value = '';
+                    document.getElementById('deploy-variant-label').value = '';
+                    document.getElementById('deploy-variant-group').value = '';
+                } else {
+                    showToast('Deploy triggered but not yet confirmed. It may still complete.', true);
+                }
+            } catch (err) {
+                console.error('Deploy error:', err);
+                showToast('Deploy failed: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+                overlay.classList.remove('visible');
+                form.style.display = 'block';
+                await loadDeployedPages();
+            }
+        }
+
+        async function pollForNewDeployedPage(route, interval = 3000, maxWait = 60000) {
+            const start = Date.now();
+            const existingIds = new Set(deployedPages.map(p => p.id));
+
+            while (Date.now() - start < maxWait) {
+                await sleep(interval);
+                try {
+                    const fresh = await sbGet('deployed_pages', `vercel_project_id=eq.${selectedProject.id}`);
+                    const newPage = fresh.find(p => !existingIds.has(p.id) && p.route === route);
+                    if (newPage) {
+                        deployedPages = fresh;
+                        renderDeployedPages();
+                        return newPage;
+                    }
+                } catch { /* continue polling */ }
+            }
+            return null;
+        }
+
+        // ── Helpers ──
+        function escHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ── Boot ──
+        init();
+    </script>
+</body>
+</html>

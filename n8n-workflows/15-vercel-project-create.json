@@ -1,0 +1,86 @@
+{
+  "name": "15 - Vercel Project Create",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vercel-project-create",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Create Project",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.vercel.com/v10/projects",
+        "method": "POST",
+        "headers": {
+          "Authorization": "Bearer YOUR_VERCEL_TOKEN",
+          "Content-Type": "application/json"
+        },
+        "body": "={{ JSON.stringify({ name: $json.body.project_name, framework: null, buildCommand: '', outputDirectory: '.', installCommand: '' }) }}",
+        "options": {}
+      },
+      "name": "Vercel: Create Project",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 300],
+      "notes": "Create a new Vercel project via API. Framework is null since we deploy raw HTML files."
+    },
+    {
+      "parameters": {
+        "functionCode": "const vercelProject = $input.first().json;\nconst webhook = $node['Webhook: Create Project'].json.body;\n\nreturn [{\n  json: {\n    brand_id: webhook.brand_id || null,\n    vercel_project_id: vercelProject.id,\n    project_name: vercelProject.name || webhook.project_name,\n    default_domain: `${vercelProject.name || webhook.project_name}.vercel.app`,\n    custom_domains: [],\n    tracking_pixels: {},\n    vercel_token: 'YOUR_VERCEL_TOKEN',\n    team_id: webhook.team_id || null\n  }\n}];"
+      },
+      "name": "Build DB Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/vercel_projects",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Supabase: Insert Project",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [950, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, project: $json }) }}"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1150, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Create Project": {
+      "main": [[{ "node": "Vercel: Create Project", "type": "main", "index": 0 }]]
+    },
+    "Vercel: Create Project": {
+      "main": [[{ "node": "Build DB Record", "type": "main", "index": 0 }]]
+    },
+    "Build DB Record": {
+      "main": [[{ "node": "Supabase: Insert Project", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Insert Project": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}

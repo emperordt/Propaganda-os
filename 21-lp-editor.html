@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP Editor</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --danger: #ff4444;
+            --danger-dim: #ff444420;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: var(--bg-secondary); border-right: 1px solid var(--border); padding: 20px 0; overflow-y: auto; z-index: 100; transition: transform 0.2s ease; }
+        .sidebar-brand { font-family: 'Geist Mono', monospace; font-weight: 700; font-size: 13px; color: var(--accent); padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-section-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; padding: 8px 8px 4px; }
+        .sidebar-link { display: block; font-family: 'Geist', Arial, sans-serif; font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 8px 12px; border-radius: 6px; transition: all 0.15s ease; }
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: #fd5106; background: #fd510615; }
+        .sidebar-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 101; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 8px; cursor: pointer; color: var(--text-secondary); }
+        .sidebar-toggle:hover { border-color: #fd5106; color: var(--accent); }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.5); } .sidebar-toggle { display: block; } }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main {
+            margin-left: 220px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            .main { margin-left: 0; }
+        }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            height: 56px;
+            min-height: 56px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            gap: 12px;
+            z-index: 50;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .gen-select {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            min-width: 280px;
+            max-width: 400px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .gen-select:hover { border-color: var(--border-hover); }
+        .gen-select:focus { border-color: #fd5106; }
+
+        .gen-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .save-indicator {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .save-indicator.unsaved { color: var(--warning); }
+        .save-indicator.saving { color: var(--blue); }
+        .save-indicator.saved { color: var(--accent); }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: #fd510620;
+            color: #fd5106;
+            border-color: #fd5106;
+        }
+
+        .btn-primary:hover {
+            background: #fd5106;
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: var(--warning-dim);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .btn-warning:hover {
+            background: var(--warning);
+            color: var(--bg-primary);
+        }
+
+        /* ===== TOGGLE SWITCH ===== */
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toggle-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            left: 2px;
+            top: 2px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--accent-dim);
+            border-color: #fd5106;
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(16px);
+            background: var(--accent);
+        }
+
+        /* ===== SPLIT EDITOR ===== */
+        .editor-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 4px 1fr;
+            overflow: hidden;
+        }
+
+        /* ===== CODE PANEL ===== */
+        .code-panel {
+            display: flex;
+            overflow: hidden;
+            background: #0d0d0f;
+        }
+
+        .line-numbers {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            padding: 12px 0;
+            text-align: right;
+            user-select: none;
+            min-width: 48px;
+            background: #0d0d0f;
+            border-right: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .line-number {
+            padding: 0 8px 0 4px;
+            display: block;
+        }
+
+        .code-textarea-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .code-textarea {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 12px;
+            width: 100%;
+            height: 100%;
+            resize: none;
+            tab-size: 2;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        .code-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .code-textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .code-textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* ===== RESIZABLE DIVIDER ===== */
+        .divider {
+            width: 4px;
+            background: var(--border);
+            cursor: col-resize;
+            transition: background 0.15s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .divider:hover,
+        .divider.active {
+            background: var(--accent);
+        }
+
+        /* ===== PREVIEW PANEL ===== */
+        .preview-panel {
+            background: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #ffffff;
+        }
+
+        .preview-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            color: var(--text-muted);
+            gap: 12px;
+        }
+
+        .preview-placeholder svg {
+            opacity: 0.3;
+        }
+
+        .preview-placeholder span {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent);
+            color: var(--text-primary);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(10px); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-wrap: wrap;
+                height: auto;
+                min-height: 56px;
+                padding: 8px 12px;
+            }
+
+            .toolbar-left {
+                width: 100%;
+            }
+
+            .gen-select {
+                min-width: 0;
+                flex: 1;
+            }
+
+            .toolbar-right {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .editor-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 4px 1fr;
+            }
+
+            .divider {
+                width: 100%;
+                height: 4px;
+                cursor: row-resize;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YOUTUBE</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TWITTER</div>
+            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">IMAGE ADS</div>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
+            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">VIDEO ADS</div>
+            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link active">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TOOLS</div>
+            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">OTHER</div>
+            <a href="05-history.html" class="sidebar-link">History</a>
+        </div>
+    </aside>
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <select class="gen-select" id="gen-select">
+                    <option value="">-- Select a generation --</option>
+                </select>
+                <span class="save-indicator" id="save-indicator"></span>
+            </div>
+            <div class="toolbar-right">
+                <div class="toggle-wrapper">
+                    <span class="toggle-label">Pixels</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="inject-pixels">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <button class="btn" id="btn-save" title="Ctrl+S / Cmd+S">Save Draft</button>
+                <button class="btn btn-warning" id="btn-ready">Mark Ready</button>
+                <button class="btn btn-primary" id="btn-deploy">Deploy Now</button>
+                <button class="btn" id="btn-download">Download HTML</button>
+            </div>
+        </div>
+
+        <!-- Editor + Preview -->
+        <div class="editor-container" id="editor-container">
+
+            <!-- Code Panel -->
+            <div class="code-panel">
+                <div class="line-numbers" id="line-numbers"></div>
+                <div class="code-textarea-wrapper">
+                    <textarea class="code-textarea" id="code-editor" spellcheck="false" placeholder="<!-- Paste or write your landing page HTML here -->&#10;&#10;<!DOCTYPE html>&#10;<html>&#10;<head>&#10;  <title>My Landing Page</title>&#10;</head>&#10;<body>&#10;  <h1>Hello World</h1>&#10;</body>&#10;</html>"></textarea>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="divider" id="divider"></div>
+
+            <!-- Preview Panel -->
+            <div class="preview-panel" id="preview-panel">
+                <div class="preview-placeholder" id="preview-placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Start typing to see live preview</span>
+                </div>
+                <iframe class="preview-iframe" id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ===== CONFIG =====
+        const CONFIG = {
+            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
+            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
+            WEBHOOK_LP_DEPLOY: 'https://n8n.dtthomas.cloud/webhook/lp-deploy'
+        };
+
+        // ===== SUPABASE HELPERS =====
+        const HEADERS = { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+        const HEADERS_READ = { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` };
+
+        async function sbGet(table, query = '') {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}?order=created_at.desc${query ? '&' + query : ''}`;
+            const res = await fetch(url, { headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
+            return res.json();
+        }
+
+        async function sbPatch(table, id, body) {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'PATCH', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`PATCH failed: ${await res.text()}`);
+            return res.json();
+        }
+
+        // ===== TOAST =====
+        function showToast(msg, isError = false) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast' + (isError ? ' error' : '');
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        // ===== STATE =====
+        let currentGenId = null;
+        let isDirty = false;
+        let saveTimeout = null;
+        let previewTimeout = null;
+        let generations = [];
+
+        // ===== DOM REFS =====
+        const genSelect = document.getElementById('gen-select');
+        const codeEditor = document.getElementById('code-editor');
+        const lineNumbers = document.getElementById('line-numbers');
+        const previewIframe = document.getElementById('preview-iframe');
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        const saveIndicator = document.getElementById('save-indicator');
+        const editorContainer = document.getElementById('editor-container');
+        const divider = document.getElementById('divider');
+        const btnSave = document.getElementById('btn-save');
+        const btnReady = document.getElementById('btn-ready');
+        const btnDeploy = document.getElementById('btn-deploy');
+        const btnDownload = document.getElementById('btn-download');
+        const injectPixels = document.getElementById('inject-pixels');
+
+        // ===== SIDEBAR TOGGLE =====
+        document.getElementById('sidebar-toggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // ===== LINE NUMBERS =====
+        function updateLineNumbers() {
+            const lines = codeEditor.value.split('\n').length;
+            let html = '';
+            for (let i = 1; i <= lines; i++) {
+                html += `<span class="line-number">${i}</span>`;
+            }
+            lineNumbers.innerHTML = html;
+        }
+
+        // Sync scroll between textarea and line numbers
+        codeEditor.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = codeEditor.scrollTop;
+        });
+
+        // ===== TAB KEY =====
+        codeEditor.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = codeEditor.selectionStart;
+                const end = codeEditor.selectionEnd;
+                const val = codeEditor.value;
+                codeEditor.value = val.substring(0, start) + '  ' + val.substring(end);
+                codeEditor.selectionStart = codeEditor.selectionEnd = start + 2;
+                onEditorInput();
+            }
+        });
+
+        // ===== CTRL+S / CMD+S =====
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveDraft();
+            }
+        });
+
+        // ===== SAVE INDICATOR =====
+        function setSaveStatus(status) {
+            saveIndicator.textContent = status === 'saved' ? 'Saved' : status === 'saving' ? 'Saving...' : status === 'unsaved' ? 'Unsaved changes' : '';
+            saveIndicator.className = 'save-indicator ' + status;
+        }
+
+        // ===== PREVIEW =====
+        function updatePreview() {
+            const html = getOutputHtml();
+            if (html.trim()) {
+                previewPlaceholder.style.display = 'none';
+                previewIframe.style.display = 'block';
+                previewIframe.srcdoc = html;
+            } else {
+                previewPlaceholder.style.display = 'flex';
+                previewIframe.style.display = 'none';
+            }
+        }
+
+        // Get HTML with optional pixel injection
+        function getOutputHtml() {
+            let html = codeEditor.value;
+            if (injectPixels.checked && html.trim()) {
+                // Inject head tracking placeholder before </head>
+                if (html.includes('</head>')) {
+                    html = html.replace('</head>', '<!-- TRACKING_HEAD -->\n</head>');
+                }
+                // Inject body tracking placeholder before </body>
+                if (html.includes('</body>')) {
+                    html = html.replace('</body>', '<!-- TRACKING_BODY -->\n</body>');
+                }
+            }
+            return html;
+        }
+
+        // ===== EDITOR INPUT HANDLER =====
+        function onEditorInput() {
+            updateLineNumbers();
+            isDirty = true;
+            setSaveStatus('unsaved');
+
+            // Debounced preview update
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(() => {
+                updatePreview();
+            }, 300);
+        }
+
+        codeEditor.addEventListener('input', onEditorInput);
+
+        // Update preview when pixel toggle changes
+        injectPixels.addEventListener('change', updatePreview);
+
+        // ===== LOAD GENERATIONS LIST =====
+        async function loadGenerations() {
+            try {
+                generations = await sbGet('landing_page_generations', 'select=id,title,page_type,status,created_at');
+                genSelect.innerHTML = '<option value="">-- Select a generation --</option>';
+                generations.forEach(gen => {
+                    const opt = document.createElement('option');
+                    opt.value = gen.id;
+                    const date = new Date(gen.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const label = gen.title || `Untitled \u2014 ${gen.page_type || 'unknown'} \u2014 ${date}`;
+                    opt.textContent = label;
+                    if (gen.status) {
+                        opt.textContent += ` [${gen.status}]`;
+                    }
+                    genSelect.appendChild(opt);
+                });
+
+                // If we have a URL param, select it
+                if (currentGenId) {
+                    genSelect.value = currentGenId;
+                }
+            } catch (err) {
+                console.error('Failed to load generations:', err);
+                showToast('Failed to load generations', true);
+            }
+        }
+
+        // ===== LOAD SINGLE GENERATION =====
+        async function loadGeneration(id) {
+            if (!id) {
+                currentGenId = null;
+                codeEditor.value = '';
+                updateLineNumbers();
+                updatePreview();
+                setSaveStatus('');
+                isDirty = false;
+                updateUrl('');
+                return;
+            }
+
+            try {
+                const data = await sbGet('landing_page_generations', `id=eq.${id}&select=*`);
+                if (!data.length) {
+                    showToast('Generation not found', true);
+                    return;
+                }
+
+                const gen = data[0];
+                currentGenId = gen.id;
+                codeEditor.value = gen.html_content || '';
+                updateLineNumbers();
+                updatePreview();
+                setSaveStatus('saved');
+                isDirty = false;
+                updateUrl(gen.id);
+            } catch (err) {
+                console.error('Failed to load generation:', err);
+                showToast('Failed to load generation', true);
+            }
+        }
+
+        // ===== URL MANAGEMENT =====
+        function updateUrl(id) {
+            const url = new URL(window.location);
+            if (id) {
+                url.searchParams.set('id', id);
+            } else {
+                url.searchParams.delete('id');
+            }
+            window.history.replaceState({}, '', url);
+        }
+
+        // ===== SAVE DRAFT =====
+        async function saveDraft() {
+            if (!currentGenId) {
+                showToast('No generation selected', true);
+                return;
+            }
+            if (!isDirty) {
+                showToast('No changes to save');
+                return;
+            }
+
+            setSaveStatus('saving');
+            try {
+                await sbPatch('landing_page_generations', currentGenId, {
+                    html_content: codeEditor.value,
+                    status: 'editing'
+                });
+                isDirty = false;
+                setSaveStatus('saved');
+                showToast('Draft saved');
+
+                // Update status in dropdown
+                const opt = genSelect.querySelector(`option[value="${currentGenId}"]`);
+                if (opt) {
+                    opt.textContent = opt.textContent.replace(/\[.*?\]$/, '[editing]');
+                }
+            } catch (err) {
+                console.error('Save failed:', err);
+                setSaveStatus('unsaved');
+                showToast('Save failed: ' + err.message, true);
+            }
+        }
+
+        // ===== MARK READY =====
+        async function markReady() {
+            if (!currentGenId) {
+                showToast('No generation selected', true);
+                return;
+            }
+
+            // Save content first if dirty
+            const patchBody = { status: 'ready' };
+            if (isDirty) {
+                patchBody.html_content = codeEditor.value;
+            }
+
+            setSaveStatus('saving');
+            try {
+                await sbPatch('landing_page_generations', currentGenId, patchBody);
+                isDirty = false;
+                setSaveStatus('saved');
+                showToast('Marked as ready');
+
+                const opt = genSelect.querySelector(`option[value="${currentGenId}"]`);
+                if (opt) {
+                    opt.textContent = opt.textContent.replace(/\[.*?\]$/, '[ready]');
+                }
+            } catch (err) {
+                console.error('Mark ready failed:', err);
+                setSaveStatus('unsaved');
+                showToast('Failed to mark ready: ' + err.message, true);
+            }
+        }
+
+        // ===== DEPLOY NOW =====
+        function deployNow() {
+            if (!currentGenId) {
+                showToast('No generation selected', true);
+                return;
+            }
+            window.location.href = `20-lp-deploy.html?generation_id=${currentGenId}`;
+        }
+
+        // ===== DOWNLOAD HTML =====
+        function downloadHtml() {
+            const html = getOutputHtml();
+            if (!html.trim()) {
+                showToast('Nothing to download', true);
+                return;
+            }
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Use generation title or fallback
+            const selected = genSelect.options[genSelect.selectedIndex];
+            const filename = selected && selected.value ? selected.textContent.replace(/[^a-zA-Z0-9-_ ]/g, '').trim().replace(/\s+/g, '-').substring(0, 50) + '.html' : 'landing-page.html';
+
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Downloaded');
+        }
+
+        // ===== RESIZABLE DIVIDER =====
+        let isResizing = false;
+
+        divider.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            divider.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            // Prevent iframe from capturing mouse events during resize
+            previewIframe.style.pointerEvents = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+
+            const containerRect = editorContainer.getBoundingClientRect();
+            const offset = e.clientX - containerRect.left;
+            const totalWidth = containerRect.width;
+            const minPanelWidth = 200;
+
+            // Clamp between min widths
+            const leftWidth = Math.max(minPanelWidth, Math.min(offset, totalWidth - minPanelWidth - 4));
+            const rightWidth = totalWidth - leftWidth - 4;
+
+            editorContainer.style.gridTemplateColumns = `${leftWidth}px 4px ${rightWidth}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!isResizing) return;
+            isResizing = false;
+            divider.classList.remove('active');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            previewIframe.style.pointerEvents = '';
+        });
+
+        // ===== EVENT LISTENERS =====
+        genSelect.addEventListener('change', () => {
+            if (isDirty && currentGenId) {
+                if (!confirm('You have unsaved changes. Switch generation?')) {
+                    genSelect.value = currentGenId;
+                    return;
+                }
+            }
+            loadGeneration(genSelect.value);
+        });
+
+        btnSave.addEventListener('click', saveDraft);
+        btnReady.addEventListener('click', markReady);
+        btnDeploy.addEventListener('click', deployNow);
+        btnDownload.addEventListener('click', downloadHtml);
+
+        // ===== WARN ON LEAVE =====
+        window.addEventListener('beforeunload', (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // ===== INIT =====
+        async function init() {
+            // Parse URL params
+            const params = new URLSearchParams(window.location.search);
+            const urlId = params.get('id');
+            if (urlId) {
+                currentGenId = urlId;
+            }
+
+            // Initialize line numbers for empty editor
+            updateLineNumbers();
+
+            // Hide iframe initially, show placeholder
+            previewIframe.style.display = 'none';
+            previewPlaceholder.style.display = 'flex';
+
+            // Load all generations into dropdown
+            await loadGenerations();
+
+            // If we have an ID from URL, load it
+            if (currentGenId) {
+                await loadGeneration(currentGenId);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -4,38 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funnel Projections Calculator</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --border: #2a2a2d;
-            --border-hover: #3a3a3d;
-            --text-primary: #fafafa;
-            --text-secondary: #a0a0a5;
-            --text-muted: #606065;
-            --accent: #00ff88;
-            --accent-dim: #00ff8820;
-            --accent-hover: #00ffaa;
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
             --danger: #ff4444;
             --danger-dim: #ff444420;
-            --warning: #ffaa00;
-            --warning-dim: #ffaa0020;
-            --purple: #a855f7;
-            --purple-dim: #a855f720;
-            --blue: #3b82f6;
-            --blue-dim: #3b82f620;
-            --orange: #f97316;
-            --orange-dim: #f9731620;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -57,7 +59,7 @@
         }
 
         .sidebar-brand {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
             color: var(--accent);
@@ -72,7 +74,7 @@
         }
 
         .sidebar-section-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             font-weight: 600;
             color: var(--text-muted);
@@ -83,7 +85,7 @@
 
         .sidebar-link {
             display: block;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             color: var(--text-secondary);
             text-decoration: none;
@@ -98,8 +100,8 @@
         }
 
         .sidebar-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
+            color: #fd5106;
+            background: #fd510615;
         }
 
         .sidebar-toggle {
@@ -117,7 +119,7 @@
         }
 
         .sidebar-toggle:hover {
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
@@ -196,7 +198,7 @@
         }
 
         .input-group label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -210,7 +212,7 @@
             border-radius: 8px;
             padding: 10px 14px;
             color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 14px;
             transition: border-color 0.15s ease;
             width: 100%;
@@ -219,7 +221,7 @@
         .input-group input:focus,
         .input-group select:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .input-group select {
@@ -260,7 +262,7 @@
 
         .scenario-header {
             padding: 16px 20px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             font-weight: 700;
             text-transform: uppercase;
@@ -281,8 +283,8 @@
         }
 
         .scenario-header.best {
-            background: var(--accent-dim);
-            color: var(--accent);
+            background: #fd510620;
+            color: #fd5106;
             border-bottom-color: var(--accent);
         }
 
@@ -302,7 +304,7 @@
         }
 
         .scenario-input-row label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-secondary);
             flex: 1;
@@ -315,7 +317,7 @@
             border-radius: 6px;
             padding: 6px 10px;
             color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             width: 90px;
             text-align: right;
@@ -324,11 +326,11 @@
 
         .scenario-input-row input:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .scenario-input-row .unit {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             width: 16px;
@@ -345,7 +347,7 @@
         }
 
         .output-section-title {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -365,7 +367,7 @@
         }
 
         .output-metric .metric-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -373,7 +375,7 @@
         }
 
         .output-metric .metric-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 14px;
             font-weight: 700;
             color: var(--text-primary);
@@ -405,7 +407,7 @@
 
         /* ===== BENCHMARK BADGES ===== */
         .benchmark-badge {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 9px;
             font-weight: 600;
             padding: 2px 6px;
@@ -426,16 +428,16 @@
             border: 1px solid #ffaa0040;
         }
         .benchmark-badge.green {
-            background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid #00ff8840;
+            background: #22c55e20;
+            color: #22c55e;
+            border: 1px solid #22c55e40;
         }
 
         /* ===== SCENARIO FOOTER ===== */
         .scenario-footer {
             padding: 14px 20px;
             border-top: 1px solid var(--border);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-secondary);
             line-height: 1.5;
@@ -450,7 +452,7 @@
         }
 
         .btn {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             padding: 10px 20px;
             border-radius: 8px;
@@ -468,13 +470,13 @@
 
         .btn-accent {
             background: var(--accent-dim);
-            border-color: var(--accent);
+            border-color: #fd5106;
             color: var(--accent);
         }
 
         .btn-accent:hover {
-            background: var(--accent);
-            color: var(--bg-primary);
+            background: #fd5106;
+            color: #fff;
         }
 
         .btn-danger {
@@ -513,7 +515,7 @@
         }
 
         .testing-metric .metric-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -522,7 +524,7 @@
         }
 
         .testing-metric .metric-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 18px;
             font-weight: 700;
             color: var(--text-primary);
@@ -543,7 +545,7 @@
         }
 
         .checkbox-group h4 {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -575,7 +577,7 @@
 
         .checkbox-item input[type="checkbox"]:checked {
             background: var(--accent-dim);
-            border-color: var(--accent);
+            border-color: #fd5106;
         }
 
         .checkbox-item input[type="checkbox"]:checked::after {
@@ -599,7 +601,7 @@
         }
 
         .angle-result .big-number {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 56px;
             font-weight: 700;
             color: var(--accent);
@@ -608,14 +610,14 @@
         }
 
         .angle-result .big-label {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 13px;
             color: var(--text-secondary);
             margin-bottom: 16px;
         }
 
         .angle-result .funnel-line {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--text-muted);
             line-height: 1.8;
@@ -635,7 +637,7 @@
             border: 1px solid var(--accent);
             border-radius: 8px;
             padding: 12px 20px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             font-size: 12px;
             color: var(--accent);
             z-index: 200;
@@ -694,7 +696,7 @@
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">CONTENT_ENGINE//v1</div>
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
 
     <div class="sidebar-section">
         <div class="sidebar-section-label">YOUTUBE</div>
@@ -720,6 +722,15 @@
         <div class="sidebar-section-label">VIDEO ADS</div>
         <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
         <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-label">LANDING PAGES</div>
+        <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+        <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+        <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+        <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+        <a href="22-lp-history.html" class="sidebar-link">History</a>
     </div>
     <div class="sidebar-section">
         <div class="sidebar-section-label">TOOLS</div>

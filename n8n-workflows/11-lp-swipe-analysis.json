@@ -1,0 +1,109 @@
+{
+  "name": "11 - LP Swipe Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lp-swipe",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: LP Swipe",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "method": "POST",
+        "headers": {
+          "x-api-key": "YOUR_ANTHROPIC_API_KEY",
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "model": "claude-sonnet-4-20250514",
+          "max_tokens": 4000,
+          "messages": [
+            {
+              "role": "user",
+              "content": [
+                {
+                  "type": "image",
+                  "source": {
+                    "type": "url",
+                    "url": "={{ $node['Webhook: LP Swipe'].json.body.screenshot_url }}"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": "You are an expert landing page analyst and direct response copywriter. Analyze this landing page screenshot and extract its complete structure, copy patterns, and design system.\n\nThe page type is: {{ $node['Webhook: LP Swipe'].json.body.page_type }}\n\nOutput ONLY valid JSON with no markdown:\n{\n  \"section_structure\": [\n    {\n      \"index\": 0,\n      \"type\": \"hero|problem|agitation|solution|features|testimonials|social_proof|faq|cta|guarantee|urgency|story|mechanism|comparison|pricing\",\n      \"description\": \"Brief description of what this section does\",\n      \"word_count_estimate\": 50,\n      \"purpose\": \"What persuasion goal this section achieves\"\n    }\n  ],\n  \"copy_blocks\": [\n    {\n      \"section\": \"Section name\",\n      \"headline\": \"Main headline text if visible\",\n      \"subheadline\": \"Subheadline if present\",\n      \"body\": \"Body copy summary\",\n      \"cta\": \"CTA text if present in this section\"\n    }\n  ],\n  \"design_patterns\": {\n    \"layout\": \"Single column / Two column / etc\",\n    \"spacing\": \"Tight / Moderate / Generous\",\n    \"imagery_style\": \"Photography / Illustration / Icons / Mixed\",\n    \"social_proof_placement\": \"Where social proof appears in the flow\",\n    \"cta_strategy\": \"How CTAs are positioned throughout\",\n    \"visual_hierarchy\": \"How attention is guided\"\n  },\n  \"color_scheme\": {\n    \"primary\": \"#hex\",\n    \"secondary\": \"#hex\",\n    \"accent\": \"#hex\",\n    \"background\": \"#hex\",\n    \"text\": \"#hex\",\n    \"cta_color\": \"#hex\"\n  },\n  \"typography\": {\n    \"headline_font\": \"Font family or style description\",\n    \"body_font\": \"Font family or style description\",\n    \"sizes\": \"Large headlines / Medium body / etc\",\n    \"weights\": \"Bold headlines / Regular body / etc\"\n  },\n  \"cta_placements\": [\n    {\n      \"location\": \"Where in the page flow\",\n      \"text\": \"CTA button text\",\n      \"style\": \"Color, shape, size\",\n      \"urgency_level\": \"none|low|medium|high\"\n    }\n  ],\n  \"recreation_prompt\": \"A DETAILED prompt to recreate this exact landing page style. Include: overall layout structure, section ordering, typography choices, color usage, spacing rhythm, imagery approach, CTA positioning, copy tone and flow. This will be used by an AI to generate a new page in this exact style but with different brand/offer content. Be extremely specific about the visual design system.\",\n  \"masterson_mapping\": {\n    \"awareness_level\": \"unaware|problem_aware|solution_aware|product_aware|most_aware\",\n    \"emotional_flow\": \"How emotions progress through the page (e.g., fear → hope → trust → urgency)\",\n    \"proof_stacking\": \"How proof elements build on each other\",\n    \"objection_handling\": \"Where and how objections are addressed\",\n    \"persuasion_techniques\": [\"List of techniques used: scarcity, social proof, authority, reciprocity, etc.\"]\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Claude: Analyze LP Screenshot (Vision)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 300],
+      "notes": "Claude Vision analyzes the landing page screenshot — extracts section structure, copy blocks, design patterns, and recreation prompt."
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $input.first().json;\nconst webhookData = $node['Webhook: LP Swipe'].json.body;\n\ntry {\n  let responseText = data.content[0].text;\n  responseText = responseText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  const analysis = JSON.parse(responseText);\n  \n  return [{\n    json: {\n      screenshot_url: webhookData.screenshot_url,\n      page_type: webhookData.page_type || 'advertorial',\n      niche: webhookData.niche || 'general',\n      source_url: webhookData.source_url || null,\n      section_structure: analysis.section_structure || [],\n      copy_blocks: analysis.copy_blocks || [],\n      design_patterns: analysis.design_patterns || {},\n      color_scheme: analysis.color_scheme || {},\n      typography: analysis.typography || {},\n      cta_placements: analysis.cta_placements || [],\n      recreation_prompt: analysis.recreation_prompt || '',\n      masterson_mapping: analysis.masterson_mapping || {}\n    }\n  }];\n} catch (e) {\n  return [{\n    json: {\n      screenshot_url: webhookData.screenshot_url,\n      page_type: webhookData.page_type || 'advertorial',\n      niche: webhookData.niche || 'general',\n      notes: 'Analysis parsing failed: ' + (data.content?.[0]?.text || e.message)\n    }\n  }];\n}"
+      },
+      "name": "Parse LP Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/landing_page_swipes",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Supabase: Insert LP Swipe",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [950, 300],
+      "notes": "Insert analyzed swipe into landing_page_swipes table"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, swipe: $json }) }}"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1150, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: LP Swipe": {
+      "main": [[{ "node": "Claude: Analyze LP Screenshot (Vision)", "type": "main", "index": 0 }]]
+    },
+    "Claude: Analyze LP Screenshot (Vision)": {
+      "main": [[{ "node": "Parse LP Analysis", "type": "main", "index": 0 }]]
+    },
+    "Parse LP Analysis": {
+      "main": [[{ "node": "Supabase: Insert LP Swipe", "type": "main", "index": 0 }]]
+    },
+    "Supabase: Insert LP Swipe": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}
