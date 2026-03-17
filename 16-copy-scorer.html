@@ -447,6 +447,30 @@
             text-align: right;
         }
 
+        .score-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: -8px;
+            margin-bottom: 8px;
+            padding: 0 62px 0 50px;
+        }
+
+        .score-label-bad {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--danger);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-label-good {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .score-value.blue { color: var(--blue); }
         .score-value.orange { color: var(--orange); }
         .score-value.muted { color: var(--text-muted); }
@@ -1075,6 +1099,7 @@
                             <input type="range" class="score-slider blue" id="confusing-slider" min="1" max="10" value="5" oninput="updateScore('confusing')">
                             <div class="score-value blue" id="confusing-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">CONFUSING</span><span class="score-label-good">CRYSTAL CLEAR</span></div>
 
                         <div class="field-label">Flagged Sections</div>
                         <div class="flagged-issues" id="confusing-issues"></div>
@@ -1110,6 +1135,7 @@
                             <input type="range" class="score-slider orange" id="unbelievable-slider" min="1" max="10" value="5" oninput="updateScore('unbelievable')">
                             <div class="score-value orange" id="unbelievable-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">TOTAL BS</span><span class="score-label-good">FULLY PROVEN</span></div>
 
                         <div class="field-label">Flagged Claims</div>
                         <div class="flagged-issues" id="unbelievable-issues"></div>
@@ -1145,6 +1171,7 @@
                             <input type="range" class="score-slider muted" id="boring-slider" min="1" max="10" value="5" oninput="updateScore('boring')">
                             <div class="score-value muted" id="boring-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">SNOOZEFEST</span><span class="score-label-good">CAN'T STOP READING</span></div>
 
                         <div class="field-label">Flagged Sections</div>
                         <div class="flagged-issues" id="boring-issues"></div>
@@ -1187,6 +1214,7 @@
                             <input type="range" class="score-slider purple" id="bigidea-slider" min="1" max="10" value="5" oninput="updateStoolScore('bigidea')">
                             <div class="score-value purple" id="bigidea-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">NO BIG IDEA</span><span class="score-label-good">BREAKTHROUGH</span></div>
 
                         <div class="field-group">
                             <div class="field-label">What is the Big Idea? (one sentence)</div>
@@ -1225,6 +1253,7 @@
                             <input type="range" class="score-slider green" id="benefits-slider" min="1" max="10" value="5" oninput="updateStoolScore('benefits')">
                             <div class="score-value green" id="benefits-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">NO BENEFITS</span><span class="score-label-good">IRRESISTIBLE</span></div>
 
                         <div class="field-label" style="margin-bottom:10px;">5 Levels of Benefits</div>
                         <div class="benefit-levels">
@@ -1293,6 +1322,7 @@
                             <input type="range" class="score-slider blue" id="proof-slider" min="1" max="10" value="5" oninput="updateStoolScore('proof')">
                             <div class="score-value blue" id="proof-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">ZERO PROOF</span><span class="score-label-good">BULLETPROOF</span></div>
 
                         <div class="field-label" style="margin-bottom:8px;">Proof Types Present</div>
                         <ul class="checklist" id="proof-types-checklist">
@@ -1327,6 +1357,7 @@
                             <input type="range" class="score-slider warning" id="credibility-slider" min="1" max="10" value="5" oninput="updateStoolScore('credibility')">
                             <div class="score-value warning" id="credibility-value">5</div>
                         </div>
+                        <div class="score-labels"><span class="score-label-bad">WHO ARE YOU?</span><span class="score-label-good">TRUSTED AUTHORITY</span></div>
 
                         <div class="field-label" style="margin-bottom:8px;">Credibility Elements</div>
                         <ul class="checklist" id="credibility-checklist">
