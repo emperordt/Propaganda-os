@@ -1015,6 +1015,7 @@
                         <option value="vsl">VSL</option>
                         <option value="optin">Opt-in</option>
                         <option value="checkout">Checkout</option>
+                        <option value="landing-page">Landing Page</option>
                         <option value="upsell">Upsell</option>
                         <option value="downsell">Downsell</option>
                         <option value="thank-you">Thank You</option>
@@ -1068,6 +1069,7 @@
                             <option value="vsl">VSL Page</option>
                             <option value="optin">Opt-in</option>
                             <option value="checkout">Checkout</option>
+                            <option value="landing-page">Landing Page</option>
                         </select>
                     </div>
                     <div class="field-group">
@@ -1092,6 +1094,7 @@
                 <option value="vsl">VSL</option>
                 <option value="optin">Opt-in</option>
                 <option value="checkout">Checkout</option>
+                <option value="landing-page">Landing Page</option>
                 <option value="upsell">Upsell</option>
                 <option value="downsell">Downsell</option>
                 <option value="thank-you">Thank You</option>
@@ -1167,6 +1170,11 @@
                     <p class="modal-text" id="modal-source-url" style="word-break: break-all;"></p>
                 </div>
 
+                <div class="modal-actions" id="modal-clone-actions" style="display: none; margin-bottom: 8px;">
+                    <button class="modal-btn" onclick="copyHtml()" style="background: #fd5106; color: #fff;">Copy HTML</button>
+                    <button class="modal-btn" onclick="openInEditor()" style="background: #22c55e; color: #fff;">Open in Editor</button>
+                    <button class="modal-btn secondary" onclick="downloadHtml()">Download .html</button>
+                </div>
                 <div class="modal-actions">
                     <button class="modal-btn secondary" onclick="copyRecreationPrompt()">Copy Prompt</button>
                     <button class="modal-btn danger" onclick="deleteSwipe()">Delete</button>
@@ -1341,19 +1349,54 @@
             }
 
             try {
-                // Fetch HTML via a CORS proxy or direct
+                // Fetch HTML — try multiple methods
                 let html = '';
+                let baseUrl = url;
+
+                // Method 1: AllOrigins proxy (handles most CORS + renders JS)
                 try {
-                    const res = await fetch(url);
-                    html = await res.text();
-                } catch (corsError) {
-                    // Try via allorigins proxy
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                     const res = await fetch(proxyUrl);
                     html = await res.text();
+                } catch (e) {}
+
+                // Method 2: Direct fetch (works for permissive servers)
+                if (!html || html.length < 200) {
+                    try {
+                        const res = await fetch(url);
+                        html = await res.text();
+                    } catch (e) {}
                 }
 
-                if (!html || html.length < 100) throw new Error('Empty or invalid page');
+                if (!html || html.length < 200) throw new Error('Could not fetch page — it may be behind Cloudflare or require authentication');
+
+                // Detect Cloudflare block
+                if (html.includes('Attention Required') && html.includes('Cloudflare')) {
+                    throw new Error('Cloudflare is blocking automated access. Open the page in your browser, Cmd+S to save it, then upload the HTML file instead.');
+                }
+
+                // Rewrite relative URLs to absolute
+                try {
+                    const urlObj = new URL(url);
+                    const origin = urlObj.origin;
+                    // Fix relative src/href attributes
+                    html = html.replace(/(src|href|action)=["']\/(?!\/)/gi, `$1="${origin}/`);
+                    // Fix protocol-relative URLs
+                    html = html.replace(/(src|href)=["']\/\//gi, `$1="https://`);
+                    // Fix srcset relative URLs
+                    html = html.replace(/srcset=["']([^"']+)["']/gi, (match, srcset) => {
+                        const fixed = srcset.replace(/(?:^|,\s*)\/(?!\/)/g, (m) => m.replace('/', origin + '/'));
+                        return `srcset="${fixed}"`;
+                    });
+                    // Fix url() in inline styles
+                    html = html.replace(/url\(["']?\/(?!\/)/gi, `url(${origin}/`);
+                    // Add <base> tag if not present
+                    if (!html.includes('<base')) {
+                        html = html.replace('<head>', `<head>\n<base href="${origin}/">`);
+                    }
+                } catch (e) {
+                    // URL parsing failed, skip rewriting
+                }
 
                 // Extract title from HTML
                 const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -1767,6 +1810,17 @@
                 sourceSection.style.display = 'none';
             }
 
+            // Show clone actions if HTML exists
+            document.getElementById('modal-clone-actions').style.display = selectedSwipe.html_content ? 'flex' : 'none';
+
+            // Update image panel for cloned pages (show iframe preview instead)
+            const imgPanel = document.querySelector('.modal-image-panel');
+            if (selectedSwipe.html_content && !selectedSwipe.screenshot_url) {
+                imgPanel.innerHTML = `<iframe srcdoc="${escapeHtml(selectedSwipe.html_content)}" style="width: 100%; height: 100%; border: none; background: #fff;" sandbox="allow-scripts"></iframe>`;
+            } else {
+                imgPanel.innerHTML = `<img id="modal-image" src="${selectedSwipe.screenshot_url || ''}" alt="Landing page screenshot">`;
+            }
+
             modal.classList.add('active');
         }
 
@@ -1949,6 +2003,57 @@
             navigator.clipboard.writeText(selectedSwipe.recreation_prompt).then(() => {
                 showToast('Recreation prompt copied!');
             });
+        }
+
+        // Copy HTML to clipboard
+        function copyHtml() {
+            if (!selectedSwipe || !selectedSwipe.html_content) return;
+            navigator.clipboard.writeText(selectedSwipe.html_content).then(() => {
+                showToast('HTML copied to clipboard!');
+            }).catch(() => {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = selectedSwipe.html_content;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('HTML copied!');
+            });
+        }
+
+        // Open in Editor — creates a generation record from the swipe HTML and opens editor
+        async function openInEditor() {
+            if (!selectedSwipe || !selectedSwipe.html_content) return;
+            try {
+                showToast('Creating editable copy...');
+                const gen = await sbPost('landing_page_generations', {
+                    swipe_id: selectedSwipe.id,
+                    page_type: selectedSwipe.page_type || 'landing-page',
+                    html_content: selectedSwipe.html_content,
+                    status: 'editing',
+                    title: selectedSwipe.notes || `Cloned — ${selectedSwipe.page_type || 'page'}`
+                });
+                if (gen && gen[0]) {
+                    window.location.href = `21-lp-editor.html?id=${gen[0].id}`;
+                }
+            } catch (err) {
+                console.error('Failed to create generation:', err);
+                showToast('Failed: ' + err.message, true);
+            }
+        }
+
+        // Download HTML file
+        function downloadHtml() {
+            if (!selectedSwipe || !selectedSwipe.html_content) return;
+            const blob = new Blob([selectedSwipe.html_content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${selectedSwipe.page_type || 'page'}-${selectedSwipe.id.slice(0, 8)}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Downloaded!');
         }
 
         // Delete swipe
