@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Hub</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --danger: #ff4444;
+            --danger-dim: #ff444420;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --green: #22c55e;
+            --green-dim: #22c55e20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 220px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+
+        .sidebar-section-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+
+        .sidebar-link {
+            display: block;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: #fd5106; background: #fd510615; }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-toggle:hover { border-color: #fd5106; color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.5); }
+            .sidebar-toggle { display: block; }
+        }
+
+        .container {
+            padding: 48px 48px 48px;
+            max-width: 1600px;
+            margin: 0 auto;
+            margin-left: 220px;
+        }
+
+        .page-header { text-align: center; margin-bottom: 32px; }
+        .page-title { font-size: 32px; font-weight: 600; }
+        .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
+
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+        .stat { display: flex; flex-direction: column; gap: 4px; }
+        .stat-value {
+            font-family: 'Geist Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label { font-size: 12px; color: var(--text-muted); }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .section-title { font-size: 18px; font-weight: 600; }
+
+        .section-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-new {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            background: #fd5106;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-new:hover { background: #ff6a24; transform: translateY(-1px); }
+
+        .filter-dropdown {
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .filter-dropdown:focus { outline: none; border-color: #fd5106; }
+
+        /* Client grid */
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .client-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 700px) {
+            .client-grid { grid-template-columns: 1fr; }
+        }
+
+        .client-card {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .client-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .client-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .client-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-muted);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .client-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+        .client-card-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 14px;
+            color: var(--text-primary);
+        }
+
+        .client-code {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .status-badge.status-prospect { background: #8a868020; color: var(--text-secondary); }
+        .status-badge.status-onboarding { background: var(--blue-dim); color: var(--blue); }
+        .status-badge.status-active { background: var(--green-dim); color: var(--green); }
+        .status-badge.status-paused { background: var(--warning-dim); color: var(--warning); }
+        .status-badge.status-offboarded { background: var(--danger-dim); color: var(--danger); }
+
+        .client-card-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .stat-num {
+            font-family: 'Geist Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .stat-label-sm {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .client-card-meta {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 64px 24px;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+        .empty-state p { font-size: 14px; margin-bottom: 16px; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            z-index: 200;
+            overflow-y: auto;
+            padding: 40px;
+        }
+        .modal-overlay.active { display: block; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 560px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title { font-size: 20px; font-weight: 600; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 28px;
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+
+        .modal-body { padding: 28px; max-height: calc(100vh - 200px); overflow-y: auto; }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            transition: border-color 0.15s ease;
+        }
+        .form-input:focus { outline: none; border-color: #fd5106; }
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-input.mono { font-family: 'Geist Mono', monospace; letter-spacing: 1px; }
+        .form-input.invalid { border-color: var(--danger); }
+
+        .form-help {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .form-error {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--danger);
+            margin-top: 16px;
+            min-height: 16px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 20px 28px;
+            border-top: 1px solid var(--border);
+        }
+
+        .modal-btn {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 14px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex: 1;
+            text-align: center;
+        }
+        .modal-btn.cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .modal-btn.cancel:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .modal-btn.save {
+            background: #fd5106;
+            border: none;
+            color: #fff;
+        }
+        .modal-btn.save:hover { background: #ff6a24; }
+        .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid #fd5106;
+            color: #fd5106;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+        }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: #fd5106;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .container { margin-left: 0; padding: 80px 16px 32px; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">CLIENTS</div>
+            <a href="23-client-hub.html" class="sidebar-link active">Client Hub</a>
+            <a href="24-onboarding.html" class="sidebar-link">Onboarding</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YOUTUBE</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TWITTER</div>
+            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">IMAGE ADS</div>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
+            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">VIDEO ADS</div>
+            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TOOLS</div>
+            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">OTHER</div>
+            <a href="05-history.html" class="sidebar-link">History</a>
+        </div>
+    </aside>
+
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+    </button>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Client Hub</h1>
+            <p class="page-subtitle">Manage all clients, onboarding, and active campaigns</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-value" id="stat-total">0</span>
+                <span class="stat-label">Total Clients</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-active">0</span>
+                <span class="stat-label">Active</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-onboarding">0</span>
+                <span class="stat-label">Onboarding</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="stat-prospect">0</span>
+                <span class="stat-label">Prospects</span>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2 class="section-title">All Clients</h2>
+            <div class="section-actions">
+                <select class="filter-dropdown" id="status-filter" onchange="renderClients()">
+                    <option value="">All Statuses</option>
+                    <option value="prospect">Prospect</option>
+                    <option value="onboarding">Onboarding</option>
+                    <option value="active">Active</option>
+                    <option value="paused">Paused</option>
+                    <option value="offboarded">Offboarded</option>
+                </select>
+                <button class="btn-new" onclick="openClientModal()">+ Add Client</button>
+            </div>
+        </div>
+
+        <div class="client-grid" id="clients-grid">
+            <div class="empty-state">
+                <div class="loading-spinner"></div>
+                <p style="margin-top:12px">Loading clients...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Client Modal -->
+    <div class="modal-overlay" id="client-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Client</h3>
+                <button class="modal-close" onclick="closeClientModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Client Name *</label>
+                    <input type="text" class="form-input" id="qc-name" placeholder="e.g., Quantum Botanics">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Client Code *</label>
+                    <input type="text" class="form-input mono" id="qc-code" placeholder="QBOT" maxlength="5" oninput="this.value=this.value.toUpperCase()">
+                    <div class="form-help">3-5 uppercase letters. Used as internal reference.</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website URL *</label>
+                    <input type="url" class="form-input" id="qc-website" placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Primary Contact Email *</label>
+                    <input type="email" class="form-input" id="qc-email" placeholder="contact@example.com">
+                </div>
+                <div class="form-error" id="qc-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeClientModal()">Cancel</button>
+                <button class="modal-btn save" id="qc-save-btn" onclick="submitQuickClient()">Create & Onboard</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && !e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+
+        // ─── Config ─────────────────────────────────────────────
+        const CONFIG = {
+            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
+            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
+            N8N_ONBOARD_WEBHOOK: 'https://n8n.dtthomas.cloud/webhook/client-onboard'
+        };
+
+        const HEADERS = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        };
+
+        const HEADERS_READ = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        };
+
+        // ─── State ──────────────────────────────────────────────
+        let allClients = [];
+
+        // ─── Utils ──────────────────────────────────────────────
+        function escHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function showToast(msg, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ─── Supabase Helpers ───────────────────────────────────
+        async function sbGet(table, query = '') {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}?order=created_at.desc${query ? '&' + query : ''}`;
+            const res = await fetch(url, { headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
+            return res.json();
+        }
+
+        async function sbPost(table, body) {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}`;
+            const res = await fetch(url, { method: 'POST', headers: HEADERS, body: JSON.stringify(body) });
+            if (!res.ok) throw new Error(`POST ${table} failed: ${res.status}`);
+            return res.json();
+        }
+
+        // ─── Load clients ───────────────────────────────────────
+        async function loadClients() {
+            try {
+                const clients = await sbGet('clients', 'select=*');
+                allClients = Array.isArray(clients) ? clients : [];
+            } catch (e) {
+                console.warn('Failed to load clients (table may not exist yet):', e);
+                allClients = [];
+            }
+            updateStats();
+            renderClients();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').textContent = allClients.length;
+            document.getElementById('stat-active').textContent = allClients.filter(c => (c.status || '').toLowerCase() === 'active').length;
+            document.getElementById('stat-onboarding').textContent = allClients.filter(c => (c.status || '').toLowerCase() === 'onboarding').length;
+            document.getElementById('stat-prospect').textContent = allClients.filter(c => (c.status || '').toLowerCase() === 'prospect').length;
+        }
+
+        function renderClients() {
+            const grid = document.getElementById('clients-grid');
+            const filter = document.getElementById('status-filter').value;
+            let list = allClients;
+            if (filter) list = list.filter(c => (c.status || '').toLowerCase() === filter);
+
+            if (list.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <p>${allClients.length === 0 ? 'No clients yet' : 'No clients match this filter'}</p>
+                        ${allClients.length === 0 ? '<button class="btn-new" onclick="openClientModal()">+ Add Your First Client</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = list.map(renderClientCard).join('');
+        }
+
+        function initials(name) {
+            if (!name) return '?';
+            return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+        }
+
+        function renderClientCard(c) {
+            const status = (c.status || 'prospect').toLowerCase();
+            const name = c.name || 'Unnamed';
+            const code = c.code || '';
+            const website = c.website_url || '';
+            const contact = c.primary_contact_email || '';
+            const created = c.created_at ? new Date(c.created_at).toLocaleDateString() : '';
+
+            return `
+                <div class="client-card" onclick="selectClient('${escHtml(c.id)}', '${status}')">
+                    <div class="client-card-header">
+                        <div class="client-logo">${escHtml(initials(name))}</div>
+                        <span class="status-badge status-${status}">${escHtml(status)}</span>
+                    </div>
+                    <div class="client-card-name">${escHtml(name)}</div>
+                    <div class="client-code">${escHtml(code)}</div>
+                    <div class="client-card-stats">
+                        <div>
+                            <div class="stat-num">${c.batches_count ?? 0}</div>
+                            <div class="stat-label-sm">Batches</div>
+                        </div>
+                        <div>
+                            <div class="stat-num">${c.creatives_count ?? 0}</div>
+                            <div class="stat-label-sm">Creatives</div>
+                        </div>
+                    </div>
+                    ${created ? `<div class="client-card-meta">Added ${escHtml(created)}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function selectClient(id, status) {
+            if (!id) return;
+            localStorage.setItem('selectedClientId', id);
+            if (status === 'active') {
+                window.location.href = '13-image-ad-generator.html';
+            } else {
+                // prospect, onboarding, paused, offboarded → onboarding form (edit mode)
+                window.location.href = '24-onboarding.html';
+            }
+        }
+
+        // ─── Add Client Modal ───────────────────────────────────
+        function openClientModal() {
+            document.getElementById('qc-name').value = '';
+            document.getElementById('qc-code').value = '';
+            document.getElementById('qc-website').value = '';
+            document.getElementById('qc-email').value = '';
+            document.getElementById('qc-error').textContent = '';
+            ['qc-name','qc-code','qc-website','qc-email'].forEach(id => document.getElementById(id).classList.remove('invalid'));
+            document.getElementById('client-modal').classList.add('active');
+            setTimeout(() => document.getElementById('qc-name').focus(), 50);
+        }
+
+        function closeClientModal() {
+            document.getElementById('client-modal').classList.remove('active');
+        }
+
+        function validateQuickClient() {
+            const name = document.getElementById('qc-name').value.trim();
+            const code = document.getElementById('qc-code').value.trim();
+            const website = document.getElementById('qc-website').value.trim();
+            const email = document.getElementById('qc-email').value.trim();
+            const errors = [];
+
+            ['qc-name','qc-code','qc-website','qc-email'].forEach(id => document.getElementById(id).classList.remove('invalid'));
+
+            if (!name) { errors.push('Name is required'); document.getElementById('qc-name').classList.add('invalid'); }
+            if (!/^[A-Z]{3,5}$/.test(code)) { errors.push('Code must be 3-5 uppercase letters'); document.getElementById('qc-code').classList.add('invalid'); }
+            try {
+                if (!website) throw new Error();
+                new URL(website);
+            } catch {
+                errors.push('Valid website URL required');
+                document.getElementById('qc-website').classList.add('invalid');
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errors.push('Valid email required');
+                document.getElementById('qc-email').classList.add('invalid');
+            }
+
+            return { errors, payload: { name, code, website_url: website, primary_contact_email: email, status: 'onboarding' } };
+        }
+
+        async function submitQuickClient() {
+            const { errors, payload } = validateQuickClient();
+            const errEl = document.getElementById('qc-error');
+            if (errors.length) {
+                errEl.textContent = errors.join(' · ');
+                return;
+            }
+            errEl.textContent = '';
+
+            const btn = document.getElementById('qc-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                const res = await fetch(CONFIG.N8N_ONBOARD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Webhook returned ' + res.status);
+                const data = await res.json().catch(() => ({}));
+                const newId = data.client_id || data.id || (data.client && data.client.id) || null;
+
+                if (newId) {
+                    localStorage.setItem('selectedClientId', newId);
+                    showToast('Client created - opening onboarding');
+                    setTimeout(() => { window.location.href = '24-onboarding.html'; }, 500);
+                } else {
+                    showToast('Client created');
+                    closeClientModal();
+                    loadClients();
+                }
+            } catch (e) {
+                console.error(e);
+                errEl.textContent = 'Failed: ' + e.message;
+                showToast('Failed to create client: ' + e.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create & Onboard';
+            }
+        }
+
+        // Close modal on overlay click
+        document.getElementById('client-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeClientModal();
+        });
+
+        // Init
+        loadClients();
+    </script>
+</body>
+</html>

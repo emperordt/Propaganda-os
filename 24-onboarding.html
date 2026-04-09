@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Onboarding</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --accent-hover: #ffffff;
+            --danger: #ff4444;
+            --danger-dim: #ff444420;
+            --warning: #f8d47a;
+            --warning-dim: #f8d47a20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --green: #22c55e;
+            --green-dim: #22c55e20;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 220px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+
+        .sidebar-section-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+
+        .sidebar-link {
+            display: block;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: #fd5106; background: #fd510615; }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-toggle:hover { border-color: #fd5106; color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.5); }
+            .sidebar-toggle { display: block; }
+        }
+
+        .container {
+            padding: 48px 48px 140px;
+            max-width: 960px;
+            margin: 0 auto;
+            margin-left: 220px;
+        }
+
+        .page-header { text-align: center; margin-bottom: 40px; }
+        .page-title { font-size: 32px; font-weight: 600; }
+        .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
+
+        .client-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            padding: 6px 12px;
+            background: var(--orange-dim);
+            color: #fd5106;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .client-chip .dot {
+            width: 6px; height: 6px; border-radius: 50%; background: #fd5106;
+        }
+
+        /* Section cards */
+        .form-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .section-number {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fd5106;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .section-heading {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .required-asterisk {
+            color: var(--danger);
+            margin-left: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            transition: border-color 0.15s ease;
+        }
+        .form-input:focus { outline: none; border-color: #fd5106; }
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-input.mono { font-family: 'Geist Mono', monospace; letter-spacing: 0.5px; }
+        .form-input.invalid { border-color: var(--danger); }
+
+        .form-textarea {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            resize: vertical;
+            transition: border-color 0.15s ease;
+            line-height: 1.6;
+        }
+        .form-textarea:focus { outline: none; border-color: #fd5106; }
+        .form-textarea::placeholder { color: var(--text-muted); }
+        .form-textarea.invalid { border-color: var(--danger); }
+
+        .form-select {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .form-select:focus { outline: none; border-color: #fd5106; }
+
+        .form-help {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .field-row-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .field-row,
+            .field-row-3col { grid-template-columns: 1fr; }
+        }
+
+        /* Color inputs */
+        .color-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .color-input-group > label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+        .color-input-wrapper input[type="color"] {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: transparent;
+            padding: 0;
+        }
+        .color-input-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-input-wrapper input[type="color"]::-webkit-color-swatch {
+            border: 2px solid var(--border);
+            border-radius: 6px;
+        }
+        .color-hex {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 80px;
+            padding: 4px 0;
+        }
+
+        /* Password toggle */
+        .password-wrapper {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 4px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .password-toggle:hover { color: #fd5106; }
+
+        /* Logo row */
+        .logo-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .logo-row .form-input { flex: 1; }
+        .upload-btn {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Submit bar - sticky */
+        .submit-bar {
+            position: fixed;
+            bottom: 0;
+            left: 220px;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 16px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 90;
+            backdrop-filter: blur(8px);
+        }
+
+        @media (max-width: 768px) {
+            .submit-bar { left: 0; padding: 16px; }
+            .container { padding: 80px 16px 140px; margin-left: 0; }
+        }
+
+        .back-link {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .back-link:hover { color: #fd5106; background: var(--bg-tertiary); }
+
+        .btn-submit {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            background: #fd5106;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 28px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-submit:hover { background: #ff6a24; transform: translateY(-1px); }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Draft indicator */
+        .draft-indicator {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-muted);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            z-index: 80;
+            pointer-events: none;
+        }
+        .draft-indicator.visible { opacity: 1; }
+        .draft-indicator .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            font-family: 'Geist Mono', monospace;
+            font-size: 13px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid #fd5106;
+            color: #fd5106;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+        }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">CLIENTS</div>
+            <a href="23-client-hub.html" class="sidebar-link">Client Hub</a>
+            <a href="24-onboarding.html" class="sidebar-link active">Onboarding</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YOUTUBE</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TWITTER</div>
+            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
+            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
+            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
+            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">IMAGE ADS</div>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
+            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">VIDEO ADS</div>
+            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">LANDING PAGES</div>
+            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
+            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
+            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
+            <a href="22-lp-history.html" class="sidebar-link">History</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">TOOLS</div>
+            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">OTHER</div>
+            <a href="05-history.html" class="sidebar-link">History</a>
+        </div>
+    </aside>
+
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+    </button>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Client Onboarding</h1>
+            <p class="page-subtitle">Everything we need to start shipping ads.</p>
+            <div class="client-chip" id="client-chip" style="display:none">
+                <span class="dot"></span>
+                <span id="client-chip-label">Editing existing client</span>
+            </div>
+        </div>
+
+        <form id="onboarding-form" autocomplete="off" onsubmit="event.preventDefault();submitOnboarding();">
+            <input type="hidden" id="client-id">
+
+            <!-- SECTION 1: BRAND IDENTITY -->
+            <div class="form-section">
+                <div class="section-number">Section 01</div>
+                <h2 class="section-heading">Brand Identity</h2>
+                <p class="section-desc">Who this client is, what they look like, and how they speak.</p>
+
+                <div class="field-row">
+                    <div class="form-group">
+                        <label class="form-label">Brand Name <span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-input" id="brand-name" data-required placeholder="e.g., Quantum Botanics">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Brand Code <span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-input mono" id="brand-code" data-required maxlength="5" placeholder="QBOT" oninput="this.value=this.value.toUpperCase()">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="form-group">
+                        <label class="form-label">Website URL <span class="required-asterisk">*</span></label>
+                        <input type="url" class="form-input" id="brand-website" data-required placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Primary Contact Email <span class="required-asterisk">*</span></label>
+                        <input type="email" class="form-input" id="brand-email" data-required placeholder="contact@example.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Logo URL</label>
+                    <div class="logo-row">
+                        <input type="url" class="form-input" id="brand-logo-url" placeholder="https://... (paste link)">
+                        <button type="button" class="upload-btn" disabled title="Upload coming soon">Upload (soon)</button>
+                    </div>
+                    <div class="form-help">Paste a link to the logo. Upload to Supabase Storage coming in V2.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Brand Colors</label>
+                    <div class="field-row-3col">
+                        <div class="color-input-group">
+                            <label>Primary</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="color-primary" value="#fd5106" onchange="syncColor(this,'hex-primary')">
+                                <input type="text" class="color-hex" id="hex-primary" value="#fd5106" oninput="syncHex(this,'color-primary')">
+                            </div>
+                        </div>
+                        <div class="color-input-group">
+                            <label>Secondary</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="color-secondary" value="#0f0f0f" onchange="syncColor(this,'hex-secondary')">
+                                <input type="text" class="color-hex" id="hex-secondary" value="#0f0f0f" oninput="syncHex(this,'color-secondary')">
+                            </div>
+                        </div>
+                        <div class="color-input-group">
+                            <label>Accent</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" id="color-accent" value="#f5f5f5" onchange="syncColor(this,'hex-accent')">
+                                <input type="text" class="color-hex" id="hex-accent" value="#f5f5f5" oninput="syncHex(this,'color-accent')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tone</label>
+                    <textarea class="form-textarea" id="brand-tone" rows="3" placeholder="e.g., premium, scientific, warm, direct"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Voice Guidelines</label>
+                    <textarea class="form-textarea" id="brand-voice" rows="5" placeholder="Speak like a trusted advisor. Use second person. Never use hype words. Always reference evidence..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Words to Avoid</label>
+                    <input type="text" class="form-input" id="brand-avoid" placeholder="comma-separated: cure, miracle, guaranteed">
+                    <div class="form-help">Separate with commas.</div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: OFFER DETAILS -->
+            <div class="form-section">
+                <div class="section-number">Section 02</div>
+                <h2 class="section-heading">Offer Details</h2>
+                <p class="section-desc">The product, the price, the promise.</p>
+
+                <div class="field-row">
+                    <div class="form-group">
+                        <label class="form-label">Product / Service Name <span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-input" id="offer-product-name" data-required placeholder="e.g., LiverGuard Pro">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price Point <span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-input" id="offer-price" data-required placeholder="$47">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Description <span class="required-asterisk">*</span></label>
+                    <textarea class="form-textarea" id="offer-description" data-required rows="5" placeholder="What the product is, what it does, key ingredients or features..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Offer Details (what they get)</label>
+                    <textarea class="form-textarea" id="offer-details" rows="4" placeholder="e.g., 60-count bottle + free shipping + bonus ebook + 90-day guarantee"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Guarantee / Risk Reversal</label>
+                    <textarea class="form-textarea" id="offer-guarantee" rows="2" placeholder="e.g., 90-day money-back guarantee, no questions asked"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Unique Mechanism</label>
+                    <textarea class="form-textarea" id="offer-mechanism" rows="3" placeholder="What makes this work differently from everything else on the market?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Awareness Level</label>
+                    <select class="form-select" id="offer-awareness">
+                        <option value="unaware">Unaware</option>
+                        <option value="problem_aware" selected>Problem Aware</option>
+                        <option value="solution_aware">Solution Aware</option>
+                        <option value="product_aware">Product Aware</option>
+                        <option value="most_aware">Most Aware</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SECTION 3: PSYCHOGRAPHICS -->
+            <div class="form-section">
+                <div class="section-number">Section 03</div>
+                <h2 class="section-heading">Customer Psychographics</h2>
+                <p class="section-desc">Who they are, what they want, what keeps them up at night.</p>
+
+                <div class="form-group">
+                    <label class="form-label">ICP Description <span class="required-asterisk">*</span></label>
+                    <input type="text" class="form-input" id="psych-icp" data-required placeholder="e.g., Women 40-60 with stubborn belly fat who've tried keto and failed">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Top 3 Pain Points</label>
+                    <div class="field-row-3col">
+                        <input type="text" class="form-input" id="pain-1" placeholder="Pain point #1">
+                        <input type="text" class="form-input" id="pain-2" placeholder="Pain point #2">
+                        <input type="text" class="form-input" id="pain-3" placeholder="Pain point #3">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Top 3 Desires</label>
+                    <div class="field-row-3col">
+                        <input type="text" class="form-input" id="desire-1" placeholder="Desire #1">
+                        <input type="text" class="form-input" id="desire-2" placeholder="Desire #2">
+                        <input type="text" class="form-input" id="desire-3" placeholder="Desire #3">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Top 3 Objections</label>
+                    <div class="field-row-3col">
+                        <input type="text" class="form-input" id="objection-1" placeholder="Objection #1">
+                        <input type="text" class="form-input" id="objection-2" placeholder="Objection #2">
+                        <input type="text" class="form-input" id="objection-3" placeholder="Objection #3">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">What They've Already Tried That Failed</label>
+                    <textarea class="form-textarea" id="psych-failed" rows="3" placeholder="Diets, supplements, programs they've wasted money on..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Where They Hang Out Online</label>
+                    <textarea class="form-textarea" id="psych-hangouts" rows="3" placeholder="Subreddits, Facebook groups, Instagram hashtags, YouTube channels..."></textarea>
+                </div>
+            </div>
+
+            <!-- SECTION 4: COMPETITIVE LANDSCAPE -->
+            <div class="form-section">
+                <div class="section-number">Section 04</div>
+                <h2 class="section-heading">Competitive Landscape</h2>
+                <p class="section-desc">Who we're fighting against and how we win.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Top 3 Competitor URLs</label>
+                    <div class="field-row-3col">
+                        <input type="url" class="form-input" id="comp-url-1" placeholder="https://competitor-1.com">
+                        <input type="url" class="form-input" id="comp-url-2" placeholder="https://competitor-2.com">
+                        <input type="url" class="form-input" id="comp-url-3" placeholder="https://competitor-3.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">What Competitors Say That Works</label>
+                    <textarea class="form-textarea" id="comp-hooks" rows="4" placeholder="Hooks, angles, claims they're running that seem to be converting..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">How This Client Is Different</label>
+                    <textarea class="form-textarea" id="comp-positioning" rows="4" placeholder="Why the customer should pick us over anyone else..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Proof Points</label>
+                    <textarea class="form-textarea" id="comp-proof" rows="5" placeholder="One per line: studies, testimonials, certifications, numbers, awards..."></textarea>
+                    <div class="form-help">One per line.</div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: TRACKING & INFRASTRUCTURE -->
+            <div class="form-section">
+                <div class="section-number">Section 05</div>
+                <h2 class="section-heading">Tracking & Infrastructure</h2>
+                <p class="section-desc">The plumbing. So we can actually measure what we ship.</p>
+
+                <div class="field-row">
+                    <div class="form-group">
+                        <label class="form-label">Meta Pixel ID</label>
+                        <input type="text" class="form-input mono" id="track-pixel-id" placeholder="123456789012345">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Meta Ad Account ID</label>
+                        <input type="text" class="form-input mono" id="track-ad-account" placeholder="act_1234567890">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">CAPI Access Token</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-input mono" id="track-capi-token" placeholder="EAAG...">
+                        <button type="button" class="password-toggle" onclick="togglePassword('track-capi-token', this)">Show</button>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="form-group">
+                        <label class="form-label">Slack Channel ID</label>
+                        <input type="text" class="form-input mono" id="track-slack" placeholder="C01ABCDEFGH">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Google Drive Folder URL</label>
+                        <input type="url" class="form-input" id="track-drive" placeholder="https://drive.google.com/drive/folders/...">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="draft-indicator" id="draft-indicator"><span class="dot"></span>Draft auto-saved</div>
+
+    <div class="submit-bar">
+        <a href="23-client-hub.html" class="back-link">← Back to Client Hub</a>
+        <button class="btn-submit" id="submit-btn" onclick="submitOnboarding()">Save & Continue to Image Ads</button>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // Sidebar toggle
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && !e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+
+        // ─── Config ─────────────────────────────────────────────
+        const CONFIG = {
+            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
+            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
+            N8N_ONBOARD_WEBHOOK: 'https://n8n.dtthomas.cloud/webhook/client-onboard'
+        };
+
+        const HEADERS = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        };
+
+        const HEADERS_READ = {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        };
+
+        // ─── State ──────────────────────────────────────────────
+        let clientId = localStorage.getItem('selectedClientId') || null;
+        let isSubmitting = false;
+        let draftTimer = null;
+        const DRAFT_KEY = `onboardingDraft:${clientId || 'new'}`;
+
+        // Every field id we want to persist + serialize
+        const FIELD_IDS = [
+            'brand-name','brand-code','brand-website','brand-email','brand-logo-url',
+            'color-primary','hex-primary','color-secondary','hex-secondary','color-accent','hex-accent',
+            'brand-tone','brand-voice','brand-avoid',
+            'offer-product-name','offer-price','offer-description','offer-details','offer-guarantee','offer-mechanism','offer-awareness',
+            'psych-icp','pain-1','pain-2','pain-3','desire-1','desire-2','desire-3',
+            'objection-1','objection-2','objection-3','psych-failed','psych-hangouts',
+            'comp-url-1','comp-url-2','comp-url-3','comp-hooks','comp-positioning','comp-proof',
+            'track-pixel-id','track-ad-account','track-capi-token','track-slack','track-drive'
+        ];
+
+        // ─── Toast ──────────────────────────────────────────────
+        function showToast(msg, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ─── Color sync ─────────────────────────────────────────
+        function syncColor(input, hexId) {
+            document.getElementById(hexId).value = input.value;
+        }
+        function syncHex(input, colorId) {
+            const v = input.value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                document.getElementById(colorId).value = v;
+            }
+        }
+
+        // ─── Password toggle ────────────────────────────────────
+        function togglePassword(id, btn) {
+            const el = document.getElementById(id);
+            if (el.type === 'password') { el.type = 'text'; btn.textContent = 'Hide'; }
+            else { el.type = 'password'; btn.textContent = 'Show'; }
+        }
+
+        // ─── Supabase Helpers ───────────────────────────────────
+        async function sbGet(table, query = '') {
+            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}${query ? '?' + query : ''}`;
+            const res = await fetch(url, { headers: HEADERS_READ });
+            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
+            return res.json();
+        }
+
+        // ─── Draft save ─────────────────────────────────────────
+        function collectFormState() {
+            const state = {};
+            FIELD_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) state[id] = el.value;
+            });
+            return state;
+        }
+
+        function applyFormState(state) {
+            if (!state) return;
+            FIELD_IDS.forEach(id => {
+                if (state[id] != null) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = state[id];
+                }
+            });
+            // Resync color pickers from hex
+            ['primary','secondary','accent'].forEach(key => {
+                const hex = document.getElementById('hex-'+key);
+                const color = document.getElementById('color-'+key);
+                if (hex && color && /^#[0-9a-fA-F]{6}$/.test(hex.value)) color.value = hex.value;
+            });
+        }
+
+        function saveDraft() {
+            try {
+                const state = collectFormState();
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
+                flashDraftIndicator();
+            } catch (e) {
+                console.warn('Draft save failed', e);
+            }
+        }
+
+        function flashDraftIndicator() {
+            const el = document.getElementById('draft-indicator');
+            el.classList.add('visible');
+            clearTimeout(flashDraftIndicator._t);
+            flashDraftIndicator._t = setTimeout(() => el.classList.remove('visible'), 1500);
+        }
+
+        function scheduleSave() {
+            clearTimeout(draftTimer);
+            draftTimer = setTimeout(saveDraft, 500);
+        }
+
+        function bindAutoSave() {
+            FIELD_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', scheduleSave);
+                    el.addEventListener('change', scheduleSave);
+                }
+            });
+        }
+
+        // ─── Prefill from DB then draft ─────────────────────────
+        async function prefillFromClient(id) {
+            try {
+                const rows = await sbGet('clients', `id=eq.${encodeURIComponent(id)}&select=*`);
+                if (!Array.isArray(rows) || rows.length === 0) return null;
+                const c = rows[0];
+
+                // Map flat client columns to form fields
+                if (c.name) document.getElementById('brand-name').value = c.name;
+                if (c.code) document.getElementById('brand-code').value = c.code;
+                if (c.website_url) document.getElementById('brand-website').value = c.website_url;
+                if (c.primary_contact_email) document.getElementById('brand-email').value = c.primary_contact_email;
+                if (c.slack_channel_id) document.getElementById('track-slack').value = c.slack_channel_id;
+                if (c.google_drive_folder) document.getElementById('track-drive').value = c.google_drive_folder;
+
+                // Chip label
+                const chip = document.getElementById('client-chip');
+                const chipLabel = document.getElementById('client-chip-label');
+                chip.style.display = 'inline-flex';
+                chipLabel.textContent = `Editing: ${c.name || c.code || id}`;
+
+                return c;
+            } catch (e) {
+                console.warn('Failed to prefill from client:', e);
+                return null;
+            }
+        }
+
+        // ─── Validation ─────────────────────────────────────────
+        function validate() {
+            const required = document.querySelectorAll('[data-required]');
+            let firstInvalid = null;
+            let ok = true;
+            required.forEach(el => {
+                el.classList.remove('invalid');
+                if (!el.value.trim()) {
+                    el.classList.add('invalid');
+                    ok = false;
+                    if (!firstInvalid) firstInvalid = el;
+                }
+            });
+            // code format
+            const code = document.getElementById('brand-code');
+            if (code.value && !/^[A-Z]{3,5}$/.test(code.value.trim())) {
+                code.classList.add('invalid');
+                ok = false;
+                if (!firstInvalid) firstInvalid = code;
+            }
+            // email format
+            const email = document.getElementById('brand-email');
+            if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+                email.classList.add('invalid');
+                ok = false;
+                if (!firstInvalid) firstInvalid = email;
+            }
+            if (!ok) {
+                showToast('Please fill required fields', true);
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => firstInvalid.focus(), 400);
+                }
+            }
+            return ok;
+        }
+
+        // ─── Payload builder ────────────────────────────────────
+        function splitCsv(s) {
+            return (s || '').split(',').map(x => x.trim()).filter(Boolean);
+        }
+        function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+        function buildPayload() {
+            return {
+                client_id: clientId,
+                brand: {
+                    name: val('brand-name'),
+                    code: val('brand-code'),
+                    website_url: val('brand-website'),
+                    contact_email: val('brand-email'),
+                    logo_url: val('brand-logo-url'),
+                    color_primary: val('hex-primary'),
+                    color_secondary: val('hex-secondary'),
+                    color_accent: val('hex-accent'),
+                    tone: val('brand-tone'),
+                    voice_guidelines: val('brand-voice'),
+                    avoid_words: splitCsv(val('brand-avoid'))
+                },
+                offer: {
+                    product_name: val('offer-product-name'),
+                    price: val('offer-price'),
+                    description: val('offer-description'),
+                    offer_details: val('offer-details'),
+                    guarantee: val('offer-guarantee'),
+                    unique_mechanism: val('offer-mechanism'),
+                    awareness_level: val('offer-awareness')
+                },
+                psychographics: {
+                    icp: val('psych-icp'),
+                    pain_points: [val('pain-1'), val('pain-2'), val('pain-3')].filter(Boolean),
+                    desires: [val('desire-1'), val('desire-2'), val('desire-3')].filter(Boolean),
+                    objections: [val('objection-1'), val('objection-2'), val('objection-3')].filter(Boolean),
+                    failed_attempts: val('psych-failed'),
+                    hangouts: val('psych-hangouts')
+                },
+                competition: {
+                    competitor_urls: [val('comp-url-1'), val('comp-url-2'), val('comp-url-3')].filter(Boolean),
+                    competitor_hooks: val('comp-hooks'),
+                    positioning: val('comp-positioning'),
+                    proof_points: val('comp-proof')
+                },
+                tracking: {
+                    meta_pixel_id: val('track-pixel-id'),
+                    meta_ad_account_id: val('track-ad-account'),
+                    capi_token: val('track-capi-token'),
+                    slack_channel_id: val('track-slack'),
+                    drive_folder_url: val('track-drive')
+                }
+            };
+        }
+
+        // ─── Submit ─────────────────────────────────────────────
+        async function submitOnboarding() {
+            if (isSubmitting) return;
+            if (!validate()) return;
+
+            const payload = buildPayload();
+            isSubmitting = true;
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
+
+            try {
+                const res = await fetch(CONFIG.N8N_ONBOARD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Webhook returned ' + res.status);
+                const data = await res.json().catch(() => ({}));
+                const returnedId = data.client_id || data.id || (data.client && data.client.id) || clientId;
+                if (returnedId) localStorage.setItem('selectedClientId', returnedId);
+
+                // Clear draft
+                localStorage.removeItem(DRAFT_KEY);
+
+                showToast('Saved - redirecting...');
+                setTimeout(() => { window.location.href = '13-image-ad-generator.html'; }, 700);
+            } catch (e) {
+                console.error(e);
+                showToast('Save failed: ' + e.message, true);
+                btn.disabled = false;
+                btn.innerHTML = 'Save & Continue to Image Ads';
+                isSubmitting = false;
+            }
+        }
+
+        // ─── Init ───────────────────────────────────────────────
+        async function init() {
+            bindAutoSave();
+
+            // 1. DB prefill first (if clientId present)
+            if (clientId) {
+                await prefillFromClient(clientId);
+            }
+
+            // 2. Draft overrides DB (in-progress edits take precedence)
+            try {
+                const raw = localStorage.getItem(DRAFT_KEY);
+                if (raw) {
+                    applyFormState(JSON.parse(raw));
+                    showToast('Draft restored');
+                }
+            } catch (e) {
+                console.warn('Draft restore failed', e);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

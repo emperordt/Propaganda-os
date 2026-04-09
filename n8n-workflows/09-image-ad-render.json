@@ -113,12 +113,165 @@
     },
     {
       "parameters": {
-        "functionCode": "// Collect all generated outputs and return as response\nconst items = $input.all();\nconst images = items.map(item => ({\n  id: item.json[0]?.id || item.json.id,\n  image_url: item.json[0]?.image_url || item.json.image_url,\n  copy_variant: item.json[0]?.copy_variant || item.json.copy_variant,\n  image_prompt: item.json[0]?.image_prompt || item.json.image_prompt\n}));\n\nreturn [{ json: { success: true, images } }];"
+        "functionCode": "// Build payload for creatives table insert\n// Preserves the legacy image_ad_outputs row for backwards compatibility\nconst outputRow = $input.item.json;\nconst inputData = $('Webhook: Image Ad Render').first().json.body || {};\nconst processed = $('Process Result').first().json;\n\nconst now = new Date();\nconst startOfYear = new Date(now.getFullYear(), 0, 1);\nconst week = Math.ceil((((now - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);\n\n// Figure out hook_number by how many items we've processed so far\n// $itemIndex is available inside Code nodes that run per-item\nconst hookNumber = (typeof $itemIndex !== 'undefined' ? $itemIndex : 0) + 1;\n\n// Pull the copy variant off the processed-result payload (not the Supabase insert response)\nconst variant = processed.copy_variant || outputRow.copy_variant || {};\nconst imageUrl = (Array.isArray(outputRow) ? outputRow[0]?.image_url : outputRow.image_url) || processed.image_url;\n\nreturn {\n  client_id: inputData.client_id || null,\n  awareness_level: inputData.awareness_level || null,\n  angle: inputData.angle || null,\n  format: inputData.format || '1080x1080',\n  week_number: week,\n  year: now.getFullYear(),\n  hook_number: hookNumber,\n  body_number: 1,\n  variant,\n  image_url: imageUrl,\n  legacy_output: Array.isArray(outputRow) ? outputRow[0] : outputRow\n};"
+      },
+      "name": "Prepare Creative Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1700, 300],
+      "notes": "Builds context payload for creatives table. Calculates week_number and hook_number. Runs once per variant inside the Split In Batches loop."
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/batches?client_id=eq.{{ $json.client_id }}&year=eq.{{ $json.year }}&week_number=eq.{{ $json.week_number }}&select=id",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Find Batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1900, 300],
+      "notes": "Look up the weekly batch for this client. Returns empty array if it doesn't exist yet."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ ($json || []).length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "IF Batch Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2100, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/batches",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ client_id: $('Prepare Creative Payload').item.json.client_id, week_number: $('Prepare Creative Payload').item.json.week_number, year: $('Prepare Creative Payload').item.json.year, status: 'in_production' }) }}",
+        "options": {}
+      },
+      "name": "Create Batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2300, 400],
+      "notes": "Insert new batch row if none exists for this client/week/year."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Merge batch_id back into the creative context regardless of whether batch was found or created\nconst ctx = $('Prepare Creative Payload').item.json;\nconst incoming = $input.item.json;\n\nlet batchId;\nif (Array.isArray(incoming) && incoming.length > 0) {\n  // From Find Batch (IF true branch)\n  batchId = incoming[0].id;\n} else if (Array.isArray(incoming)) {\n  // Create Batch returned array\n  batchId = incoming[0]?.id;\n} else if (incoming && incoming.id) {\n  batchId = incoming.id;\n} else if (incoming && Array.isArray(incoming) === false && incoming[0]?.id) {\n  batchId = incoming[0].id;\n}\n\nreturn { ...ctx, batch_id: batchId };"
+      },
+      "name": "Merge Batch ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [2500, 300],
+      "notes": "Combines both IF branches. Attaches batch_id to the creative payload."
+    },
+    {
+      "parameters": {
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/concepts?batch_id=eq.{{ $json.batch_id }}&angle=eq.{{ $json.angle }}&format=eq.{{ $json.format }}&select=id",
+        "method": "GET",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY"
+        },
+        "options": {}
+      },
+      "name": "Find Concept",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2700, 300],
+      "notes": "Look up the concept for this batch+angle+format. Returns empty array if it doesn't exist yet."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ ($json || []).length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "IF Concept Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/concepts",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ batch_id: $('Merge Batch ID').item.json.batch_id, client_id: $('Merge Batch ID').item.json.client_id, angle: $('Merge Batch ID').item.json.angle, format: $('Merge Batch ID').item.json.format, awareness_level: $('Merge Batch ID').item.json.awareness_level, status: 'in_production' }) }}",
+        "options": {}
+      },
+      "name": "Create Concept",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [3100, 400],
+      "notes": "Insert new concept row if none exists for this batch/angle/format."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Merge concept_id back into the creative context regardless of branch\nconst ctx = $('Merge Batch ID').item.json;\nconst incoming = $input.item.json;\n\nlet conceptId;\nif (Array.isArray(incoming) && incoming.length > 0) {\n  conceptId = incoming[0].id;\n} else if (incoming && incoming.id) {\n  conceptId = incoming.id;\n}\n\nreturn { ...ctx, concept_id: conceptId };"
+      },
+      "name": "Merge Concept ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [3300, 300],
+      "notes": "Combines both IF branches. Attaches concept_id to the creative payload."
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/creatives",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ concept_id: $json.concept_id, client_id: $json.client_id, hook_number: $json.hook_number, body_number: $json.body_number, hook_text: ($json.variant && $json.variant.headline) || '', body_text: ($json.variant && $json.variant.body_copy) || '', cta_text: ($json.variant && $json.variant.cta) || '', awareness_level: $json.awareness_level, image_url: $json.image_url, format: $json.format, production_status: 'rendered' }) }}",
+        "options": {}
+      },
+      "name": "Insert Creative",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [3500, 300],
+      "notes": "Inserts the creative row. The Postgres trigger auto-generates the name field (e.g. CLIENT-W14-H1B1)."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all generated outputs and return as response\nconst items = $input.all();\nconst images = items.map(item => {\n  const row = Array.isArray(item.json) ? item.json[0] : item.json;\n  return {\n    creative_id: row?.id || null,\n    creative_name: row?.name || null,\n    image_url: row?.image_url || null,\n    hook_text: row?.hook_text || null,\n    body_text: row?.body_text || null,\n    cta_text: row?.cta_text || null,\n    angle: row?.angle || null\n  };\n});\n\nreturn [{ json: { success: true, images, count: images.length } }];"
       },
       "name": "Collect Results",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [1700, 300]
+      "position": [3700, 300]
     },
     {
       "parameters": {
@@ -128,7 +281,7 @@
       "name": "Respond: Generated Images",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1900, 300]
+      "position": [3900, 300]
     }
   ],
   "connections": {
@@ -144,7 +297,32 @@
     "Split In Batches": { "main": [[{ "node": "NanoBanana: Generate Image", "type": "main", "index": 0 }]] },
     "NanoBanana: Generate Image": { "main": [[{ "node": "Process Result", "type": "main", "index": 0 }]] },
     "Process Result": { "main": [[{ "node": "Supabase: Insert Output", "type": "main", "index": 0 }]] },
-    "Supabase: Insert Output": { "main": [[{ "node": "Split In Batches", "type": "main", "index": 0 }], [{ "node": "Collect Results", "type": "main", "index": 0 }]] },
+    "Supabase: Insert Output": { "main": [[{ "node": "Prepare Creative Payload", "type": "main", "index": 0 }]] },
+    "Prepare Creative Payload": { "main": [[{ "node": "Find Batch", "type": "main", "index": 0 }]] },
+    "Find Batch": { "main": [[{ "node": "IF Batch Exists", "type": "main", "index": 0 }]] },
+    "IF Batch Exists": {
+      "main": [
+        [{ "node": "Merge Batch ID", "type": "main", "index": 0 }],
+        [{ "node": "Create Batch", "type": "main", "index": 0 }]
+      ]
+    },
+    "Create Batch": { "main": [[{ "node": "Merge Batch ID", "type": "main", "index": 0 }]] },
+    "Merge Batch ID": { "main": [[{ "node": "Find Concept", "type": "main", "index": 0 }]] },
+    "Find Concept": { "main": [[{ "node": "IF Concept Exists", "type": "main", "index": 0 }]] },
+    "IF Concept Exists": {
+      "main": [
+        [{ "node": "Merge Concept ID", "type": "main", "index": 0 }],
+        [{ "node": "Create Concept", "type": "main", "index": 0 }]
+      ]
+    },
+    "Create Concept": { "main": [[{ "node": "Merge Concept ID", "type": "main", "index": 0 }]] },
+    "Merge Concept ID": { "main": [[{ "node": "Insert Creative", "type": "main", "index": 0 }]] },
+    "Insert Creative": {
+      "main": [[
+        { "node": "Split In Batches", "type": "main", "index": 0 },
+        { "node": "Collect Results", "type": "main", "index": 0 }
+      ]]
+    },
     "Collect Results": { "main": [[{ "node": "Respond: Generated Images", "type": "main", "index": 0 }]] }
   }
 }

@@ -1,0 +1,200 @@
+{
+  "name": "16 - Client Onboard",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "client-onboard",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Client Onboard",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "notes": "Receives the long-form onboarding payload from page 24. Creates client, brand profile, offer context, onboarding steps, and triggers Vercel project creation."
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/clients",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ name: $json.body.name, code: $json.body.code, website_url: $json.body.website_url || null, status: 'onboarding', primary_contact_email: $json.body.primary_contact_email || null, slack_channel_id: $json.body.slack_channel_id || null, google_drive_folder: $json.body.google_drive_folder || null }) }}",
+        "options": {}
+      },
+      "name": "Insert Client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "notes": "Create the client row. Returns the new row with id."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract client.id from insert response\nconst data = $input.first().json;\nconst row = Array.isArray(data) ? data[0] : data;\nconst webhook = $node['Webhook: Client Onboard'].json.body;\nreturn [{\n  json: {\n    client_id: row.id,\n    client: row,\n    webhook\n  }\n}];"
+      },
+      "name": "Parse Client ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/brand_profiles",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ client_id: $json.client_id, name: $json.webhook.brand_name || $json.webhook.name, brand_colors: $json.webhook.brand_colors || {}, tone: $json.webhook.tone || null, voice_guidelines: $json.webhook.voice_guidelines || null, avoid_words: $json.webhook.avoid_words || [], logo_url: $json.webhook.logo_url || null }) }}",
+        "options": {}
+      },
+      "name": "Insert Brand Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract brand_profile.id from insert response\nconst data = $input.first().json;\nconst row = Array.isArray(data) ? data[0] : data;\nconst prev = $('Parse Client ID').first().json;\nreturn [{\n  json: {\n    client_id: prev.client_id,\n    brand_id: row.id,\n    brand: row,\n    webhook: prev.webhook\n  }\n}];"
+      },
+      "name": "Parse Brand ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/offer_contexts",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify({ brand_id: $json.brand_id, name: $json.webhook.offer_name || ($json.webhook.product_name ? ($json.webhook.product_name + ' Offer') : 'Primary Offer'), product_name: $json.webhook.product_name || null, product_description: $json.webhook.product_description || null, offer_details: $json.webhook.offer_details || null, price_point: $json.webhook.price_point || null, awareness_level: $json.webhook.awareness_level || 'problem_aware', pain_points: $json.webhook.pain_points || [], desires: $json.webhook.desires || [], objections: $json.webhook.objections || [], unique_mechanism: $json.webhook.unique_mechanism || null, proof_points: $json.webhook.proof_points || null, icp: $json.webhook.icp || null, competitors: $json.webhook.competitors || [] }) }}",
+        "options": {}
+      },
+      "name": "Insert Offer Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract offer_context.id from insert response\nconst data = $input.first().json;\nconst row = Array.isArray(data) ? data[0] : data;\nconst prev = $('Parse Brand ID').first().json;\nreturn [{\n  json: {\n    client_id: prev.client_id,\n    brand_id: prev.brand_id,\n    offer_id: row.id,\n    offer: row,\n    webhook: prev.webhook\n  }\n}];"
+      },
+      "name": "Parse Offer ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Build the 8-step onboarding checklist for this client\nconst clientId = $('Parse Client ID').first().json.client_id;\nconst steps = [\n  'Client intake & brand profile',\n  'Offer context & positioning',\n  'Swipe file curation',\n  'Concept generation (week 1 batch)',\n  'Copy generation',\n  'Image render & review',\n  'Meta ad upload & launch',\n  'Reporting & iteration'\n];\nconst now = new Date().toISOString();\nconst stepRows = steps.map((name, i) => ({\n  client_id: clientId,\n  step_number: i + 1,\n  step_name: name,\n  status: i === 0 ? 'in_progress' : 'pending',\n  started_at: i === 0 ? now : null\n}));\n\nreturn [{\n  json: {\n    client_id: clientId,\n    brand_id: $json.brand_id,\n    offer_id: $json.offer_id,\n    webhook: $json.webhook,\n    steps: stepRows\n  }\n}];"
+      },
+      "name": "Build Onboarding Steps",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/onboarding_steps",
+        "method": "POST",
+        "headers": {
+          "apikey": "YOUR_SUPABASE_SERVICE_KEY",
+          "Authorization": "Bearer YOUR_SUPABASE_SERVICE_KEY",
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        "body": "={{ JSON.stringify($json.steps) }}",
+        "options": {}
+      },
+      "name": "Insert Onboarding Steps",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 300],
+      "notes": "Bulk insert the 8 onboarding step rows. Supabase accepts an array for batch insert."
+    },
+    {
+      "parameters": {
+        "url": "https://n8n.dtthomas.cloud/webhook/vercel-project-create",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "={{ JSON.stringify({ project_name: $('Parse Client ID').first().json.webhook.code, brand_id: $('Parse Brand ID').first().json.brand_id }) }}",
+        "options": {}
+      },
+      "name": "Trigger Vercel Create",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2050, 300],
+      "continueOnFail": true,
+      "notes": "Fires workflow 15 to create the Vercel landing page project for this client. continueOnFail so a Vercel outage doesn't break onboarding."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Final response payload\nconst clientId = $('Parse Client ID').first().json.client_id;\nconst brandId = $('Parse Brand ID').first().json.brand_id;\nconst offerId = $('Parse Offer ID').first().json.offer_id;\nconst vercel = $input.first().json || {};\n\nreturn [{\n  json: {\n    success: true,\n    client_id: clientId,\n    brand_id: brandId,\n    offer_id: offerId,\n    vercel: vercel && vercel.success ? vercel : null\n  }\n}];"
+      },
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [2250, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Client Onboard": {
+      "main": [[{ "node": "Insert Client", "type": "main", "index": 0 }]]
+    },
+    "Insert Client": {
+      "main": [[{ "node": "Parse Client ID", "type": "main", "index": 0 }]]
+    },
+    "Parse Client ID": {
+      "main": [[{ "node": "Insert Brand Profile", "type": "main", "index": 0 }]]
+    },
+    "Insert Brand Profile": {
+      "main": [[{ "node": "Parse Brand ID", "type": "main", "index": 0 }]]
+    },
+    "Parse Brand ID": {
+      "main": [[{ "node": "Insert Offer Context", "type": "main", "index": 0 }]]
+    },
+    "Insert Offer Context": {
+      "main": [[{ "node": "Parse Offer ID", "type": "main", "index": 0 }]]
+    },
+    "Parse Offer ID": {
+      "main": [[{ "node": "Build Onboarding Steps", "type": "main", "index": 0 }]]
+    },
+    "Build Onboarding Steps": {
+      "main": [[{ "node": "Insert Onboarding Steps", "type": "main", "index": 0 }]]
+    },
+    "Insert Onboarding Steps": {
+      "main": [[{ "node": "Trigger Vercel Create", "type": "main", "index": 0 }]]
+    },
+    "Trigger Vercel Create": {
+      "main": [[{ "node": "Build Response", "type": "main", "index": 0 }]]
+    },
+    "Build Response": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {}
+}

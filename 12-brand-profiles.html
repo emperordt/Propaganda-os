@@ -869,6 +869,13 @@
             <p class="page-subtitle">Manage brand profiles and offer contexts for consistent, on-brand content generation</p>
         </div>
 
+        <div style="display:flex;gap:12px;align-items:center;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:20px">
+          <a href="23-client-hub.html" style="color:var(--text-muted);text-decoration:none;font-size:13px">← Client Hub</a>
+          <span style="color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-left:12px">Client</span>
+          <select id="client-select" class="form-select" onchange="onClientChange()" style="flex:1;max-width:300px"></select>
+          <span id="client-badge" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-muted);padding:6px 10px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;display:none"></span>
+        </div>
+
         <div class="stats-bar">
             <div class="stat">
                 <span class="stat-value" id="stat-brands">0</span>
@@ -1231,6 +1238,40 @@
             if (!res.ok) throw new Error(`DELETE ${table} failed: ${res.status}`);
         }
 
+        // ─── Client Filtering ───────────────────────────────────
+        let clients = [];
+        let selectedClientId = localStorage.getItem('selectedClientId') || '';
+
+        async function loadClients() {
+          try {
+            const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/clients?status=neq.offboarded&order=name.asc`, { headers: HEADERS_READ });
+            clients = r.ok ? await r.json() : [];
+          } catch (e) { clients = []; }
+          const sel = document.getElementById('client-select');
+          if (sel) {
+            sel.innerHTML = '<option value="">All clients</option>' +
+              clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('');
+          }
+          updateClientBadge();
+        }
+
+        function updateClientBadge() {
+          const c = clients.find(x => x.id === selectedClientId);
+          const badge = document.getElementById('client-badge');
+          if (badge) {
+            if (c) { badge.textContent = `${c.name} (${c.code})`; badge.style.display = 'inline-block'; }
+            else { badge.style.display = 'none'; }
+          }
+        }
+
+        function onClientChange() {
+          selectedClientId = document.getElementById('client-select').value;
+          localStorage.setItem('selectedClientId', selectedClientId);
+          updateClientBadge();
+          if (typeof loadBrands === 'function') loadBrands();
+          if (typeof loadOffers === 'function') loadOffers();
+        }
+
         // ─── Color Hex Update ───────────────────────────────────
         function updateColorHex(input) {
             const target = input.id.replace('brand-color-', 'hex-');
@@ -1384,7 +1425,8 @@
         // ─── Load Data ──────────────────────────────────────────
         async function loadBrands() {
             try {
-                brands = await sbGet('brand_profiles');
+                const filter = selectedClientId ? `client_id=eq.${selectedClientId}` : '';
+                brands = await sbGet('brand_profiles', filter);
                 renderBrands();
                 populateBrandDropdowns();
                 updateStats();
@@ -1399,7 +1441,8 @@
 
         async function loadOffers() {
             try {
-                offers = await sbGet('offer_contexts');
+                const filter = selectedClientId ? `client_id=eq.${selectedClientId}` : '';
+                offers = await sbGet('offer_contexts', filter);
                 renderOffers();
                 updateStats();
             } catch (e) {
@@ -1686,6 +1729,7 @@
 
             const body = {
                 name,
+                client_id: selectedClientId || null,
                 brand_colors: {
                     primary: document.getElementById('brand-color-primary').value,
                     secondary: document.getElementById('brand-color-secondary').value,
@@ -1930,8 +1974,11 @@
         }
 
         // ─── Initialize ─────────────────────────────────────────
-        loadBrands();
-        loadOffers();
+        (async () => {
+            await loadClients();
+            loadBrands();
+            loadOffers();
+        })();
     </script>
 </body>
 </html>

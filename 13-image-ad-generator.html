@@ -248,6 +248,25 @@
 
         .form-textarea::placeholder { color: var(--text-muted); }
 
+        .form-input {
+            width: 100%;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            transition: border-color 0.15s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #fd5106;
+        }
+
+        .form-input::placeholder { color: var(--text-muted); }
+
         /* ===== BRAND SUMMARY ===== */
         .brand-summary {
             background: var(--bg-tertiary);
@@ -868,6 +887,13 @@
             <p class="page-subtitle">Generate on-brand image ads with AI copy + NanoBanana rendering</p>
         </div>
 
+        <div style="display:flex;gap:12px;align-items:center;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:20px">
+          <a href="23-client-hub.html" style="color:var(--text-muted);text-decoration:none;font-size:13px">← Client Hub</a>
+          <span style="color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-left:12px">Client</span>
+          <select id="client-select" class="form-select" onchange="onClientChange()" style="flex:1;max-width:300px"></select>
+          <span id="client-badge" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-muted);padding:6px 10px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;display:none"></span>
+        </div>
+
         <div class="three-panel-layout">
             <!-- ========== LEFT PANEL: Config & Context ========== -->
             <div class="panel">
@@ -1009,6 +1035,26 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                      <label class="form-label">Awareness Level *</label>
+                      <select id="awareness-level" class="form-select">
+                        <option value="">Select...</option>
+                        <option value="Unaware">Unaware</option>
+                        <option value="Problem Aware">Problem Aware</option>
+                        <option value="Solution Aware">Solution Aware</option>
+                        <option value="Product Aware">Product Aware</option>
+                        <option value="Most Aware">Most Aware</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Angle *</label>
+                      <input type="text" id="angle-input" class="form-input" placeholder="e.g. PainAgitate, Founders, AdsEdge">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Custom Instructions (Optional)</label>
+                      <textarea id="custom-prompt" class="form-textarea" rows="3" placeholder="Add specific instructions for this generation, e.g. 'use first-person founder voice'"></textarea>
+                    </div>
+
                     <!-- Generate Copy Button -->
                     <button class="generate-btn" id="generate-copy-btn">GENERATE COPY &rarr;</button>
                 </div>
@@ -1079,6 +1125,10 @@
                 </div>
                 <a href="14-image-ad-review.html" class="review-link" id="review-link" style="display: none;">View All in Review &rarr;</a>
             </div>
+        </div>
+
+        <div style="text-align:center;margin-top:30px;padding-top:20px;border-top:1px solid var(--border)">
+          <a href="26-creative-board.html" style="color:var(--orange);text-decoration:none;font-size:13px">View Creative Pipeline →</a>
         </div>
     </div>
 
@@ -1213,12 +1263,51 @@
         }
 
         // ==========================================
+        // CLIENT FILTERING
+        // ==========================================
+        let clients = [];
+        let selectedClientId = localStorage.getItem('selectedClientId') || '';
+
+        async function loadClients() {
+          try {
+            const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/clients?status=neq.offboarded&order=name.asc`, { headers: HEADERS });
+            clients = r.ok ? await r.json() : [];
+          } catch (e) { clients = []; }
+          const sel = document.getElementById('client-select');
+          if (sel) {
+            sel.innerHTML = '<option value="">All clients</option>' +
+              clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('');
+          }
+          updateClientBadge();
+        }
+
+        function updateClientBadge() {
+          const c = clients.find(x => x.id === selectedClientId);
+          const badge = document.getElementById('client-badge');
+          if (badge) {
+            if (c) { badge.textContent = `${c.name} (${c.code})`; badge.style.display = 'inline-block'; }
+            else { badge.style.display = 'none'; }
+          }
+        }
+
+        function onClientChange() {
+          selectedClientId = document.getElementById('client-select').value;
+          localStorage.setItem('selectedClientId', selectedClientId);
+          updateClientBadge();
+          if (typeof loadBrands === 'function') loadBrands();
+          if (typeof loadOffers === 'function') loadOffers();
+        }
+
+        // ==========================================
         // LOAD BRANDS
         // ==========================================
         async function loadBrands() {
             try {
-                brands = await supabaseGet('brand_profiles', 'select=*&order=name.asc');
+                const clientFilter = selectedClientId ? `&client_id=eq.${selectedClientId}` : '';
+                brands = await supabaseGet('brand_profiles', `select=*&order=name.asc${clientFilter}`);
                 const select = document.getElementById('brand-select');
+                // Reset and re-populate (keep the default empty option)
+                select.innerHTML = '<option value="">Select a brand...</option>';
                 brands.forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = b.id;
@@ -1423,6 +1512,7 @@
             const extraPainPoints = customPains ? customPains.split(',').map(p => p.trim()).filter(Boolean) : [];
 
             const payload = {
+                client_id: selectedClientId,
                 brand_id: selectedBrand?.id || null,
                 offer_id: selectedOffer?.id || null,
                 swipe_id: selectedSwipe?.id || null,
@@ -1430,6 +1520,9 @@
                 niche: selectedOffer?.niche || selectedBrand?.niche || 'general',
                 num_variants: totalFromAwareness > 0 ? totalFromAwareness : variantCount,
                 awareness_breakdown: awarenessBreakdown,
+                awareness_level: document.getElementById('awareness-level').value,
+                angle: document.getElementById('angle-input').value,
+                custom_prompt: document.getElementById('custom-prompt').value || null,
                 angles: selectedAngles,
                 selected_pain_points: [...selectedPainPoints, ...extraPainPoints],
                 selected_desires: selectedDesires,
@@ -1741,6 +1834,7 @@
             progressText.textContent = `Generating ${selectedVars.length} images in background...`;
 
             const payload = {
+                client_id: selectedClientId,
                 generation_id: currentGenerationId,
                 variants: selectedVars.map(v => ({
                     headline: v.headline,
@@ -1751,6 +1845,9 @@
                 swipe_id: selectedSwipe?.id || null,
                 brand_id: selectedBrand?.id || null,
                 apply_brand_styling: document.getElementById('apply-brand-styling')?.checked !== false,
+                awareness_level: document.getElementById('awareness-level').value,
+                angle: document.getElementById('angle-input').value,
+                custom_prompt: document.getElementById('custom-prompt').value || null,
                 format: format
             };
 
@@ -1935,6 +2032,7 @@
         // INITIALIZATION
         // ==========================================
         async function init() {
+            await loadClients();
             await Promise.all([
                 loadBrands(),
                 loadSwipes()

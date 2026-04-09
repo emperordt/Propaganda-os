@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Pipeline — Propaganda OS</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+            --green: #4ade80;
+            --green-dim: #4ade8020;
+            --amber: #f8d47a;
+            --amber-dim: #f8d47a20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --red: #ff4444;
+            --red-dim: #ff444420;
+        }
+
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 220px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-section-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+        .sidebar-link {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: var(--orange); background: var(--orange-dim); }
+
+        /* MAIN */
+        .main {
+            margin-left: 220px;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .top-bar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-bar label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-select, .form-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            min-width: 180px;
+            transition: border-color 0.15s ease;
+        }
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--orange);
+        }
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+        .btn-primary {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0f0f0f;
+            font-weight: 600;
+        }
+        .btn-primary:hover { background: #ff6620; border-color: #ff6620; }
+
+        /* KANBAN */
+        .kanban {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            min-height: calc(100vh - 220px);
+        }
+        @media (max-width: 1400px) {
+            .kanban { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .kanban { grid-template-columns: 1fr; }
+        }
+
+        .column {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+        .column.drag-over { border-color: var(--orange); background: var(--orange-dim); }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .column-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .column-count {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .column[data-status="draft"] .column-title { color: var(--text-muted); }
+        .column[data-status="rendered"] .column-title { color: var(--blue); }
+        .column[data-status="reviewed"] .column-title { color: var(--amber); }
+        .column[data-status="approved"] .column-title { color: var(--green); }
+        .column[data-status="launched"] .column-title { color: var(--purple); }
+
+        .column-body {
+            padding: 12px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            cursor: grab;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .card:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+        .card.dragging { opacity: 0.4; cursor: grabbing; }
+        .card.selected { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+
+        .card-checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: transparent;
+            z-index: 2;
+        }
+        .card-checkbox.checked {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0f0f0f;
+        }
+
+        .card-thumb {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-thumb-placeholder {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-align: center;
+            padding: 12px;
+        }
+
+        .card-name {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+            word-break: break-all;
+            line-height: 1.3;
+            margin-bottom: 6px;
+        }
+
+        .card-pills {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+        .pill {
+            font-family: 'Geist Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pill-ua { background: var(--red-dim); color: var(--red); }
+        .pill-pa { background: var(--orange-dim); color: var(--orange); }
+        .pill-sa { background: var(--amber-dim); color: var(--amber); }
+        .pill-pra { background: var(--green-dim); color: var(--green); }
+        .pill-ma { background: var(--blue-dim); color: var(--blue); }
+
+        .card-hook {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .perf-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 14px;
+            z-index: 1;
+        }
+
+        /* EMPTY COLUMN STATE */
+        .column-empty {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 30px 12px;
+            font-style: italic;
+        }
+
+        /* DETAIL PANEL */
+        .panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 520px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            z-index: 200;
+            transform: translateX(100%);
+            transition: transform 0.2s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel.open { transform: translateX(0); }
+        .panel-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        .panel-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+        }
+        .panel-body {
+            padding: 18px 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .panel-image {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+        }
+        .panel-section { margin-bottom: 18px; }
+        .panel-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .panel-input, .panel-textarea, .panel-select {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+        }
+        .panel-textarea { min-height: 80px; resize: vertical; }
+        .panel-input:focus, .panel-textarea:focus, .panel-select:focus {
+            outline: none;
+            border-color: var(--orange);
+        }
+        .panel-actions {
+            padding: 18px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* BULK ACTIONS BAR */
+        .bulk-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--orange);
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            z-index: 150;
+            transition: transform 0.2s ease;
+        }
+        .bulk-bar.visible {
+            transform: translateX(-50%) translateY(0);
+        }
+        .bulk-count {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--orange);
+            font-weight: 600;
+            padding-right: 8px;
+            border-right: 1px solid var(--border);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            min-width: 400px;
+            max-width: 500px;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+        .modal-field { margin-bottom: 14px; }
+        .modal-field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .modal-field input, .modal-field textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 13px;
+            z-index: 400;
+            transform: translateX(120%);
+            transition: transform 0.2s ease;
+            max-width: 320px;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state h3 {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* PERFORMANCE BADGE COLORS */
+        .perf-heavy_winner { color: #ffd700; }
+        .perf-winner { color: var(--green); }
+        .perf-average { color: var(--text-muted); }
+        .perf-loser { color: var(--red); }
+        .perf-fatigued { color: var(--amber); }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand">PROPAGANDA//OS</div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Operations</div>
+            <a href="23-client-hub.html" class="sidebar-link">Client Hub</a>
+            <a href="24-onboarding.html" class="sidebar-link">Onboarding</a>
+            <a href="13-image-ad-generator.html" class="sidebar-link">Image Ad Generator</a>
+            <a href="26-creative-board.html" class="sidebar-link active">Creative Pipeline</a>
+            <a href="12-brand-profiles.html" class="sidebar-link">Brand Profiles</a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">YouTube</div>
+            <a href="01-generation-hub.html" class="sidebar-link">Generation Hub</a>
+            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
+            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Image Ads</div>
+            <a href="14-image-ad-review.html" class="sidebar-link">Image Ad Review</a>
+            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Landing Pages</div>
+            <a href="19-lp-generator.html" class="sidebar-link">LP Generator</a>
+            <a href="20-lp-deploy.html" class="sidebar-link">LP Deploy</a>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Creative Pipeline</div>
+                <div class="page-subtitle">Internal kanban board for image ad production</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <span id="client-badge" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-muted);padding:6px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;display:none"></span>
+                <button class="btn" onclick="loadAll()">↻ Refresh</button>
+            </div>
+        </div>
+
+        <div class="top-bar">
+            <div class="top-bar-group">
+                <label>Client</label>
+                <select id="client-select" class="form-select" onchange="onClientChange()">
+                    <option value="">Select client...</option>
+                </select>
+            </div>
+            <div class="top-bar-group">
+                <label>Batch</label>
+                <select id="batch-select" class="form-select" onchange="onBatchChange()">
+                    <option value="">All batches</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
+        </div>
+
+        <div id="board-container">
+            <div class="kanban" id="kanban">
+                <div class="column" data-status="draft" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'draft')">
+                    <div class="column-header">
+                        <span class="column-title">Draft</span>
+                        <span class="column-count" id="count-draft">0</span>
+                    </div>
+                    <div class="column-body" id="col-draft"></div>
+                </div>
+                <div class="column" data-status="rendered" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'rendered')">
+                    <div class="column-header">
+                        <span class="column-title">Rendered</span>
+                        <span class="column-count" id="count-rendered">0</span>
+                    </div>
+                    <div class="column-body" id="col-rendered"></div>
+                </div>
+                <div class="column" data-status="reviewed" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'reviewed')">
+                    <div class="column-header">
+                        <span class="column-title">Reviewed</span>
+                        <span class="column-count" id="count-reviewed">0</span>
+                    </div>
+                    <div class="column-body" id="col-reviewed"></div>
+                </div>
+                <div class="column" data-status="approved" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'approved')">
+                    <div class="column-header">
+                        <span class="column-title">Approved</span>
+                        <span class="column-count" id="count-approved">0</span>
+                    </div>
+                    <div class="column-body" id="col-approved"></div>
+                </div>
+                <div class="column" data-status="launched" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'launched')">
+                    <div class="column-header">
+                        <span class="column-title">Launched</span>
+                        <span class="column-count" id="count-launched">0</span>
+                    </div>
+                    <div class="column-body" id="col-launched"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- DETAIL PANEL -->
+    <aside class="panel" id="detail-panel">
+        <div class="panel-header">
+            <div class="panel-title" id="panel-title">—</div>
+            <button class="panel-close" onclick="closePanel()">×</button>
+        </div>
+        <div class="panel-body" id="panel-body"></div>
+        <div class="panel-actions">
+            <button class="btn" onclick="rerenderCreative()">↻ Re-render</button>
+            <button class="btn" onclick="duplicateCreative()">⧉ Duplicate</button>
+            <button class="btn" onclick="downloadCreative()">↓ Download</button>
+            <button class="btn" onclick="archiveCreative()" style="margin-left:auto">Archive</button>
+        </div>
+    </aside>
+
+    <!-- BULK ACTIONS BAR -->
+    <div class="bulk-bar" id="bulk-bar">
+        <span class="bulk-count" id="bulk-count">0 selected</span>
+        <button class="btn" onclick="downloadSelected()">↓ Download ZIP</button>
+        <button class="btn" onclick="bulkSetStatus('approved')">✓ Approve</button>
+        <button class="btn" onclick="bulkSetStatus('launched')">→ Launched</button>
+        <button class="btn" onclick="bulkArchive()">Archive</button>
+        <button class="btn" onclick="clearSelection()">Clear</button>
+    </div>
+
+    <!-- NEW BATCH MODAL -->
+    <div class="modal-overlay" id="batch-modal">
+        <div class="modal">
+            <div class="modal-title">+ New Batch</div>
+            <div class="modal-field">
+                <label>Week Number</label>
+                <input type="number" id="batch-week" min="1" max="53">
+            </div>
+            <div class="modal-field">
+                <label>Year</label>
+                <input type="number" id="batch-year">
+            </div>
+            <div class="modal-field">
+                <label>Due Date</label>
+                <input type="date" id="batch-due">
+            </div>
+            <div class="modal-field">
+                <label>Strategy Notes</label>
+                <textarea id="batch-notes" rows="3"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeBatchModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createBatch()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import JSZip from 'https://cdn.skypack.dev/jszip';
+        window.JSZip = JSZip;
+    </script>
+
+    <script>
+        // ============================================
+        // CONFIG
+        // ============================================
+        const SUPABASE_URL = 'https://wqclspynbdghfsosqygg.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av';
+        const HEADERS = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        };
+        const HEADERS_READ = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+        const WF09_WEBHOOK = 'https://n8n.dtthomas.cloud/webhook/image-ad-render';
+
+        // ============================================
+        // STATE
+        // ============================================
+        let clients = [];
+        let batches = [];
+        let creatives = [];
+        let selectedClientId = localStorage.getItem('selectedClientId') || '';
+        let selectedBatchId = localStorage.getItem('selectedBatchId') || '';
+        let selectedCreatives = new Set();
+        let activeCreative = null;
+
+        // ============================================
+        // SUPABASE HELPERS
+        // ============================================
+        async function sbGet(path) {
+            try {
+                const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
+                if (!r.ok) return [];
+                return await r.json();
+            } catch (e) { return []; }
+        }
+        async function sbPost(table, body) {
+            const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+                method: 'POST', headers: HEADERS, body: JSON.stringify(body)
+            });
+            if (!r.ok) throw new Error('POST failed');
+            return await r.json();
+        }
+        async function sbPatch(table, id, body) {
+            const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+                method: 'PATCH', headers: HEADERS, body: JSON.stringify(body)
+            });
+            if (!r.ok) throw new Error('PATCH failed');
+            return await r.json();
+        }
+
+        // ============================================
+        // LOADERS
+        // ============================================
+        async function loadClients() {
+            clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
+            const sel = document.getElementById('client-select');
+            sel.innerHTML = '<option value="">Select client...</option>' +
+                clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('');
+            updateClientBadge();
+        }
+
+        async function loadBatches() {
+            if (!selectedClientId) {
+                batches = [];
+                document.getElementById('batch-select').innerHTML = '<option value="">Select client first</option>';
+                return;
+            }
+            batches = await sbGet(`batches?client_id=eq.${selectedClientId}&order=year.desc,week_number.desc`);
+            const sel = document.getElementById('batch-select');
+            sel.innerHTML = '<option value="">All batches</option>' +
+                batches.map(b => `<option value="${b.id}" ${b.id === selectedBatchId ? 'selected' : ''}>${b.name || `W${b.week_number}`}</option>`).join('');
+        }
+
+        async function loadCreatives() {
+            if (!selectedClientId) {
+                creatives = [];
+                renderBoard();
+                return;
+            }
+            let path = `creatives?client_id=eq.${selectedClientId}&archived=eq.false&order=created_at.desc`;
+            if (selectedBatchId) {
+                // Filter by batch via concept join — need to fetch concepts in batch first
+                const concepts = await sbGet(`concepts?batch_id=eq.${selectedBatchId}&select=id`);
+                const conceptIds = concepts.map(c => c.id);
+                if (conceptIds.length === 0) {
+                    creatives = [];
+                    renderBoard();
+                    return;
+                }
+                path = `creatives?concept_id=in.(${conceptIds.join(',')})&archived=eq.false&order=created_at.desc`;
+            }
+            creatives = await sbGet(path);
+            renderBoard();
+        }
+
+        async function loadAll() {
+            await loadClients();
+            await loadBatches();
+            await loadCreatives();
+        }
+
+        // ============================================
+        // RENDER
+        // ============================================
+        function renderBoard() {
+            const statuses = ['draft', 'rendered', 'reviewed', 'approved', 'launched'];
+            statuses.forEach(s => {
+                const col = document.getElementById('col-' + s);
+                const items = creatives.filter(c => (c.production_status || 'draft') === s);
+                document.getElementById('count-' + s).textContent = items.length;
+                if (items.length === 0) {
+                    col.innerHTML = '<div class="column-empty">No creatives</div>';
+                } else {
+                    col.innerHTML = items.map(renderCard).join('');
+                }
+            });
+            attachCardListeners();
+        }
+
+        function renderCard(c) {
+            const awarenessCode = (() => {
+                switch (c.awareness_level) {
+                    case 'Unaware': return 'ua';
+                    case 'Problem Aware': return 'pa';
+                    case 'Solution Aware': return 'sa';
+                    case 'Product Aware': return 'pra';
+                    case 'Most Aware': return 'ma';
+                    default: return '';
+                }
+            })();
+            const perfBadge = (() => {
+                switch (c.performance) {
+                    case 'heavy_winner': return '<div class="perf-badge perf-heavy_winner">🏆</div>';
+                    case 'winner': return '<div class="perf-badge perf-winner">⭐</div>';
+                    case 'loser': return '<div class="perf-badge perf-loser">❌</div>';
+                    case 'fatigued': return '<div class="perf-badge perf-fatigued">💤</div>';
+                    case 'average': return '<div class="perf-badge perf-average">🫤</div>';
+                    default: return '';
+                }
+            })();
+            const isSelected = selectedCreatives.has(c.id);
+            const checkClass = isSelected ? 'card-checkbox checked' : 'card-checkbox';
+            const cardClass = isSelected ? 'card selected' : 'card';
+            return `
+                <div class="${cardClass}" draggable="true" data-id="${c.id}">
+                    ${perfBadge}
+                    <div class="${checkClass}" data-checkbox="${c.id}">${isSelected ? '✓' : ''}</div>
+                    <div class="card-thumb">
+                        ${c.image_url ? `<img src="${c.image_url}" loading="lazy">` : '<div class="card-thumb-placeholder">No image yet</div>'}
+                    </div>
+                    <div class="card-name">${c.name || 'unnamed'}</div>
+                    <div class="card-pills">
+                        ${awarenessCode ? `<span class="pill pill-${awarenessCode}">${awarenessCode.toUpperCase()}</span>` : ''}
+                    </div>
+                    <div class="card-hook">${c.hook_text || ''}</div>
+                </div>
+            `;
+        }
+
+        function attachCardListeners() {
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('dragstart', onDragStart);
+                card.addEventListener('dragend', onDragEnd);
+                card.addEventListener('click', e => {
+                    if (e.target.dataset.checkbox) {
+                        toggleSelect(e.target.dataset.checkbox);
+                        e.stopPropagation();
+                    } else {
+                        openPanel(card.dataset.id);
+                    }
+                });
+            });
+        }
+
+        // ============================================
+        // DRAG & DROP
+        // ============================================
+        let draggedId = null;
+        function onDragStart(e) {
+            draggedId = e.target.dataset.id;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        function onDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        window.onDragOver = function(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+        window.onDragLeave = function(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+        window.onDrop = async function(e, status) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (!draggedId) return;
+            try {
+                await sbPatch('creatives', draggedId, { production_status: status });
+                const c = creatives.find(x => x.id === draggedId);
+                if (c) c.production_status = status;
+                renderBoard();
+                toast(`Moved to ${status}`, 'success');
+            } catch (err) {
+                toast('Failed to update status', 'error');
+            }
+            draggedId = null;
+        }
+
+        // ============================================
+        // SELECTION
+        // ============================================
+        function toggleSelect(id) {
+            if (selectedCreatives.has(id)) selectedCreatives.delete(id);
+            else selectedCreatives.add(id);
+            updateBulkBar();
+            renderBoard();
+        }
+        window.clearSelection = function() {
+            selectedCreatives.clear();
+            updateBulkBar();
+            renderBoard();
+        }
+        function updateBulkBar() {
+            const bar = document.getElementById('bulk-bar');
+            const count = selectedCreatives.size;
+            document.getElementById('bulk-count').textContent = `${count} selected`;
+            if (count > 0) bar.classList.add('visible');
+            else bar.classList.remove('visible');
+        }
+
+        // ============================================
+        // BULK ACTIONS
+        // ============================================
+        window.downloadSelected = async function() {
+            if (!window.JSZip) {
+                toast('JSZip not loaded yet, try again', 'error');
+                return;
+            }
+            const selected = creatives.filter(c => selectedCreatives.has(c.id));
+            if (selected.length === 0) return;
+            toast(`Zipping ${selected.length} creatives...`);
+            const zip = new window.JSZip();
+            let success = 0, fail = 0;
+            for (const c of selected) {
+                if (!c.image_url) { fail++; continue; }
+                try {
+                    const r = await fetch(c.image_url);
+                    const blob = await r.blob();
+                    zip.file((c.name || c.id) + '.png', blob);
+                    success++;
+                } catch (e) { fail++; }
+            }
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const clientCode = clients.find(c => c.id === selectedClientId)?.code || 'export';
+            a.href = url;
+            a.download = `propaganda-os-${clientCode}-${Date.now()}.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast(`Downloaded ${success} files${fail > 0 ? ` (${fail} failed)` : ''}`, 'success');
+        }
+
+        window.bulkSetStatus = async function(status) {
+            const ids = Array.from(selectedCreatives);
+            for (const id of ids) {
+                try { await sbPatch('creatives', id, { production_status: status }); }
+                catch (e) {}
+            }
+            await loadCreatives();
+            clearSelection();
+            toast(`Marked ${ids.length} as ${status}`, 'success');
+        }
+
+        window.bulkArchive = async function() {
+            const ids = Array.from(selectedCreatives);
+            for (const id of ids) {
+                try { await sbPatch('creatives', id, { archived: true }); } catch (e) {}
+            }
+            await loadCreatives();
+            clearSelection();
+            toast(`Archived ${ids.length}`, 'success');
+        }
+
+        // ============================================
+        // DETAIL PANEL
+        // ============================================
+        function openPanel(id) {
+            const c = creatives.find(x => x.id === id);
+            if (!c) return;
+            activeCreative = c;
+            document.getElementById('panel-title').textContent = c.name || 'Untitled';
+            document.getElementById('panel-body').innerHTML = `
+                ${c.image_url ? `<img src="${c.image_url}" class="panel-image">` : '<div class="card-thumb-placeholder" style="padding:80px">No image yet</div>'}
+                <div class="panel-section">
+                    <div class="panel-label">Hook</div>
+                    <textarea class="panel-textarea" id="edit-hook">${c.hook_text || ''}</textarea>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">Body</div>
+                    <textarea class="panel-textarea" id="edit-body">${c.body_text || ''}</textarea>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">CTA</div>
+                    <input type="text" class="panel-input" id="edit-cta" value="${c.cta_text || ''}">
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">Awareness Level</div>
+                    <select class="panel-select" id="edit-awareness">
+                        <option ${c.awareness_level === 'Unaware' ? 'selected' : ''}>Unaware</option>
+                        <option ${c.awareness_level === 'Problem Aware' ? 'selected' : ''}>Problem Aware</option>
+                        <option ${c.awareness_level === 'Solution Aware' ? 'selected' : ''}>Solution Aware</option>
+                        <option ${c.awareness_level === 'Product Aware' ? 'selected' : ''}>Product Aware</option>
+                        <option ${c.awareness_level === 'Most Aware' ? 'selected' : ''}>Most Aware</option>
+                    </select>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">Performance</div>
+                    <select class="panel-select" id="edit-performance" onchange="updatePerformance()">
+                        <option value="">— None —</option>
+                        <option value="heavy_winner" ${c.performance === 'heavy_winner' ? 'selected' : ''}>🏆 Heavy Winner</option>
+                        <option value="winner" ${c.performance === 'winner' ? 'selected' : ''}>⭐ Winner</option>
+                        <option value="average" ${c.performance === 'average' ? 'selected' : ''}>🫤 Average</option>
+                        <option value="loser" ${c.performance === 'loser' ? 'selected' : ''}>❌ Loser</option>
+                        <option value="fatigued" ${c.performance === 'fatigued' ? 'selected' : ''}>💤 Fatigued</option>
+                    </select>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">Internal Notes</div>
+                    <textarea class="panel-textarea" id="edit-notes">${c.internal_notes || ''}</textarea>
+                </div>
+                <button class="btn btn-primary" onclick="saveEdits()" style="width:100%">Save Changes</button>
+            `;
+            document.getElementById('detail-panel').classList.add('open');
+        }
+        window.closePanel = function() {
+            document.getElementById('detail-panel').classList.remove('open');
+            activeCreative = null;
+        }
+        window.saveEdits = async function() {
+            if (!activeCreative) return;
+            const body = {
+                hook_text: document.getElementById('edit-hook').value,
+                body_text: document.getElementById('edit-body').value,
+                cta_text: document.getElementById('edit-cta').value,
+                awareness_level: document.getElementById('edit-awareness').value,
+                performance: document.getElementById('edit-performance').value || null,
+                internal_notes: document.getElementById('edit-notes').value
+            };
+            try {
+                await sbPatch('creatives', activeCreative.id, body);
+                Object.assign(activeCreative, body);
+                renderBoard();
+                toast('Saved', 'success');
+            } catch (e) { toast('Save failed', 'error'); }
+        }
+        window.updatePerformance = async function() {
+            if (!activeCreative) return;
+            const perf = document.getElementById('edit-performance').value || null;
+            try {
+                await sbPatch('creatives', activeCreative.id, { performance: perf });
+                activeCreative.performance = perf;
+                renderBoard();
+            } catch (e) {}
+        }
+        window.rerenderCreative = function() {
+            if (!activeCreative) return;
+            toast('Re-render not yet wired up — coming soon');
+        }
+        window.duplicateCreative = async function() {
+            if (!activeCreative) return;
+            const copy = { ...activeCreative };
+            delete copy.id;
+            delete copy.name;
+            delete copy.created_at;
+            delete copy.updated_at;
+            copy.hook_number = (activeCreative.hook_number || 0) + 1;
+            try {
+                await sbPost('creatives', copy);
+                await loadCreatives();
+                toast('Duplicated', 'success');
+            } catch (e) { toast('Duplicate failed', 'error'); }
+        }
+        window.downloadCreative = function() {
+            if (!activeCreative || !activeCreative.image_url) return;
+            const a = document.createElement('a');
+            a.href = activeCreative.image_url;
+            a.download = (activeCreative.name || 'creative') + '.png';
+            a.target = '_blank';
+            a.click();
+        }
+        window.archiveCreative = async function() {
+            if (!activeCreative) return;
+            try {
+                await sbPatch('creatives', activeCreative.id, { archived: true });
+                closePanel();
+                await loadCreatives();
+                toast('Archived', 'success');
+            } catch (e) { toast('Archive failed', 'error'); }
+        }
+
+        // ============================================
+        // BATCH MODAL
+        // ============================================
+        window.openBatchModal = function() {
+            if (!selectedClientId) {
+                toast('Select a client first', 'error');
+                return;
+            }
+            const now = new Date();
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const week = Math.ceil((((now - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
+            document.getElementById('batch-week').value = week;
+            document.getElementById('batch-year').value = now.getFullYear();
+            document.getElementById('batch-modal').classList.add('open');
+        }
+        window.closeBatchModal = function() {
+            document.getElementById('batch-modal').classList.remove('open');
+        }
+        window.createBatch = async function() {
+            const body = {
+                client_id: selectedClientId,
+                week_number: parseInt(document.getElementById('batch-week').value),
+                year: parseInt(document.getElementById('batch-year').value),
+                due_date: document.getElementById('batch-due').value || null,
+                strategy_notes: document.getElementById('batch-notes').value || null,
+                status: 'planning'
+            };
+            try {
+                await sbPost('batches', body);
+                closeBatchModal();
+                await loadBatches();
+                toast('Batch created', 'success');
+            } catch (e) { toast('Create failed', 'error'); }
+        }
+
+        // ============================================
+        // CHANGE HANDLERS
+        // ============================================
+        window.onClientChange = function() {
+            selectedClientId = document.getElementById('client-select').value;
+            localStorage.setItem('selectedClientId', selectedClientId);
+            selectedBatchId = '';
+            localStorage.removeItem('selectedBatchId');
+            clearSelection();
+            updateClientBadge();
+            loadBatches().then(loadCreatives);
+        }
+        window.onBatchChange = function() {
+            selectedBatchId = document.getElementById('batch-select').value;
+            localStorage.setItem('selectedBatchId', selectedBatchId);
+            clearSelection();
+            loadCreatives();
+        }
+        function updateClientBadge() {
+            const c = clients.find(x => x.id === selectedClientId);
+            const badge = document.getElementById('client-badge');
+            if (c) {
+                badge.textContent = `Active: ${c.name} (${c.code})`;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function toast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show ' + (type || '');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        loadAll();
+
+        // Poll every 15s for updates (no realtime for V1)
+        setInterval(loadCreatives, 15000);
+    </script>
+</body>
+</html>
