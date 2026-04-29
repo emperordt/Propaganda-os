@@ -1970,6 +1970,7 @@
         let aiBrandDraft = null;   // { tone, voice_guidelines, avoid_words, niche, mechanism, ... }
         let aiICPDrafts = [];       // [{ name, tier, ...full ICP record }, ...]
         let potentialICPs = [];     // [{ name, tier, note }] — the user's research input list
+        let brandIsAIDraft = false; // toggled true when confirmBrandDraftAndContinue() ran
 
         window.chooseAIQuickFill = function() {
             // Pre-seed the potential ICPs list with one empty row.
@@ -2109,6 +2110,8 @@
             const mech = val('ai-b-mechanism'); if (mech) document.getElementById('unique-mechanism').value = mech;
             // Niche goes onto the offer-research slide
             const niche = val('ai-b-niche'); if (niche) document.getElementById('offer-niche').value = niche;
+            // Mark the brand_profile as AI-drafted so submit flags it for review.
+            brandIsAIDraft = true;
             jumpToSlide('ai-review-icps');
         };
 
@@ -2267,7 +2270,9 @@
                     tone: payload.brand.tone,
                     voice_guidelines: payload.brand.voice_guidelines,
                     avoid_words: payload.brand.avoid_words,
-                    is_default: false
+                    is_default: false,
+                    is_ai_draft: brandIsAIDraft || false,
+                    ai_drafted_at: brandIsAIDraft ? new Date().toISOString() : null
                 });
                 const brandId = brand.id;
                 console.log('✓ brand created:', brandId);

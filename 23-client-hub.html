@@ -300,6 +300,18 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .ai-draft-row {
+            margin-top: 10px;
+            padding: 5px 8px;
+            background: rgba(253, 81, 6, 0.13);
+            border: 1px solid rgba(253, 81, 6, 0.55);
+            border-radius: 4px;
+            color: #fd5106;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
 
         /* Empty state */
         .empty-state {
@@ -645,6 +657,17 @@
                 console.warn('Failed to load clients (table may not exist yet):', e);
                 allClients = [];
             }
+            // Pull AI-draft counts so we can badge clients with pending review
+            try {
+                const draftIcps = await sbGet('icps', 'select=client_id&is_ai_draft=eq.true');
+                const draftBrands = await sbGet('brand_profiles', 'select=client_id&is_ai_draft=eq.true');
+                const counts = {};
+                (draftIcps || []).forEach(r => { counts[r.client_id] = (counts[r.client_id] || 0) + 1; });
+                (draftBrands || []).forEach(r => { counts[r.client_id] = (counts[r.client_id] || 0) + 1; });
+                allClients.forEach(c => { c._aiDraftCount = counts[c.id] || 0; });
+            } catch (e) {
+                console.warn('AI draft count fetch failed:', e);
+            }
             updateStats();
             renderClients();
         }
@@ -688,6 +711,10 @@
             const contact = c.primary_contact_email || '';
             const created = c.created_at ? new Date(c.created_at).toLocaleDateString() : '';
 
+            const draftCount = c._aiDraftCount || 0;
+            const draftBadge = draftCount
+                ? `<div class="ai-draft-row">✨ ${draftCount} AI draft${draftCount === 1 ? '' : 's'} pending review</div>`
+                : '';
             return `
                 <div class="client-card" onclick="selectClient('${escHtml(c.id)}', '${status}')">
                     <div class="client-card-header">
@@ -696,6 +723,7 @@
                     </div>
                     <div class="client-card-name">${escHtml(name)}</div>
                     <div class="client-code">${escHtml(code)}</div>
+                    ${draftBadge}
                     <div class="client-card-stats">
                         <div>
                             <div class="stat-num">${c.batches_count ?? 0}</div>
