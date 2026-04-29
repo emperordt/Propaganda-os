@@ -25,6 +25,10 @@ window.PROPAGANDA = {
         // Propaganda OS
         CLIENT_ONBOARD: 'https://n8n.dtthomas.cloud/webhook/client-onboard',
         BRAND_SCRAPE: 'https://n8n.dtthomas.cloud/webhook/brand-scrape',
+        // Onboarding agent (Opus 4.7 + web_search) — drafts brand_profiles + N icps from URL + context + offer brief + potential ICPs.
+        // Returns: { brand_profile: {...}, icps: [{...}, ...] }
+        // POST shape: { client_id, url, context_dump, offer_brief, potential_icps: [{name, tier, note}, ...] }
+        CLIENT_ONBOARD_AGENT: 'https://n8n.dtthomas.cloud/webhook/client-onboard-agent',
         // Creative brief layer — flows not yet built; pages tolerate empty strings
         BRIEF_GENERATE: '',           // POST {client_id, brand_id, offer_id, icp_id, lead_type, awareness_level, angle, big_idea} → returns brief_json
         CREATIVE_SLACK_NOTIFY: ''     // POST {event:'approved'|'winner', creative_id, client_id, name, image_url}

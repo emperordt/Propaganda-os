@@ -645,6 +645,117 @@
             </section>
 
             <!-- ============================================
+                 SLIDE 4.5: AI QUICK-FILL FORK
+                 ============================================ -->
+            <section class="slide" data-slide="ai-fork">
+                <div class="slide-number">Section 04.5 · AI Quick-Fill</div>
+                <h1 class="slide-title">Want AI to draft the ICPs?</h1>
+                <p class="slide-subtitle">Give us a URL + 30-sec context + a list of target segments. Opus 4.7 will deep-research each one and pre-fill every ICP field. You review + confirm before saving. Takes ~90 seconds.</p>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px">
+                    <button class="btn btn-primary" onclick="chooseAIQuickFill()" style="padding:24px 18px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+                        <div style="font-size:18px;font-weight:700">✨ AI Quick-Fill</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:400">URL + brief → drafts brand voice + every ICP block. Review &amp; ✓ confirm.</div>
+                    </button>
+                    <button class="btn" onclick="chooseManualPath()" style="padding:24px 18px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+                        <div style="font-size:18px;font-weight:700">✍️ Manual</div>
+                        <div style="font-size:12px;color:var(--text-muted);font-weight:400">Fill every field by hand. Slower, but you control every word.</div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 AI INPUT SLIDE A — context dump
+                 ============================================ -->
+            <section class="slide" data-slide="ai-context">
+                <div class="slide-number">AI Quick-Fill · Step 1 of 3</div>
+                <h1 class="slide-title">Tell us about the client.</h1>
+                <p class="slide-subtitle">30-second context dump. What they do, who they serve, the angle, anything we should know.</p>
+
+                <div class="field">
+                    <label class="field-label">Context dump <span class="req">*</span></label>
+                    <textarea class="textarea" id="ai-context-dump" rows="6" placeholder="e.g., Mailmend helps DTC ecom brands $1M-$10M/yr fix their email deliverability. Founder is a former Klaviyo solutions engineer. The angle: 'Your promotions tab is killing your revenue.' They've already got 47 case studies and the offer is $5K/mo retainer. Main competitors are Sendlane, Klaviyo's own tools." data-required></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 AI INPUT SLIDE B — offer brief
+                 ============================================ -->
+            <section class="slide" data-slide="ai-offer-brief">
+                <div class="slide-number">AI Quick-Fill · Step 2 of 3</div>
+                <h1 class="slide-title">Offer brief.</h1>
+                <p class="slide-subtitle">What they sell, who it's for, the pain it solves, the big promise. The agent reads this to write everything ICP-aligned.</p>
+
+                <div class="field">
+                    <label class="field-label">Offer brief <span class="req">*</span></label>
+                    <textarea class="textarea" id="ai-offer-brief" rows="6" placeholder="What: Done-for-you email deliverability + retention system for DTC ecom brands. Who: $1M-$10M/yr brands losing 30%+ email revenue to the promotions tab. Pain: Klaviyo open rates dropping, list fatigue, founder doing all the writing. Big promise: 'Recover 30%+ of your email revenue in 60 days or you don't pay.' Mechanism: Proprietary deliverability audit + done-for-you Klaviyo rebuild + ongoing optimization." data-required></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 AI INPUT SLIDE C — potential ICPs
+                 ============================================ -->
+            <section class="slide" data-slide="ai-potential-icps">
+                <div class="slide-number">AI Quick-Fill · Step 3 of 3</div>
+                <h1 class="slide-title">List the potential ICPs.</h1>
+                <p class="slide-subtitle">Add segments to research. The agent will deep-research each one and produce a complete ICP record. You can add more later as Sub-ICPs from the brief generator.</p>
+
+                <div id="potential-icps-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"></div>
+
+                <button class="btn" onclick="addPotentialICP()" style="margin-top:14px">+ Add ICP</button>
+
+                <div style="margin-top:30px;padding:18px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;text-align:center">
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Click below to start the agent. Takes ~90 seconds.</div>
+                    <button class="btn btn-primary" onclick="runOnboardingAgent()" style="padding:14px 28px">✨ Generate Drafts →</button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 AI LOADING SLIDE
+                 ============================================ -->
+            <section class="slide" data-slide="ai-loading">
+                <div class="slide-number">AI Quick-Fill · Working</div>
+                <h1 class="slide-title">Researching the market…</h1>
+                <p class="slide-subtitle" id="ai-loading-status">🌐 Scraping site…</p>
+
+                <div style="margin-top:30px;padding:24px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px">
+                    <div id="ai-loading-log" style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-muted);line-height:1.8;min-height:140px"></div>
+                </div>
+
+                <div class="hint" style="text-align:center;margin-top:20px">Don't navigate away. Total time ~60-120 seconds.</div>
+            </section>
+
+            <!-- ============================================
+                 AI REVIEW SLIDE — BRAND
+                 ============================================ -->
+            <section class="slide" data-slide="ai-review-brand">
+                <div class="slide-number">AI Review · Brand Profile</div>
+                <h1 class="slide-title">Review the brand draft.</h1>
+                <p class="slide-subtitle">Every field below was drafted by AI. Edit anything that's off, then ✓ Confirm to lock it.</p>
+
+                <div id="ai-review-brand-body" style="display:flex;flex-direction:column;gap:14px;margin-top:18px"></div>
+
+                <div style="margin-top:24px;display:flex;gap:10px">
+                    <button class="btn btn-primary" onclick="confirmBrandDraftAndContinue()" style="flex:1">✓ Looks good — Continue to ICP review</button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 AI REVIEW SLIDE — ICPs
+                 ============================================ -->
+            <section class="slide" data-slide="ai-review-icps">
+                <div class="slide-number">AI Review · ICP Drafts</div>
+                <h1 class="slide-title">Review the ICP drafts.</h1>
+                <p class="slide-subtitle">Each card below is one fully-drafted ICP. Click any card to expand and edit fields. ✓ Confirm All when ready.</p>
+
+                <div id="ai-review-icps-body" style="display:flex;flex-direction:column;gap:14px;margin-top:18px"></div>
+
+                <div style="margin-top:24px;display:flex;gap:10px">
+                    <button class="btn btn-primary" onclick="confirmICPDraftsAndContinue()" style="flex:1">✓ Confirm all ICPs → continue to offer details</button>
+                </div>
+            </section>
+
+            <!-- ============================================
                  SLIDE 5: OFFER — PRODUCT
                  ============================================ -->
             <section class="slide" data-slide="offer-product">
@@ -689,6 +800,47 @@
             </section>
 
             <!-- ============================================
+                 SLIDE 6.5: OFFER RESEARCH (structured arrays for copy gen)
+                 ============================================ -->
+            <section class="slide" data-slide="offer-research">
+                <div class="slide-number">Section 05.5 · Offer Research</div>
+                <h1 class="slide-title">Structured offer fuel.</h1>
+                <p class="slide-subtitle">These feed every brief and every test. One per line — the brief generator pulls from these directly.</p>
+
+                <div class="field">
+                    <label class="field-label">Niche</label>
+                    <input type="text" class="input" id="offer-niche" placeholder="e.g., DTC ecom, health coaching, B2B SaaS, info products">
+                </div>
+                <div class="field">
+                    <label class="field-label">Awareness Level <span style="color:var(--text-muted);font-weight:400">— where most prospects are</span></label>
+                    <select class="input" id="offer-awareness-level">
+                        <option value="">— pick —</option>
+                        <option value="Unaware">Unaware</option>
+                        <option value="Problem Aware">Problem Aware</option>
+                        <option value="Solution Aware">Solution Aware</option>
+                        <option value="Product Aware">Product Aware</option>
+                        <option value="Most Aware">Most Aware</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">Pain Points <span style="color:var(--text-muted);font-weight:400">— one per line</span></label>
+                    <textarea class="textarea" id="offer-pain-points" rows="4" placeholder="Inconsistent lead flow&#10;High CAC eating margin&#10;Email blasts hitting promotions tab&#10;Founder doing all the writing&#10;Agencies that don't deliver"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Desires <span style="color:var(--text-muted);font-weight:400">— what they actually want</span></label>
+                    <textarea class="textarea" id="offer-desires" rows="4" placeholder="Predictable booked calls every week&#10;CAC under $80&#10;Ads that print money on autopilot&#10;Be seen as the smart operator"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Proof Points <span style="color:var(--text-muted);font-weight:400">— wins, stats, testimonials, case studies</span></label>
+                    <textarea class="textarea" id="offer-proof-points" rows="4" placeholder="Case study: $2.1M generated for client X in 90 days&#10;47 testimonials on the sales page&#10;Featured in Forbes / TechCrunch&#10;100% money-back guarantee"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Objections <span style="color:var(--text-muted);font-weight:400">— what stops them from buying</span></label>
+                    <textarea class="textarea" id="offer-objections" rows="4" placeholder="Tried agencies before, got burned&#10;Can't afford to invest right now&#10;Worried it won't work for my niche&#10;Don't have time to implement"></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
                  SLIDE 7: ICP — START
                  ============================================ -->
             <section class="slide" data-slide="icp-intro">
@@ -711,11 +863,19 @@
             <section class="slide icp-slide" data-slide="icp-identity">
                 <div class="slide-number">ICP #<span class="icp-num">1</span> · Identity</div>
                 <h1 class="slide-title">Who is this avatar?</h1>
-                <p class="slide-subtitle">Give them a name and a one-line description.</p>
+                <p class="slide-subtitle">Give them a name, a tier, and a one-line description.</p>
 
                 <div class="field">
                     <label class="field-label">ICP Name <span class="req">*</span></label>
                     <input type="text" class="input" id="icp-name" placeholder="e.g., DTC founders doing $100K/mo with broken email" data-icp-required>
+                </div>
+                <div class="field">
+                    <label class="field-label">Tier</label>
+                    <select class="input" id="icp-tier">
+                        <option value="Primary">🎯 Primary — main target, drives most spend</option>
+                        <option value="Secondary">🔁 Secondary — meaningful share, sub-segment</option>
+                        <option value="Test">🧪 Test — exploring fit, low budget</option>
+                    </select>
                 </div>
                 <div class="field">
                     <label class="field-label">ICP Description</label>
@@ -1113,6 +1273,31 @@
                     <label class="field-label">UNAWARE — they don't even know they have the problem. What story or stat wakes them up?</label>
                     <textarea class="textarea" id="icp-unaware" rows="3" placeholder="e.g., 'Most DTC brands lose 30% of email revenue without realizing it.' 'I thought I was profitable until I ran the numbers.' Tell a story that makes them say 'wait, that's me.'"></textarea>
                 </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE: ICP — MARKET SOPHISTICATION (Schwartz 1-5)
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-sophistication">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Market Sophistication</div>
+                <h1 class="slide-title">Where is the market?</h1>
+                <p class="slide-subtitle">Eugene Schwartz's 5 stages — drives whether you lead with claim, mechanism, or experience.</p>
+
+                <div class="field">
+                    <label class="field-label">Sophistication Stage</label>
+                    <select class="input" id="icp-sophistication-stage">
+                        <option value="">— pick a stage —</option>
+                        <option value="1">1 · First to market — direct claim works ("Lose 10 lbs in 30 days")</option>
+                        <option value="2">2 · Bigger claim — out-promise the competition ("Lose 20 lbs in 30 days")</option>
+                        <option value="3">3 · Mechanism era — claims fatigue, market wants HOW ("Burns fat using brown adipose tissue")</option>
+                        <option value="4">4 · Better mechanism — your unique angle on the mechanism ("Triggers BAT 3x faster than ice baths")</option>
+                        <option value="5">5 · Experience / identity — they've heard everything; sell the experience or who they become</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">Sophistication Notes <span style="color:var(--text-muted);font-weight:400">— what's the market tired of, what still works</span></label>
+                    <textarea class="textarea" id="icp-sophistication-notes" rows="3" placeholder="e.g., Market is at stage 4 — sick of generic 'fix your email' claims, wants specific mechanism. Stage 3 still works for early-stage founders but burns out in 2 weeks."></textarea>
+                </div>
 
                 <div style="margin-top:30px;padding:18px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;text-align:center">
                     <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">This is the last slide for this ICP.</div>
@@ -1216,7 +1401,7 @@
         let currentICPDraft = {}; // draft of the ICP being filled
         let icpInProgress = false; // are we inside the ICP slides flow?
         const ICP_FIRST_INDEX = slides.findIndex(s => s.dataset.slide === 'icp-identity');
-        const ICP_LAST_INDEX = slides.findIndex(s => s.dataset.slide === 'icp-awareness');
+        const ICP_LAST_INDEX = slides.findIndex(s => s.dataset.slide === 'icp-sophistication');
 
         // ============================================
         // NAVIGATION
@@ -1268,8 +1453,19 @@
                 return;
             }
 
+            // ai-fork: if user clicks Next without picking a button, default to manual.
+            if (slideKey === 'ai-fork') { jumpToSlide('offer-product'); return; }
+
+            // AI input slides: Next advances normally (validation handles required).
+            // ai-loading: no Next button (it's auto-advanced by runOnboardingAgent).
+            // ai-review-* slides: advance only via their explicit Confirm buttons.
+            if (slideKey === 'ai-loading' || slideKey === 'ai-review-brand' || slideKey === 'ai-review-icps') {
+                showToast('Use the Confirm button on this slide', 'error');
+                return;
+            }
+
             // If we're at the last ICP slide, save the ICP and ask if they want another
-            if (slideKey === 'icp-awareness') {
+            if (slideKey === 'icp-sophistication') {
                 showToast('Use the "Save This ICP" button to finalize this avatar');
                 return;
             }
@@ -1343,6 +1539,7 @@
 
             const icp = {
                 name: nameEl.value,
+                tier: val('icp-tier') || 'Primary',
                 description: val('icp-description'),
                 goals_dreams: {
                     public_goals: val('icp-public-goals'),
@@ -1427,6 +1624,10 @@
                     problem_aware: val('icp-problem-aware'),
                     unaware: val('icp-unaware')
                 },
+                current_sophistication_stage: val('icp-sophistication-stage')
+                    ? parseInt(val('icp-sophistication-stage'), 10)
+                    : null,
+                current_sophistication_notes: val('icp-sophistication-notes'),
             };
 
             icps.push(icp);
@@ -1643,6 +1844,10 @@
             const el = document.getElementById(id);
             return el ? el.value.trim() : '';
         }
+        // Newline-separated textarea → array of trimmed non-empty strings.
+        function splitLines(s) {
+            return (s || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+        }
 
         function collectAllFields() {
             const ids = [
@@ -1651,6 +1856,7 @@
                 'color-primary','color-secondary','color-accent',
                 'product-name','price-point','product-description',
                 'offer-details','guarantee','unique-mechanism',
+                'offer-niche','offer-awareness-level','offer-pain-points','offer-desires','offer-proof-points','offer-objections',
                 'meta-pixel-id','meta-ad-account','capi-token',
                 'drive-folder',
                 // ICP fields (only persisted in draft, not submitted directly)
@@ -1669,6 +1875,7 @@
                 'icp-decision','icp-core-id','icp-emo-lever','icp-jtbd',
                 'icp-phrases','icp-power-words','icp-pushy-words','icp-emo-lang',
                 'icp-most-aware','icp-product-aware','icp-solution-aware','icp-problem-aware','icp-unaware',
+                'icp-tier','icp-sophistication-stage','icp-sophistication-notes',
             ];
             const out = {};
             ids.forEach(id => out[id] = val(id));
@@ -1707,7 +1914,13 @@
                     product_description: val('product-description'),
                     offer_details: val('offer-details'),
                     guarantee: val('guarantee'),
-                    unique_mechanism: val('unique-mechanism')
+                    unique_mechanism: val('unique-mechanism'),
+                    niche:           val('offer-niche'),
+                    awareness_level: val('offer-awareness-level'),
+                    pain_points:     splitLines(val('offer-pain-points')),
+                    desires:         splitLines(val('offer-desires')),
+                    proof_points:    splitLines(val('offer-proof-points')),
+                    objections:      splitLines(val('offer-objections'))
                 },
                 tracking: {
                     meta_pixel_id: val('meta-pixel-id'),
@@ -1749,6 +1962,227 @@
                 </div>
             `;
         }
+
+        // ============================================
+        // AI QUICK-FILL FLOW
+        // ============================================
+        // State: holds the agent's draft until the user confirms each section.
+        let aiBrandDraft = null;   // { tone, voice_guidelines, avoid_words, niche, mechanism, ... }
+        let aiICPDrafts = [];       // [{ name, tier, ...full ICP record }, ...]
+        let potentialICPs = [];     // [{ name, tier, note }] — the user's research input list
+
+        window.chooseAIQuickFill = function() {
+            // Pre-seed the potential ICPs list with one empty row.
+            if (potentialICPs.length === 0) potentialICPs.push({ name: '', tier: 'Primary', note: '' });
+            renderPotentialICPs();
+            jumpToSlide('ai-context');
+        };
+        window.chooseManualPath = function() {
+            jumpToSlide('offer-product');
+        };
+
+        window.addPotentialICP = function() {
+            potentialICPs.push({ name: '', tier: 'Primary', note: '' });
+            renderPotentialICPs();
+        };
+        window.removePotentialICP = function(i) {
+            potentialICPs.splice(i, 1);
+            renderPotentialICPs();
+        };
+        function renderPotentialICPs() {
+            const wrap = document.getElementById('potential-icps-list');
+            if (!wrap) return;
+            wrap.innerHTML = potentialICPs.map((icp, i) => `
+                <div style="display:grid;grid-template-columns:2fr 1fr 3fr auto;gap:8px;align-items:center">
+                    <input type="text" class="input" placeholder="ICP name (e.g. DTC ecom $1M-$10M/mo)"
+                        value="${escapeHtml(icp.name)}" oninput="potentialICPs[${i}].name=this.value">
+                    <select class="input" onchange="potentialICPs[${i}].tier=this.value">
+                        <option value="Primary"   ${icp.tier==='Primary'?'selected':''}>🎯 Primary</option>
+                        <option value="Secondary" ${icp.tier==='Secondary'?'selected':''}>🔁 Secondary</option>
+                        <option value="Test"      ${icp.tier==='Test'?'selected':''}>🧪 Test</option>
+                    </select>
+                    <input type="text" class="input" placeholder="One-line note (optional) — what makes them this segment"
+                        value="${escapeHtml(icp.note)}" oninput="potentialICPs[${i}].note=this.value">
+                    <button class="btn" onclick="removePotentialICP(${i})" style="padding:8px 12px;color:var(--red);border-color:var(--red)">×</button>
+                </div>
+            `).join('');
+        }
+
+        function appendAILog(msg) {
+            const log = document.getElementById('ai-loading-log');
+            if (!log) return;
+            const ts = new Date().toLocaleTimeString();
+            log.innerHTML += `<div>[${ts}] ${escapeHtml(msg)}</div>`;
+        }
+        function setAIStatus(msg) {
+            const s = document.getElementById('ai-loading-status');
+            if (s) s.textContent = msg;
+            appendAILog(msg);
+        }
+
+        window.runOnboardingAgent = async function() {
+            // Validate inputs
+            const url = val('client-website');
+            const ctx = val('ai-context-dump');
+            const brief = val('ai-offer-brief');
+            const validIcps = potentialICPs.filter(i => (i.name || '').trim());
+            if (!url)   { showToast('Add a website URL on slide 1 first', 'error'); jumpToSlide('basics'); return; }
+            if (!ctx)   { showToast('Context dump is required', 'error'); jumpToSlide('ai-context'); return; }
+            if (!brief) { showToast('Offer brief is required', 'error'); jumpToSlide('ai-offer-brief'); return; }
+            if (validIcps.length === 0) { showToast('Add at least one potential ICP', 'error'); return; }
+
+            jumpToSlide('ai-loading');
+            document.getElementById('ai-loading-log').innerHTML = '';
+            setAIStatus('🌐 Sending payload to onboarding agent…');
+
+            const endpoint = window.PROPAGANDA?.N8N?.CLIENT_ONBOARD_AGENT;
+            if (!endpoint) {
+                appendAILog('⚠️ CLIENT_ONBOARD_AGENT webhook not configured in config.js');
+                appendAILog('Falling back to manual path — fill the ICP slides yourself.');
+                setTimeout(() => { showToast('Agent not configured yet — going manual', 'error'); jumpToSlide('offer-product'); }, 2500);
+                return;
+            }
+
+            try {
+                appendAILog(`Calling ${endpoint}`);
+                appendAILog(`Researching ${validIcps.length} ICP${validIcps.length===1?'':'s'}: ${validIcps.map(i => i.name).join(', ')}`);
+                setAIStatus('🔍 Opus 4.7 + web_search running…');
+
+                const r = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url,
+                        context_dump: ctx,
+                        offer_brief: brief,
+                        potential_icps: validIcps,
+                        client_name: val('client-name'),
+                        client_code: val('client-code')
+                    })
+                });
+                if (!r.ok) throw new Error(`Agent returned ${r.status}: ${(await r.text()).slice(0,200)}`);
+                const data = await r.json();
+
+                aiBrandDraft = data.brand_profile || data.brand || null;
+                aiICPDrafts  = data.icps || [];
+
+                appendAILog(`✓ Got brand draft + ${aiICPDrafts.length} ICP draft${aiICPDrafts.length===1?'':'s'}`);
+                setAIStatus('✓ Drafts ready — review them next.');
+
+                // Render the review screens, then jump to brand review
+                renderAIBrandReview();
+                renderAIICPsReview();
+                setTimeout(() => jumpToSlide('ai-review-brand'), 600);
+            } catch (e) {
+                appendAILog(`✗ ${e.message}`);
+                appendAILog('Falling back to manual path — fill the ICP slides yourself.');
+                setTimeout(() => { showToast('Agent failed — going manual', 'error'); jumpToSlide('offer-product'); }, 3000);
+            }
+        };
+
+        function renderAIBrandReview() {
+            const wrap = document.getElementById('ai-review-brand-body');
+            if (!wrap) return;
+            const b = aiBrandDraft || {};
+            const fields = [
+                { id: 'ai-b-niche',    label: 'Niche',             val: b.niche, type: 'input' },
+                { id: 'ai-b-tone',     label: 'Tone',              val: b.tone, type: 'textarea' },
+                { id: 'ai-b-voice',    label: 'Voice Guidelines',  val: b.voice_guidelines, type: 'textarea' },
+                { id: 'ai-b-avoid',    label: 'Avoid Words (comma-separated)', val: Array.isArray(b.avoid_words) ? b.avoid_words.join(', ') : (b.avoid_words || ''), type: 'input' },
+                { id: 'ai-b-mechanism', label: 'Unique Mechanism', val: b.mechanism || b.unique_mechanism, type: 'textarea' },
+            ];
+            wrap.innerHTML = fields.map(f => `
+                <div class="field" style="position:relative">
+                    <label class="field-label">${f.label} <span style="background:var(--orange-dim);color:var(--orange);padding:2px 6px;border-radius:3px;font-size:10px;font-weight:700;margin-left:4px">✨ AI DRAFT</span></label>
+                    ${f.type === 'textarea'
+                        ? `<textarea class="textarea" id="${f.id}" rows="3">${escapeHtml(f.val || '')}</textarea>`
+                        : `<input type="text" class="input" id="${f.id}" value="${escapeHtml(f.val || '')}">`}
+                </div>
+            `).join('');
+        }
+
+        window.confirmBrandDraftAndContinue = function() {
+            // Push edited values back into the manual brand fields so submitOnboarding picks them up.
+            const tone = val('ai-b-tone'); if (tone) document.getElementById('brand-tone').value = tone;
+            const voice = val('ai-b-voice'); if (voice) document.getElementById('brand-voice').value = voice;
+            const avoid = val('ai-b-avoid'); if (avoid) document.getElementById('brand-avoid').value = avoid;
+            const mech = val('ai-b-mechanism'); if (mech) document.getElementById('unique-mechanism').value = mech;
+            // Niche goes onto the offer-research slide
+            const niche = val('ai-b-niche'); if (niche) document.getElementById('offer-niche').value = niche;
+            jumpToSlide('ai-review-icps');
+        };
+
+        function renderAIICPsReview() {
+            const wrap = document.getElementById('ai-review-icps-body');
+            if (!wrap) return;
+            if (!aiICPDrafts.length) {
+                wrap.innerHTML = '<div style="color:var(--text-muted);font-size:13px">No ICPs returned by the agent.</div>';
+                return;
+            }
+            wrap.innerHTML = aiICPDrafts.map((icp, i) => `
+                <details style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:14px">
+                    <summary style="cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600">
+                        <span style="background:var(--orange-dim);color:var(--orange);padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700">✨ AI DRAFT</span>
+                        <span>${escapeHtml(icp.name || 'Untitled ICP')}</span>
+                        <span style="background:var(--bg-tertiary);color:var(--text-secondary);padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600">${escapeHtml(icp.tier || 'Primary')}</span>
+                        <span style="margin-left:auto;color:var(--text-muted);font-size:11px;font-weight:400">click to expand &amp; edit</span>
+                    </summary>
+                    <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                        <div class="field">
+                            <label class="field-label">Name</label>
+                            <input type="text" class="input" value="${escapeHtml(icp.name || '')}" oninput="aiICPDrafts[${i}].name=this.value">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Tier</label>
+                            <select class="input" onchange="aiICPDrafts[${i}].tier=this.value">
+                                <option value="Primary"   ${icp.tier==='Primary'?'selected':''}>🎯 Primary</option>
+                                <option value="Secondary" ${icp.tier==='Secondary'?'selected':''}>🔁 Secondary</option>
+                                <option value="Test"      ${icp.tier==='Test'?'selected':''}>🧪 Test</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Description</label>
+                            <textarea class="textarea" rows="2" oninput="aiICPDrafts[${i}].description=this.value">${escapeHtml(icp.description || '')}</textarea>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Pain points (market_pain_data)</label>
+                            <textarea class="textarea" rows="3" oninput="aiICPDrafts[${i}].market_pain_data=this.value">${escapeHtml(icp.market_pain_data || '')}</textarea>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Their phrases (verbatim language)</label>
+                            <textarea class="textarea" rows="3" oninput="aiICPDrafts[${i}].their_phrases=this.value">${escapeHtml(icp.their_phrases || '')}</textarea>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Sophistication stage</label>
+                            <select class="input" onchange="aiICPDrafts[${i}].current_sophistication_stage=parseInt(this.value)||null">
+                                <option value="">— pick —</option>
+                                <option value="1" ${icp.current_sophistication_stage==1?'selected':''}>1 · First to market</option>
+                                <option value="2" ${icp.current_sophistication_stage==2?'selected':''}>2 · Bigger claim</option>
+                                <option value="3" ${icp.current_sophistication_stage==3?'selected':''}>3 · Mechanism era</option>
+                                <option value="4" ${icp.current_sophistication_stage==4?'selected':''}>4 · Better mechanism</option>
+                                <option value="5" ${icp.current_sophistication_stage==5?'selected':''}>5 · Experience / identity</option>
+                            </select>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-muted);font-style:italic">
+                            All other fields (goals_dreams, fears, awareness_analysis, etc.) are filled and will save on submit. Open the client in the brief generator after onboarding to review them.
+                        </div>
+                    </div>
+                </details>
+            `).join('');
+        }
+
+        window.confirmICPDraftsAndContinue = function() {
+            // Mark each draft as AI-generated and copy them into the global icps array so submitOnboarding picks them up.
+            aiICPDrafts.forEach(icp => {
+                icp.is_ai_draft = true;
+                icp.tier = icp.tier || 'Primary';
+            });
+            // Append to icps (don't replace — user may have manual ones too).
+            icps.push(...aiICPDrafts);
+            renderICPPills();
+            saveDraft();
+            jumpToSlide('offer-product');
+        };
 
         // ============================================
         // SUBMIT — direct Supabase REST inserts (no n8n)
@@ -1848,6 +2282,12 @@
                     offer_details: payload.offer.offer_details,
                     price_point: payload.offer.price_point,
                     unique_mechanism: payload.offer.unique_mechanism,
+                    niche:           payload.offer.niche || null,
+                    awareness_level: payload.offer.awareness_level || null,
+                    pain_points:     payload.offer.pain_points  || [],
+                    desires:         payload.offer.desires      || [],
+                    proof_points:    payload.offer.proof_points || [],
+                    objections:      payload.offer.objections   || [],
                     status: 'active'
                 });
                 const offerId = offer.id;
@@ -1860,6 +2300,7 @@
                         await sbInsert('icps', {
                             client_id: clientId,
                             name: icp.name,
+                            tier: icp.tier || 'Primary',
                             description: icp.description,
                             goals_dreams: icp.goals_dreams,
                             fears_insecurities: icp.fears_insecurities,
@@ -1885,6 +2326,10 @@
                             pushy_words_avoid: icp.pushy_words_avoid,
                             emotional_language: icp.emotional_language,
                             awareness_analysis: icp.awareness_analysis,
+                            current_sophistication_stage: icp.current_sophistication_stage || null,
+                            current_sophistication_notes: icp.current_sophistication_notes || null,
+                            is_ai_draft: icp.is_ai_draft || false,
+                            ai_drafted_at: icp.is_ai_draft ? new Date().toISOString() : null,
                             status: 'active'
                         });
                     }

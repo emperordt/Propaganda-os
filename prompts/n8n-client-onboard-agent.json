@@ -1,0 +1,102 @@
+{
+  "name": "client-onboard-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "client-onboard-agent",
+        "responseMode": "lastNode"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [200, 300],
+      "typeVersion": 1,
+      "notes": "POST /webhook/client-onboard-agent\n\nExpected body:\n{\n  url, context_dump, offer_brief,\n  potential_icps: [{name, tier, note}, ...],\n  client_name, client_code\n}"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.body.url}}",
+        "responseFormat": "string",
+        "options": {
+          "timeout": 15000,
+          "redirect": { "redirect": { "followRedirects": true } }
+        }
+      },
+      "name": "Fetch URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [400, 300],
+      "typeVersion": 4,
+      "continueOnFail": true,
+      "notes": "Pre-scrape the client URL. Pass output to the agent as primary context.\nIf this fails, the agent still runs from web_search alone."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Strip HTML to plain text and truncate to 30K chars.\nconst html = $input.item.json.data || $input.item.json.body || '';\nconst plain = String(html)\n  .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n  .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim()\n  .slice(0, 30000);\nreturn { json: { scraped: plain } };"
+      },
+      "name": "Strip HTML",
+      "type": "n8n-nodes-base.function",
+      "position": [600, 300],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "message",
+        "model": "claude-opus-4-7",
+        "options": {
+          "maxTokensToSample": 60000,
+          "temperature": 0.6,
+          "tools": [
+            { "type": "web_search_20250305", "name": "web_search" }
+          ]
+        },
+        "systemMessage": "PASTE THE CONTENTS OF prompts/onboarding-agent-system.md HERE (or load via $vars / external file)",
+        "userMessage": "=CLIENT URL:\n{{ $('Webhook').item.json.body.url }}\n\nSCRAPED CONTENT (first 30K chars):\n{{ $('Strip HTML').item.json.scraped }}\n\nCONTEXT DUMP:\n{{ $('Webhook').item.json.body.context_dump }}\n\nOFFER BRIEF:\n{{ $('Webhook').item.json.body.offer_brief }}\n\nPOTENTIAL ICPs:\n{{ $('Webhook').item.json.body.potential_icps.map(i => `- ${i.name} (${i.tier}): ${i.note || ''}`).join('\\n') }}\n\nCLIENT NAME: {{ $('Webhook').item.json.body.client_name }}\nCLIENT CODE: {{ $('Webhook').item.json.body.client_code }}\n\nResearch each ICP via web_search. Output ONE valid JSON object matching the schema. No prose."
+      },
+      "name": "Anthropic — Opus 4.7",
+      "type": "n8n-nodes-base.anthropic",
+      "position": [800, 300],
+      "typeVersion": 1,
+      "notes": "Replace {systemMessage} with the actual contents of prompts/onboarding-agent-system.md.\n\nEnable web_search tool — see https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool\n\nMax tokens 60K (output is verbose JSON for N ICPs).\nTemperature 0.6 — slight diversity but not chaotic."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse the model's text output as JSON. Strip any code fencing if present.\nlet txt = $input.item.json.completion || $input.item.json.content?.[0]?.text || '';\ntxt = txt.trim();\nif (txt.startsWith('```')) {\n  txt = txt.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\n}\ntry {\n  const parsed = JSON.parse(txt);\n  return { json: parsed };\n} catch (e) {\n  // Best-effort: try to find a JSON object in the text\n  const m = txt.match(/\\{[\\s\\S]*\\}/);\n  if (m) {\n    try { return { json: JSON.parse(m[0]) }; } catch (e2) {}\n  }\n  throw new Error('Agent returned invalid JSON: ' + txt.slice(0, 500));\n}"
+      },
+      "name": "Parse Agent Response",
+      "type": "n8n-nodes-base.function",
+      "position": [1000, 300],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1200, 300],
+      "typeVersion": 1,
+      "notes": "Returns { brand_profile: {...}, icps: [...] } to the onboarding page."
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Fetch URL", "type": "main", "index": 0 }]] },
+    "Fetch URL": { "main": [[{ "node": "Strip HTML", "type": "main", "index": 0 }]] },
+    "Strip HTML": { "main": [[{ "node": "Anthropic — Opus 4.7", "type": "main", "index": 0 }]] },
+    "Anthropic — Opus 4.7": { "main": [[{ "node": "Parse Agent Response", "type": "main", "index": 0 }]] },
+    "Parse Agent Response": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "tags": [],
+  "_README": [
+    "Import this JSON in n8n via the import workflow menu.",
+    "Then:",
+    "1. Replace the systemMessage in the 'Anthropic — Opus 4.7' node with the contents of prompts/onboarding-agent-system.md",
+    "2. Add your Anthropic API credential to that node",
+    "3. Activate the workflow",
+    "4. Verify the public webhook URL matches CLIENT_ONBOARD_AGENT in config.js (https://n8n.dtthomas.cloud/webhook/client-onboard-agent)",
+    "",
+    "Stress test before shipping by sending a curl POST with sample payload."
+  ]
+}
