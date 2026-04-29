@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Onboarding</title>
+    <title>Client Onboarding — Propaganda OS</title>
     <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,29 +13,19 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg-primary: #0f0f0f;
+            --bg-primary: #0a0a0a;
             --bg-secondary: #141414;
             --bg-tertiary: #1e1e1e;
-            --border: #3a3835;
-            --border-hover: #444240;
+            --bg-card: #161616;
+            --border: #2a2a2a;
+            --border-hover: #444;
             --text-primary: #f5f5f5;
             --text-secondary: #c4c0b8;
             --text-muted: #8a8680;
-            --accent: #f5f5f5;
-            --accent-dim: #f5f5f515;
-            --accent-hover: #ffffff;
-            --danger: #ff4444;
-            --danger-dim: #ff444420;
-            --warning: #f8d47a;
-            --warning-dim: #f8d47a20;
-            --purple: #a78bfa;
-            --purple-dim: #a78bfa20;
-            --blue: #60a5fa;
-            --blue-dim: #60a5fa20;
-            --green: #22c55e;
-            --green-dim: #22c55e20;
             --orange: #fd5106;
-            --orange-dim: #fd510620;
+            --orange-dim: rgba(253,81,6,0.12);
+            --green: #4ade80;
+            --red: #ff4444;
         }
 
         body {
@@ -44,1092 +34,1960 @@
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        .sidebar {
+        /* ============================================
+           NO SIDEBAR — fullscreen Typeform layout
+           ============================================ */
+
+        .onboarding-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top bar with logo + progress */
+        .top-bar {
             position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            width: 220px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            padding: 20px 0;
-            overflow-y: auto;
-            z-index: 100;
-            transition: transform 0.2s ease;
+            right: 0;
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 32px;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .sidebar-brand {
+        .brand {
             font-family: 'Geist Mono', monospace;
             font-weight: 700;
             font-size: 13px;
-            color: var(--accent);
-            padding: 0 20px 20px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 12px;
+            color: var(--text-primary);
         }
-
-        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
-
-        .sidebar-section-label {
+        .brand a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-right: 16px;
+            font-size: 12px;
+        }
+        .brand a:hover { color: var(--orange); }
+        .step-counter {
             font-family: 'Geist Mono', monospace;
-            font-size: 10px;
-            font-weight: 600;
+            font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            padding: 8px 8px 4px;
         }
+        .step-counter strong { color: var(--orange); }
 
-        .sidebar-link {
-            display: block;
-            font-family: 'Geist', Arial, sans-serif;
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-
-        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
-        .sidebar-link.active { color: #fd5106; background: #fd510615; }
-
-        .sidebar-toggle {
-            display: none;
+        /* Progress bar */
+        .progress-bar {
             position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 101;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px;
-            cursor: pointer;
-            color: var(--text-secondary);
+            top: 53px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--bg-tertiary);
+            z-index: 49;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--orange);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .sidebar-toggle:hover { border-color: #fd5106; color: var(--accent); }
-
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.5); }
-            .sidebar-toggle { display: block; }
+        /* Slide container */
+        .slide-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 24px 140px;
+            min-height: 100vh;
         }
 
-        .container {
-            padding: 48px 48px 140px;
-            max-width: 960px;
-            margin: 0 auto;
-            margin-left: 220px;
+        .slide {
+            width: 100%;
+            max-width: 720px;
+            display: none;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slide.active { display: block; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .page-header { text-align: center; margin-bottom: 40px; }
-        .page-title { font-size: 32px; font-weight: 600; }
-        .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
-
-        .client-chip {
-            display: inline-flex;
+        .slide-number {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 14px;
-            font-family: 'Geist Mono', monospace;
-            font-size: 11px;
-            padding: 6px 12px;
-            background: var(--orange-dim);
-            color: #fd5106;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-        .client-chip .dot {
-            width: 6px; height: 6px; border-radius: 50%; background: #fd5106;
+        .slide-number::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--orange);
         }
 
-        /* Section cards */
-        .form-section {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 24px;
+        .slide-title {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        .slide-subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            max-width: 580px;
         }
 
-        .section-number {
+        /* Form fields */
+        .field { margin-bottom: 22px; }
+        .field-label {
+            display: block;
             font-family: 'Geist Mono', monospace;
             font-size: 11px;
             font-weight: 600;
-            color: #fd5106;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
             margin-bottom: 8px;
         }
-
-        .section-heading {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .section-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 28px;
-        }
-
-        .form-group { margin-bottom: 20px; }
-
-        .form-label {
-            font-family: 'Geist Mono', monospace;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .required-asterisk {
-            color: var(--danger);
-            margin-left: 4px;
-        }
-
-        .form-input {
-            width: 100%;
-            font-family: 'Geist', Arial, sans-serif;
-            font-size: 15px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 16px;
-            color: var(--text-primary);
-            transition: border-color 0.15s ease;
-        }
-        .form-input:focus { outline: none; border-color: #fd5106; }
-        .form-input::placeholder { color: var(--text-muted); }
-        .form-input.mono { font-family: 'Geist Mono', monospace; letter-spacing: 0.5px; }
-        .form-input.invalid { border-color: var(--danger); }
-
-        .form-textarea {
-            width: 100%;
-            font-family: 'Geist', Arial, sans-serif;
-            font-size: 15px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 16px;
-            color: var(--text-primary);
-            resize: vertical;
-            transition: border-color 0.15s ease;
-            line-height: 1.6;
-        }
-        .form-textarea:focus { outline: none; border-color: #fd5106; }
-        .form-textarea::placeholder { color: var(--text-muted); }
-        .form-textarea.invalid { border-color: var(--danger); }
-
-        .form-select {
-            width: 100%;
-            font-family: 'Geist', Arial, sans-serif;
-            font-size: 15px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 16px;
-            color: var(--text-primary);
-            cursor: pointer;
-        }
-        .form-select:focus { outline: none; border-color: #fd5106; }
-
-        .form-help {
+        .field-label .req { color: var(--orange); margin-left: 4px; }
+        .field-help {
             font-size: 12px;
             color: var(--text-muted);
             margin-top: 6px;
+            font-style: italic;
         }
 
-        .field-row {
+        .input, .textarea, .select {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 15px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            transition: all 0.15s ease;
+        }
+        .textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+        .input:focus, .textarea:focus, .select:focus {
+            outline: none;
+            border-color: var(--orange);
+            background: var(--bg-tertiary);
+        }
+        .input::placeholder, .textarea::placeholder { color: var(--text-muted); opacity: 0.6; }
+        .input.error, .textarea.error { border-color: var(--red); }
+
+        .field-row-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 14px;
         }
-        .field-row-3col {
+        .field-row-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
+            gap: 14px;
+        }
+        .field-row-5 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
         }
 
-        @media (max-width: 800px) {
-            .field-row,
-            .field-row-3col { grid-template-columns: 1fr; }
-        }
-
-        /* Color inputs */
-        .color-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .color-input-group > label {
-            font-family: 'Geist Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .color-input-wrapper {
+        /* Color picker */
+        .color-pick {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 12px;
+            border-radius: 10px;
+            padding: 10px 14px;
         }
-        .color-input-wrapper input[type="color"] {
+        .color-swatch {
             width: 32px;
             height: 32px;
-            border: none;
             border-radius: 6px;
-            cursor: pointer;
-            background: transparent;
-            padding: 0;
-        }
-        .color-input-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        .color-input-wrapper input[type="color"]::-webkit-color-swatch {
-            border: 2px solid var(--border);
-            border-radius: 6px;
-        }
-        .color-hex {
-            font-family: 'Geist Mono', monospace;
-            font-size: 12px;
-            color: var(--text-primary);
-            background: transparent;
-            border: none;
-            outline: none;
-            width: 80px;
-            padding: 4px 0;
-        }
-
-        /* Password toggle */
-        .password-wrapper {
-            position: relative;
-        }
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-family: 'Geist Mono', monospace;
-            font-size: 10px;
-            cursor: pointer;
-            padding: 4px 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .password-toggle:hover { color: #fd5106; }
-
-        /* Logo row */
-        .logo-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .logo-row .form-input { flex: 1; }
-        .upload-btn {
-            font-family: 'Geist Mono', monospace;
-            font-size: 11px;
-            background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 18px;
-            color: var(--text-muted);
-            cursor: not-allowed;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
+            cursor: pointer;
+            flex-shrink: 0;
         }
-
-        /* Submit bar - sticky */
-        .submit-bar {
-            position: fixed;
-            bottom: 0;
-            left: 220px;
-            right: 0;
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 16px 48px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            z-index: 90;
-            backdrop-filter: blur(8px);
-        }
-
-        @media (max-width: 768px) {
-            .submit-bar { left: 0; padding: 16px; }
-            .container { padding: 80px 16px 140px; margin-left: 0; }
-        }
-
-        .back-link {
-            font-family: 'Geist Mono', monospace;
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-        .back-link:hover { color: #fd5106; background: var(--bg-tertiary); }
-
-        .btn-submit {
+        .color-pick input[type="text"] {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
             font-family: 'Geist Mono', monospace;
             font-size: 13px;
-            font-weight: 600;
-            background: #fd5106;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 14px 28px;
+            flex: 1;
+            outline: none;
+        }
+        .color-pick input[type="color"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Logo dropzone */
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 36px 24px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.15s ease;
+            background: var(--bg-secondary);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .dropzone:hover, .dropzone.dragging {
+            border-color: var(--orange);
+            background: var(--orange-dim);
+        }
+        .dropzone-icon {
+            font-size: 32px;
+            color: var(--text-muted);
+        }
+        .dropzone-text { font-size: 14px; color: var(--text-secondary); }
+        .dropzone-sub {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .dropzone input[type="file"] { display: none; }
+        .logo-preview { display: none; flex-direction: column; align-items: center; gap: 10px; }
+        .logo-preview.visible { display: flex; }
+        .logo-preview img {
+            max-width: 140px;
+            max-height: 140px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            padding: 8px;
+            object-fit: contain;
+        }
+        .logo-preview .name {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .logo-actions {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+        }
+        .logo-actions a {
+            color: var(--text-muted);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .logo-actions a:hover { color: var(--orange); }
+        .upload-status {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            margin-top: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .btn-submit:hover { background: #ff6a24; transform: translateY(-1px); }
-        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .upload-status.uploading { color: var(--text-muted); }
+        .upload-status.success { color: var(--green); }
+        .upload-status.error { color: var(--red); }
 
-        /* Draft indicator */
-        .draft-indicator {
-            position: fixed;
-            bottom: 90px;
-            right: 24px;
-            font-family: 'Geist Mono', monospace;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 8px 14px;
+        /* Brand scrape result preview */
+        .scrape-result {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text-muted);
-            opacity: 0;
-            transition: opacity 0.25s ease;
-            z-index: 80;
-            pointer-events: none;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
         }
-        .draft-indicator.visible { opacity: 1; }
-        .draft-indicator .dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--green);
-            border-radius: 50%;
-            margin-right: 6px;
-            vertical-align: middle;
+        .scrape-result.success { border-color: var(--green); }
+        .scrape-result-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .scrape-color-strip {
+            display: flex;
+            gap: 6px;
+        }
+        .scrape-color-strip > div {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* Bottom nav bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+        }
+        .nav-info {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 11px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn:hover:not(:disabled) {
+            border-color: var(--border-hover);
+            background: var(--bg-secondary);
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0a0a0a;
+            font-weight: 700;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #ff6620;
+            border-color: #ff6620;
+            box-shadow: 0 4px 20px rgba(253,81,6,0.3);
+        }
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Hint text */
+        .hint {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        kbd {
+            font-family: 'Geist Mono', monospace;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* ICPs review pills */
+        .icp-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0 30px;
+        }
+        .icp-pill {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icp-pill .num {
+            font-family: 'Geist Mono', monospace;
+            color: var(--orange);
+            font-size: 11px;
+        }
+        .icp-pill .remove {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .icp-pill .remove:hover { color: var(--red); }
+
+        .icp-section-header {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
         }
 
         /* Toast */
-        .toast-container {
-            position: fixed;
-            bottom: 100px;
-            right: 24px;
-            z-index: 500;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
         .toast {
-            font-family: 'Geist Mono', monospace;
-            font-size: 13px;
-            padding: 14px 20px;
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150%);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            background: var(--bg-secondary);
-            border: 1px solid #fd5106;
-            color: #fd5106;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+            padding: 12px 22px;
+            font-size: 13px;
+            z-index: 200;
+            transition: transform 0.3s ease;
         }
-        .toast.error { border-color: var(--danger); color: var(--danger); }
-        @keyframes toastIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+
+        /* Submit success state */
+        .success-state {
+            text-align: center;
+            padding: 60px 20px;
         }
-        @keyframes toastOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
         }
 
-        .loading-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 8px;
+        @media (max-width: 600px) {
+            .field-row-2, .field-row-3 { grid-template-columns: 1fr; }
+            .slide-title { font-size: 24px; }
+            .top-bar { padding: 12px 16px; }
+            .nav-bar { padding: 12px 16px; }
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">PROPAGANDA//OS</div>
+    <div class="onboarding-shell">
 
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">CLIENTS</div>
-            <a href="23-client-hub.html" class="sidebar-link">Client Hub</a>
-            <a href="24-onboarding.html" class="sidebar-link active">Onboarding</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">YOUTUBE</div>
-            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
-            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
-            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
-            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">TWITTER</div>
-            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
-            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
-            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
-            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">IMAGE ADS</div>
-            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
-            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
-            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">VIDEO ADS</div>
-            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
-            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">LANDING PAGES</div>
-            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
-            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
-            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
-            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
-            <a href="22-lp-history.html" class="sidebar-link">History</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">TOOLS</div>
-            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
-            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
-            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">OTHER</div>
-            <a href="05-history.html" class="sidebar-link">History</a>
-        </div>
-    </aside>
-
-    <button class="sidebar-toggle" id="sidebar-toggle">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 12h18M3 6h18M3 18h18"/>
-        </svg>
-    </button>
-
-    <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">Client Onboarding</h1>
-            <p class="page-subtitle">Everything we need to start shipping ads.</p>
-            <div class="client-chip" id="client-chip" style="display:none">
-                <span class="dot"></span>
-                <span id="client-chip-label">Editing existing client</span>
+        <!-- TOP BAR -->
+        <header class="top-bar">
+            <div class="brand">
+                <a href="23-client-hub.html">← Exit</a>
+                PROPAGANDA//OS — ONBOARDING
             </div>
-        </div>
+            <div class="step-counter">
+                Step <strong id="current-step">1</strong> / <span id="total-steps">25</span>
+            </div>
+        </header>
 
-        <form id="onboarding-form" autocomplete="off" onsubmit="event.preventDefault();submitOnboarding();">
-            <input type="hidden" id="client-id">
+        <!-- PROGRESS -->
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
 
-            <!-- SECTION 1: BRAND IDENTITY -->
-            <div class="form-section">
-                <div class="section-number">Section 01</div>
-                <h2 class="section-heading">Brand Identity</h2>
-                <p class="section-desc">Who this client is, what they look like, and how they speak.</p>
+        <!-- SLIDES -->
+        <main class="slide-container" id="slide-container">
 
-                <div class="field-row">
-                    <div class="form-group">
-                        <label class="form-label">Brand Name <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-input" id="brand-name" data-required placeholder="e.g., Quantum Botanics">
+            <!-- ============================================
+                 SLIDE 1: CLIENT BASICS
+                 ============================================ -->
+            <section class="slide active" data-slide="basics">
+                <div class="slide-number">Section 01 · Client Basics</div>
+                <h1 class="slide-title">Who are we onboarding?</h1>
+                <p class="slide-subtitle">The essentials. We'll auto-scrape the rest from their website.</p>
+
+                <div class="field-row-2">
+                    <div class="field">
+                        <label class="field-label">Brand Name <span class="req">*</span></label>
+                        <input type="text" class="input" id="client-name" placeholder="e.g., Callix" data-required>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Brand Code <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-input mono" id="brand-code" data-required maxlength="5" placeholder="QBOT" oninput="this.value=this.value.toUpperCase()">
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div class="form-group">
-                        <label class="form-label">Website URL <span class="required-asterisk">*</span></label>
-                        <input type="url" class="form-input" id="brand-website" data-required placeholder="https://example.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Primary Contact Email <span class="required-asterisk">*</span></label>
-                        <input type="email" class="form-input" id="brand-email" data-required placeholder="contact@example.com">
+                    <div class="field">
+                        <label class="field-label">Brand Code <span class="req">*</span></label>
+                        <input type="text" class="input" id="client-code" placeholder="e.g., CALX" maxlength="5" data-required style="text-transform:uppercase">
+                        <div class="field-help">3-5 letters. Used in creative naming.</div>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Logo URL</label>
-                    <div class="logo-row">
-                        <input type="url" class="form-input" id="brand-logo-url" placeholder="https://... (paste link)">
-                        <button type="button" class="upload-btn" disabled title="Upload coming soon">Upload (soon)</button>
-                    </div>
-                    <div class="form-help">Paste a link to the logo. Upload to Supabase Storage coming in V2.</div>
+                <div class="field">
+                    <label class="field-label">Website URL <span class="req">*</span></label>
+                    <input type="url" class="input" id="client-website" placeholder="https://callix.io" data-required>
                 </div>
+                <div class="field">
+                    <label class="field-label">Primary Contact Email</label>
+                    <input type="email" class="input" id="client-email" placeholder="founder@callix.io">
+                </div>
+            </section>
 
-                <div class="form-group">
-                    <label class="form-label">Brand Colors</label>
-                    <div class="field-row-3col">
-                        <div class="color-input-group">
-                            <label>Primary</label>
-                            <div class="color-input-wrapper">
-                                <input type="color" id="color-primary" value="#fd5106" onchange="syncColor(this,'hex-primary')">
-                                <input type="text" class="color-hex" id="hex-primary" value="#fd5106" oninput="syncHex(this,'color-primary')">
-                            </div>
-                        </div>
-                        <div class="color-input-group">
-                            <label>Secondary</label>
-                            <div class="color-input-wrapper">
-                                <input type="color" id="color-secondary" value="#0f0f0f" onchange="syncColor(this,'hex-secondary')">
-                                <input type="text" class="color-hex" id="hex-secondary" value="#0f0f0f" oninput="syncHex(this,'color-secondary')">
-                            </div>
-                        </div>
-                        <div class="color-input-group">
-                            <label>Accent</label>
-                            <div class="color-input-wrapper">
-                                <input type="color" id="color-accent" value="#f5f5f5" onchange="syncColor(this,'hex-accent')">
-                                <input type="text" class="color-hex" id="hex-accent" value="#f5f5f5" oninput="syncHex(this,'color-accent')">
-                            </div>
+            <!-- ============================================
+                 SLIDE 2: AI BRAND SCRAPE
+                 ============================================ -->
+            <section class="slide" data-slide="scrape">
+                <div class="slide-number">Section 02 · AI Brand Scrape</div>
+                <h1 class="slide-title">Let AI scan their site.</h1>
+                <p class="slide-subtitle">We'll extract brand colors, fonts, voice, and tone in 10 seconds. Or skip and fill it in manually.</p>
+
+                <button class="btn btn-primary" id="scrape-btn" onclick="runBrandScrape()" style="width:100%;padding:18px">
+                    Scan Site & Extract Brand
+                </button>
+
+                <div class="scrape-result" id="scrape-result" style="display:none">
+                    <div class="scrape-result-row">
+                        <div style="flex:1">
+                            <div class="hint" style="margin-bottom:6px">Brand Colors Detected</div>
+                            <div class="scrape-color-strip" id="scrape-colors"></div>
                         </div>
                     </div>
+                    <div style="margin-top:14px">
+                        <div class="hint" style="margin-bottom:6px">Tone</div>
+                        <div id="scrape-tone" style="font-size:13px;color:var(--text-secondary)"></div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Tone</label>
-                    <textarea class="form-textarea" id="brand-tone" rows="3" placeholder="e.g., premium, scientific, warm, direct"></textarea>
+                <div class="hint" style="text-align:center;margin-top:20px">Or click NEXT to skip and fill manually</div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 3: BRAND VISUALS (logo + colors)
+                 ============================================ -->
+            <section class="slide" data-slide="visuals">
+                <div class="slide-number">Section 03 · Brand Visuals</div>
+                <h1 class="slide-title">Logo and brand colors.</h1>
+                <p class="slide-subtitle">Drop in their logo and confirm the colors. Auto-populated from the scrape if you ran it.</p>
+
+                <div class="field">
+                    <label class="field-label">Logo</label>
+                    <div class="dropzone" id="logo-dropzone" onclick="document.getElementById('logo-input').click()">
+                        <input type="file" id="logo-input" accept="image/*" onchange="handleLogoFile(this.files[0])">
+                        <div id="logo-empty">
+                            <div class="dropzone-icon">↑</div>
+                            <div class="dropzone-text">Drag & drop logo or <span style="color:var(--orange);text-decoration:underline">browse</span></div>
+                            <div class="dropzone-sub">PNG · JPG · SVG · WEBP</div>
+                        </div>
+                        <div class="logo-preview" id="logo-preview">
+                            <img id="logo-img">
+                            <div class="name" id="logo-name"></div>
+                            <div class="logo-actions">
+                                <a onclick="event.stopPropagation();document.getElementById('logo-input').click()">Replace</a>
+                                <span style="color:var(--text-muted)">·</span>
+                                <a onclick="event.stopPropagation();clearLogo()">Remove</a>
+                            </div>
+                        </div>
+                        <div class="upload-status" id="upload-status"></div>
+                    </div>
+                    <input type="hidden" id="brand-logo-url">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Voice Guidelines</label>
-                    <textarea class="form-textarea" id="brand-voice" rows="5" placeholder="Speak like a trusted advisor. Use second person. Never use hype words. Always reference evidence..."></textarea>
+                <div class="field">
+                    <label class="field-label">Brand Colors</label>
+                    <div class="field-row-3">
+                        <div class="color-pick">
+                            <div class="color-swatch" id="swatch-primary" style="background:#fd5106"></div>
+                            <input type="text" id="color-primary" value="#fd5106">
+                            <input type="color" value="#fd5106" oninput="syncColor('primary',this.value)">
+                        </div>
+                        <div class="color-pick">
+                            <div class="color-swatch" id="swatch-secondary" style="background:#0a0a0a"></div>
+                            <input type="text" id="color-secondary" value="#0a0a0a">
+                            <input type="color" value="#0a0a0a" oninput="syncColor('secondary',this.value)">
+                        </div>
+                        <div class="color-pick">
+                            <div class="color-swatch" id="swatch-accent" style="background:#f5f5f5"></div>
+                            <input type="text" id="color-accent" value="#f5f5f5">
+                            <input type="color" value="#f5f5f5" oninput="syncColor('accent',this.value)">
+                        </div>
+                    </div>
+                    <div class="field-help">Click a swatch to pick. Type a hex to sync.</div>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 4: BRAND VOICE
+                 ============================================ -->
+            <section class="slide" data-slide="voice">
+                <div class="slide-number">Section 04 · Brand Voice</div>
+                <h1 class="slide-title">How do they sound?</h1>
+                <p class="slide-subtitle">Tone, voice rules, words to avoid. This shapes every piece of copy we write.</p>
+
+                <div class="field">
+                    <label class="field-label">Tone</label>
+                    <textarea class="textarea" id="brand-tone" rows="2" placeholder="e.g., Authoritative, no-fluff, founder-led. Speaks to operators, not consumers."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Voice Guidelines</label>
+                    <textarea class="textarea" id="brand-voice" rows="4" placeholder="e.g., Use first-person 'we'. Avoid corporate speak. Lead with proof. Short sentences. No emojis except ✓. Always include a specific number."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Words to Avoid</label>
+                    <input type="text" class="input" id="brand-avoid" placeholder="comma, separated, list">
+                    <div class="field-help">Banned words/phrases. Comma-separated.</div>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 5: OFFER — PRODUCT
+                 ============================================ -->
+            <section class="slide" data-slide="offer-product">
+                <div class="slide-number">Section 05 · The Offer</div>
+                <h1 class="slide-title">What are they selling?</h1>
+                <p class="slide-subtitle">The product and the price. Keep it simple.</p>
+
+                <div class="field">
+                    <label class="field-label">Product / Service Name <span class="req">*</span></label>
+                    <input type="text" class="input" id="product-name" placeholder="e.g., Mailmend Inbox Placement" data-required>
+                </div>
+                <div class="field">
+                    <label class="field-label">Price Point</label>
+                    <input type="text" class="input" id="price-point" placeholder="$5,000 setup + $3,000/mo">
+                </div>
+                <div class="field">
+                    <label class="field-label">Product Description</label>
+                    <textarea class="textarea" id="product-description" rows="4" placeholder="What it is, what it does, key features or ingredients..."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 6: OFFER — PROMISE & MECHANISM
+                 ============================================ -->
+            <section class="slide" data-slide="offer-promise">
+                <div class="slide-number">Section 05 · The Offer (cont.)</div>
+                <h1 class="slide-title">The promise and the mechanism.</h1>
+                <p class="slide-subtitle">What customers get, the guarantee, and what makes it different.</p>
+
+                <div class="field">
+                    <label class="field-label">Offer Details (What They Get)</label>
+                    <textarea class="textarea" id="offer-details" rows="4" placeholder="Everything included: features, bonuses, guarantee, timeline..."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Guarantee / Risk Reversal</label>
+                    <textarea class="textarea" id="guarantee" rows="2" placeholder="e.g., 90-day money-back, double-or-nothing, results in 30 days..."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Unique Mechanism</label>
+                    <textarea class="textarea" id="unique-mechanism" rows="3" placeholder="What makes this work differently from everything else on the market?"></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 7: ICP — START
+                 ============================================ -->
+            <section class="slide" data-slide="icp-intro">
+                <div class="slide-number">Section 06 · Customer Avatars</div>
+                <h1 class="slide-title">Define your ideal customers.</h1>
+                <p class="slide-subtitle">Add as many ICPs as you want. Each gets a deep psychographic profile so we can write surgical copy. All fields are optional — fill in what you have.</p>
+
+                <div class="icp-pills" id="icp-pills"></div>
+
+                <div style="text-align:center;margin-top:30px">
+                    <button class="btn btn-primary" onclick="startNewICP()" style="padding:14px 28px">+ Add an ICP</button>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Words to Avoid</label>
-                    <input type="text" class="form-input" id="brand-avoid" placeholder="comma-separated: cure, miracle, guaranteed">
-                    <div class="form-help">Separate with commas.</div>
+                <div class="hint" style="text-align:center;margin-top:24px">Or click NEXT to skip and add ICPs later</div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 8: ICP — IDENTITY
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-identity">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Identity</div>
+                <h1 class="slide-title">Who is this avatar?</h1>
+                <p class="slide-subtitle">Give them a name and a one-line description.</p>
+
+                <div class="field">
+                    <label class="field-label">ICP Name <span class="req">*</span></label>
+                    <input type="text" class="input" id="icp-name" placeholder="e.g., DTC founders doing $100K/mo with broken email" data-icp-required>
                 </div>
+                <div class="field">
+                    <label class="field-label">ICP Description</label>
+                    <textarea class="textarea" id="icp-description" rows="3" placeholder="Who they are, what they do, what makes them this avatar..."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 9: ICP — GOALS & DREAMS
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-goals">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Goals & Dreams</div>
+                <h1 class="slide-title">What do they want?</h1>
+                <p class="slide-subtitle">Both the goals they brag about and the dreams they hide.</p>
+
+                <div class="field">
+                    <label class="field-label">What do they openly say they want?</label>
+                    <textarea class="textarea" id="icp-public-goals" rows="2" placeholder="e.g., Hit $1M/year. Build a brand my dad respects. Get profitable in 6 months."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What do they secretly want but won't admit out loud?</label>
+                    <textarea class="textarea" id="icp-secret-dreams" rows="2" placeholder="e.g., Be famous on Twitter. Prove my ex wrong. Beat my brother at his own game. Get featured on a podcast."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Who do they want to become or be seen as?</label>
+                    <textarea class="textarea" id="icp-identity-desires" rows="2" placeholder="e.g., The founder everyone asks for advice. A respected operator, not a hype guy. The 'smart one' in their mastermind."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">How are they trying to fix this problem right now?</label>
+                    <textarea class="textarea" id="icp-current-process" rows="2" placeholder="e.g., Hiring agencies that don't deliver. Watching YouTube tutorials at 2am. Throwing more money at ads hoping it works."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 10: ICP — FEARS & INSECURITIES
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-fears">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Fears</div>
+                <h1 class="slide-title">What keeps them up at night?</h1>
+                <p class="slide-subtitle">The fears they admit + the ones they hide.</p>
+
+                <div class="field">
+                    <label class="field-label">What keeps them up at 3am?</label>
+                    <textarea class="textarea" id="icp-three-am" rows="2" placeholder="e.g., What if I run out of money before this works? My team will quit if I don't fix revenue this quarter."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What are they terrified people will find out about them?</label>
+                    <textarea class="textarea" id="icp-secret-fears" rows="3" placeholder="e.g., That I don't actually know what I'm doing. That my best year was 5 years ago. That I built a fake brand and everyone will see through it eventually."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What's their worst-case nightmare?</label>
+                    <textarea class="textarea" id="icp-failures" rows="2" placeholder="e.g., Going broke and moving back home. Having to shut down and start over at 40. Becoming the cautionary tale."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Who do they fear is getting ahead while they fall behind?</label>
+                    <textarea class="textarea" id="icp-paranoia" rows="2" placeholder="e.g., That competitor everyone's talking about on Twitter. Their friend who 10x'd in 6 months. The 22-year-old making $500K/mo from one offer."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What do they fear they're running out of time for?</label>
+                    <textarea class="textarea" id="icp-time-anxiety" rows="2" placeholder="e.g., Building a brand before AI flattens everything. Hitting financial freedom before 40. Having a kid before the business is stable."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 11: ICP — EMBARRASSMENT
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-embarrass">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · What They Avoid</div>
+                <h1 class="slide-title">What embarrasses them?</h1>
+                <p class="slide-subtitle">The situations they go out of their way to dodge.</p>
+
+                <div class="field">
+                    <label class="field-label">What would humiliate them in front of their peers?</label>
+                    <textarea class="textarea" id="icp-prof-shame" rows="2" placeholder="e.g., Showing their actual ROAS to other founders. Admitting they don't know SQL. Getting asked 'so what's your CAC?' in a meeting."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What makes them feel incompetent or behind?</label>
+                    <textarea class="textarea" id="icp-inadequacy" rows="2" placeholder="e.g., Not being able to build their own funnel. Hiring someone half their age who knows more. Watching newer founders pass them."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What do they pray no one finds out about?</label>
+                    <textarea class="textarea" id="icp-exposure" rows="2" placeholder="e.g., They're 6 months behind on payroll. Their wife thinks they're failing. They Googled 'is my business dying?' last week."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What previous attempts still haunt them?</label>
+                    <textarea class="textarea" id="icp-past-failures" rows="2" placeholder="e.g., The agency they paid $50K that ghosted them. The course they bought and never finished. The launch that flopped publicly."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What would make them look foolish or amateur?</label>
+                    <textarea class="textarea" id="icp-status-threats" rows="2" placeholder="e.g., Getting called out on Twitter for bad ad copy. Posting a launch that flops. Having to refund a client publicly."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 12: ICP — TRANSFORMATION
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-transform">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Transformation</div>
+                <h1 class="slide-title">What changes when they buy?</h1>
+                <p class="slide-subtitle">The before vs after. What pain stops, what becomes possible.</p>
+
+                <div class="field">
+                    <label class="field-label">What pain stops the moment they start using this?</label>
+                    <textarea class="textarea" id="icp-relief" rows="2" placeholder="e.g., They stop checking ad accounts at 11pm. They stop firefighting their team's mistakes. The Sunday-night dread goes away."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">How does this make them look or feel superior?</label>
+                    <textarea class="textarea" id="icp-status-elev" rows="2" placeholder="e.g., They become the founder others ask for advice. They post wins instead of struggles. They can finally show their P&L."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What can they finally do without fear?</label>
+                    <textarea class="textarea" id="icp-confidence" rows="2" placeholder="e.g., Pitch a $50K deal without flinching. Hire a CMO and trust the system. Take a real vacation."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What can they stop manually doing or worrying about?</label>
+                    <textarea class="textarea" id="icp-time-lib" rows="2" placeholder="e.g., Building creative briefs from scratch every week. Babysitting their ad accounts. Writing every email themselves."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">How does this put them ahead of people they envy?</label>
+                    <textarea class="textarea" id="icp-advantage" rows="2" placeholder="e.g., They scale to $1M/mo while competitors stay stuck at $200K. They sleep while their funnel prints money."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 13: ICP — WHY YOU
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-why-you">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Why You</div>
+                <h1 class="slide-title">Why are you the obvious choice?</h1>
+                <p class="slide-subtitle">What makes you feel inevitable to this avatar.</p>
+
+                <div class="field">
+                    <label class="field-label">Why does your approach click with how they think?</label>
+                    <textarea class="textarea" id="icp-psych-fit" rows="2" placeholder="e.g., You speak founder, not marketer. You show numbers, not vibes. You skip the fluff and get to the point."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What about you makes them feel safe and understood?</label>
+                    <textarea class="textarea" id="icp-trust" rows="2" placeholder="e.g., You've been in their seat. You charge what you charge because results back it. You don't pitch — you diagnose."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Why do they see you as THE expert they've been looking for?</label>
+                    <textarea class="textarea" id="icp-authority" rows="2" placeholder="e.g., You ran ads at 8 figures. You wrote the playbook everyone copies. Your results are public and verifiable."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">How do your other customers mirror what they want to become?</label>
+                    <textarea class="textarea" id="icp-social-proof" rows="2" placeholder="e.g., Your case studies are founders just like them. Your clients are who they wish they were in 2 years."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What makes choosing you feel safer than staying stuck?</label>
+                    <textarea class="textarea" id="icp-risk-rev" rows="2" placeholder="e.g., Money-back guarantee. Done-for-you setup. They lose nothing trying you."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 14: ICP — FAILED ALTERNATIVES
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-failed">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · What's Failed Them</div>
+                <h1 class="slide-title">What have they already tried?</h1>
+                <p class="slide-subtitle">The graveyard of stuff that didn't work for them.</p>
+
+                <div class="field">
+                    <label class="field-label">What have they tried that left them frustrated?</label>
+                    <textarea class="textarea" id="icp-prev-sol" rows="2" placeholder="e.g., Generic agencies that gave them dashboards instead of revenue. Coaches who sold systems and ghosted on calls."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What over-hyped solutions burned them before?</label>
+                    <textarea class="textarea" id="icp-false-prom" rows="2" placeholder="e.g., Magic AI tools that didn't move the needle. 'Done-for-you funnels' that took 6 months and never launched."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What did they try to do themselves that backfired?</label>
+                    <textarea class="textarea" id="icp-diy" rows="2" placeholder="e.g., Built their own funnel and lost $20K testing it. Wrote their own ads and CPA tripled overnight."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Which competitors disappointed them?</label>
+                    <textarea class="textarea" id="icp-comp-disap" rows="2" placeholder="e.g., Competitor X promised X but delivered nothing. Y's setup took 3 months and broke their site."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Why did the cheap or free options make things worse?</label>
+                    <textarea class="textarea" id="icp-free-fail" rows="2" placeholder="e.g., Free Klaviyo template killed deliverability. $99 funnel template wouldn't convert and cost them a launch."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 15: ICP — HESITATION
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-hesitation">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Why They Hesitate</div>
+                <h1 class="slide-title">Why might they say no?</h1>
+                <p class="slide-subtitle">The objections you have to overcome in the copy.</p>
+
+                <div class="field">
+                    <label class="field-label">What past experiences make them doubt this will work?</label>
+                    <textarea class="textarea" id="icp-skepticism" rows="2" placeholder="e.g., They've been pitched 10 versions of this. They tried something similar in 2022 and it flopped."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What money fears hold them back?</label>
+                    <textarea class="textarea" id="icp-invest-fears" rows="2" placeholder="e.g., They burned $50K on an agency last year. They're already overspending on tools. Cash is tight this month."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What's comfortable about staying stuck?</label>
+                    <textarea class="textarea" id="icp-change-res" rows="2" placeholder="e.g., At least they know how their current bad system works. Switching means breaking what's barely working."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Why do they keep waiting for the 'perfect' solution?</label>
+                    <textarea class="textarea" id="icp-perfectionism" rows="2" placeholder="e.g., They want all the features before committing. They want to see one more case study. They want to test it for free first."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What makes them question if you're really the right guide?</label>
+                    <textarea class="textarea" id="icp-auth-doubts" rows="2" placeholder="e.g., You don't have a podcast. You're younger than they are. You don't have a famous client they recognize."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 16: ICP — ENEMY
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-enemy">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · The Enemy</div>
+                <h1 class="slide-title">Who's the villain in their story?</h1>
+                <p class="slide-subtitle">Every customer has someone or something to blame. Find theirs.</p>
+
+                <div class="field">
+                    <label class="field-label">Who or what do they blame for this problem?</label>
+                    <textarea class="textarea" id="icp-villains" rows="2" placeholder="e.g., Gmail's algorithm. iOS 14 killing tracking. Big tech taking their profit margin."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What broken systems or institutions failed them?</label>
+                    <textarea class="textarea" id="icp-systems" rows="2" placeholder="e.g., Schools didn't teach them sales. The 'follow your passion' lie. Their MBA didn't prepare them for this."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Who gave them terrible advice that made things worse?</label>
+                    <textarea class="textarea" id="icp-bad-advice" rows="2" placeholder="e.g., Twitter gurus selling templates. The CMO who said 'just blast more emails.' The agency that tripled their CAC."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What self-defeating habits can't they break?</label>
+                    <textarea class="textarea" id="icp-saboteurs" rows="2" placeholder="e.g., They start everything and finish nothing. They tweak instead of ship. They hire and micromanage."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">Who's winning while they're struggling?</label>
+                    <textarea class="textarea" id="icp-comp-threats" rows="2" placeholder="e.g., That competitor with half their experience but 10x the revenue. The 22-year-old going viral every week."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 17: ICP — INTERNAL DIALOGUE
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-dialogue">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · The Voice in Their Head</div>
+                <h1 class="slide-title">What do they say to themselves?</h1>
+                <p class="slide-subtitle">Steal the exact words. Drop them in headlines.</p>
+
+                <div class="field">
+                    <label class="field-label">What do they literally say to themselves about this problem?</label>
+                    <textarea class="textarea" id="icp-self-talk" rows="2" placeholder="e.g., 'I should be further along by now.' 'Why is this so hard for me when others make it look easy?'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">How do they make excuses for their current situation?</label>
+                    <textarea class="textarea" id="icp-justification" rows="2" placeholder="e.g., 'I just need one more month to figure it out.' 'The market is just bad right now.' 'I'm playing the long game.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What do they want to believe vs what they fear is true?</label>
+                    <textarea class="textarea" id="icp-hope-cynic" rows="2" placeholder="e.g., 'I want to believe ads still work, but maybe I'm just bad at it.' 'I want to believe I can scale, but maybe I'm at my ceiling.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What thoughts loop in their head when they're about to buy?</label>
+                    <textarea class="textarea" id="icp-paralysis" rows="2" placeholder="e.g., 'What if this doesn't work?' 'What if I waste more money?' 'I should wait until next month.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What do they daydream about achieving?</label>
+                    <textarea class="textarea" id="icp-fantasies" rows="2" placeholder="e.g., 'Finally hitting $1M/mo and quitting the grind.' 'Buying back my time.' 'Getting interviewed on the My First Million podcast.'"></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 18: ICP — HARD DATA
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-data">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Hard Data & Proof</div>
+                <h1 class="slide-title">What stats prove the pain is real?</h1>
+                <p class="slide-subtitle">Numbers and studies you can drop into ad copy. Format: • [stat] — [source]</p>
+
+                <div class="field">
+                    <label class="field-label">What stats prove the problem is widespread or expensive?</label>
+                    <textarea class="textarea" id="icp-pain-data" rows="6" placeholder="• 67% of DTC brands lose $50K+/year to inbox placement issues — Litmus 2024&#10;• Average ecom email revenue dropped 23% in 2023 — Klaviyo Industry Report&#10;• 1 in 3 promo emails never reach the inbox — Sender Score 2024"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What stats prove your solution actually works?</label>
+                    <textarea class="textarea" id="icp-solution-data" rows="6" placeholder="• Brands fixing deliverability see 4.2x ROI within 90 days — Klaviyo 2023&#10;• Average lift after warmup: 38% open rate increase — Postmark Study&#10;• 81% of brands using DMARC see fewer bounces — Valimail 2024"></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 19: ICP — COMPETITIVE
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-competitive">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Competition</div>
+                <h1 class="slide-title">Who else is in this market?</h1>
+                <p class="slide-subtitle">The other options your customer is comparing you to.</p>
+
+                <div class="field">
+                    <label class="field-label">Who are the top 5 direct competitors? (offers, pricing, angle)</label>
+                    <textarea class="textarea" id="icp-direct-comp" rows="4" placeholder="e.g., 1. Klaviyo Deliverability — $200/mo, 'enterprise inbox placement'&#10;2. WarmupInbox — $99/mo, 'warmup automation'&#10;3. Mailgun — $150/mo, 'email infrastructure'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What free or DIY alternatives do they try first?</label>
+                    <textarea class="textarea" id="icp-alt-sol" rows="3" placeholder="e.g., Free Klaviyo template. DIY warmup with personal Gmail. ChatGPT for email rewrites. Doing nothing and hoping it improves."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What do customers complain about with existing options?</label>
+                    <textarea class="textarea" id="icp-cust-complaints" rows="3" placeholder="e.g., 'Setup took 3 months.' 'No real human support.' 'Reports look great but revenue didn't move.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What big shifts are happening in this market right now?</label>
+                    <textarea class="textarea" id="icp-market-trends" rows="3" placeholder="e.g., AI is flooding inboxes. Gmail is rolling out new sender requirements. iOS privacy changes broke existing tracking."></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 20: ICP — PSYCH PROFILE
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-psych">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · How They Decide</div>
+                <h1 class="slide-title">How do they actually buy?</h1>
+                <p class="slide-subtitle">The decision-making patterns you need to design copy around.</p>
+
+                <div class="field">
+                    <label class="field-label">How do they make buying decisions? (logic / emotion / social proof, fast / slow, alone / committee)</label>
+                    <textarea class="textarea" id="icp-decision" rows="2" placeholder="e.g., Founder makes the call alone. Decides fast when they feel pain. Driven by social proof from people they respect."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What identity are they trying to achieve or protect?</label>
+                    <textarea class="textarea" id="icp-core-id" rows="2" placeholder="e.g., 'Smart operator who runs a real business.' 'Founder who outworks everyone.' 'The one their team can rely on.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What's the single biggest emotional driver for this customer?</label>
+                    <textarea class="textarea" id="icp-emo-lever" rows="2" placeholder="e.g., Fear of being left behind. Status of being seen as elite. Aspiration to finally feel in control."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What 'job' are they hiring this product to do?</label>
+                    <textarea class="textarea" id="icp-jtbd" rows="3" placeholder="e.g., Functional: scale ad spend. Emotional: stop the 11pm panic. Social: be the founder others ask 'how did you do it?'"></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 21: ICP — LANGUAGE LIBRARY
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-language">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Their Words</div>
+                <h1 class="slide-title">What words do they actually use?</h1>
+                <p class="slide-subtitle">Steal their exact phrases for headlines and hooks.</p>
+
+                <div class="field">
+                    <label class="field-label">How do they describe this problem in their own words?</label>
+                    <textarea class="textarea" id="icp-phrases" rows="3" placeholder="e.g., 'My emails are dying.' 'Inbox placement is killing my Q4.' 'I'm hemorrhaging revenue and I can't see why.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What words make them feel something powerful or credible?</label>
+                    <textarea class="textarea" id="icp-power-words" rows="2" placeholder="e.g., 'Inbox placement,' 'sender reputation,' 'deliverability,' 'cash collected,' 'verified,' 'audited,' 'measured.'"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What words turn them off or sound pushy?</label>
+                    <textarea class="textarea" id="icp-pushy-words" rows="2" placeholder="e.g., 'Game-changer,' 'revolutionary,' 'cutting-edge,' 'synergy,' 'turnkey,' 'leverage' as a verb."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">What words do they use when they're angry or excited?</label>
+                    <textarea class="textarea" id="icp-emo-lang" rows="2" placeholder="e.g., 'Insane.' 'Absolute fire.' 'This is wild.' 'I'm so cooked.' 'Finally.'"></textarea>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 22: ICP — AWARENESS ANALYSIS
+                 ============================================ -->
+            <section class="slide icp-slide" data-slide="icp-awareness">
+                <div class="slide-number">ICP #<span class="icp-num">1</span> · Awareness Levels</div>
+                <h1 class="slide-title">How do you talk to them at each stage?</h1>
+                <p class="slide-subtitle">Different message for different awareness. Schwartz framework.</p>
+
+                <div class="field">
+                    <label class="field-label">MOST AWARE — they know your product and want it. What's the final push?</label>
+                    <textarea class="textarea" id="icp-most-aware" rows="3" placeholder="e.g., Limited spots this month. New case study just dropped. Price goes up Friday. Free strategy call this week only."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">PRODUCT AWARE — they know products like yours exist but not yours. How do you stand out?</label>
+                    <textarea class="textarea" id="icp-product-aware" rows="3" placeholder="e.g., We're the only one that does X. Here's the side-by-side. Here's why our approach is different."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">SOLUTION AWARE — they know solutions exist but not your category. What makes your approach different?</label>
+                    <textarea class="textarea" id="icp-solution-aware" rows="3" placeholder="e.g., Stop using X — here's why it doesn't work anymore. There's a new way to solve this that nobody's talking about."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">PROBLEM AWARE — they feel the pain but don't know solutions exist. How do you wake them up?</label>
+                    <textarea class="textarea" id="icp-problem-aware" rows="3" placeholder="e.g., 'You're losing $X/mo and don't even know it.' 'Here's the real reason your ROAS is dropping.' Show the gap between current and possible."></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">UNAWARE — they don't even know they have the problem. What story or stat wakes them up?</label>
+                    <textarea class="textarea" id="icp-unaware" rows="3" placeholder="e.g., 'Most DTC brands lose 30% of email revenue without realizing it.' 'I thought I was profitable until I ran the numbers.' Tell a story that makes them say 'wait, that's me.'"></textarea>
+                </div>
+
+                <div style="margin-top:30px;padding:18px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;text-align:center">
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">This is the last slide for this ICP.</div>
+                    <button class="btn btn-primary" onclick="saveCurrentICP()">Save This ICP</button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 24: TRACKING
+                 ============================================ -->
+            <section class="slide" data-slide="tracking">
+                <div class="slide-number">Section 07 · Tracking & Infrastructure</div>
+                <h1 class="slide-title">Hook up their tracking.</h1>
+                <p class="slide-subtitle">Pixel IDs and ad accounts. We'll inject these everywhere we deploy.</p>
+
+                <div class="field-row-2">
+                    <div class="field">
+                        <label class="field-label">Meta Pixel ID</label>
+                        <input type="text" class="input" id="meta-pixel-id" placeholder="123456789012345">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Meta Ad Account ID</label>
+                        <input type="text" class="input" id="meta-ad-account" placeholder="act_123456789">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label">CAPI Access Token</label>
+                    <input type="password" class="input" id="capi-token" placeholder="EAAxxx...">
+                </div>
+                <div class="field">
+                    <label class="field-label">Google Drive Folder URL</label>
+                    <input type="url" class="input" id="drive-folder" placeholder="https://drive.google.com/...">
+                </div>
+            </section>
+
+            <!-- ============================================
+                 SLIDE 25: REVIEW & SUBMIT
+                 ============================================ -->
+            <section class="slide" data-slide="submit">
+                <div class="slide-number">Final · Review & Launch</div>
+                <h1 class="slide-title">Ready to onboard?</h1>
+                <p class="slide-subtitle">We'll create the client, brand profile, offer context, ICPs, and onboarding steps in one shot.</p>
+
+                <div id="review-summary" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:24px;margin:20px 0">
+                    <!-- Populated by JS -->
+                </div>
+
+                <button class="btn btn-primary" onclick="submitOnboarding()" style="width:100%;padding:18px;font-size:16px">
+                    Save & Continue to Image Ad Generator →
+                </button>
+            </section>
+
+            <!-- ============================================
+                 SUCCESS STATE
+                 ============================================ -->
+            <section class="slide" data-slide="success">
+                <div class="success-state">
+                    <div class="success-icon">✓</div>
+                    <h1 class="slide-title">Client onboarded.</h1>
+                    <p class="slide-subtitle">Redirecting you to the image ad generator...</p>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- BOTTOM NAV -->
+        <footer class="nav-bar">
+            <div class="nav-info">
+                <kbd>↵</kbd> next · <kbd>shift</kbd>+<kbd>↵</kbd> back · auto-saved
             </div>
-
-            <!-- SECTION 2: OFFER DETAILS -->
-            <div class="form-section">
-                <div class="section-number">Section 02</div>
-                <h2 class="section-heading">Offer Details</h2>
-                <p class="section-desc">The product, the price, the promise.</p>
-
-                <div class="field-row">
-                    <div class="form-group">
-                        <label class="form-label">Product / Service Name <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-input" id="offer-product-name" data-required placeholder="e.g., LiverGuard Pro">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Price Point <span class="required-asterisk">*</span></label>
-                        <input type="text" class="form-input" id="offer-price" data-required placeholder="$47">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Product Description <span class="required-asterisk">*</span></label>
-                    <textarea class="form-textarea" id="offer-description" data-required rows="5" placeholder="What the product is, what it does, key ingredients or features..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Offer Details (what they get)</label>
-                    <textarea class="form-textarea" id="offer-details" rows="4" placeholder="e.g., 60-count bottle + free shipping + bonus ebook + 90-day guarantee"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Guarantee / Risk Reversal</label>
-                    <textarea class="form-textarea" id="offer-guarantee" rows="2" placeholder="e.g., 90-day money-back guarantee, no questions asked"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Unique Mechanism</label>
-                    <textarea class="form-textarea" id="offer-mechanism" rows="3" placeholder="What makes this work differently from everything else on the market?"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Awareness Level</label>
-                    <select class="form-select" id="offer-awareness">
-                        <option value="unaware">Unaware</option>
-                        <option value="problem_aware" selected>Problem Aware</option>
-                        <option value="solution_aware">Solution Aware</option>
-                        <option value="product_aware">Product Aware</option>
-                        <option value="most_aware">Most Aware</option>
-                    </select>
-                </div>
+            <div class="nav-actions">
+                <button class="btn" id="back-btn" onclick="prevSlide()">← Back</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextSlide()">Next →</button>
             </div>
+        </footer>
 
-            <!-- SECTION 3: PSYCHOGRAPHICS -->
-            <div class="form-section">
-                <div class="section-number">Section 03</div>
-                <h2 class="section-heading">Customer Psychographics</h2>
-                <p class="section-desc">Who they are, what they want, what keeps them up at night.</p>
-
-                <div class="form-group">
-                    <label class="form-label">ICP Description <span class="required-asterisk">*</span></label>
-                    <input type="text" class="form-input" id="psych-icp" data-required placeholder="e.g., Women 40-60 with stubborn belly fat who've tried keto and failed">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Top 3 Pain Points</label>
-                    <div class="field-row-3col">
-                        <input type="text" class="form-input" id="pain-1" placeholder="Pain point #1">
-                        <input type="text" class="form-input" id="pain-2" placeholder="Pain point #2">
-                        <input type="text" class="form-input" id="pain-3" placeholder="Pain point #3">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Top 3 Desires</label>
-                    <div class="field-row-3col">
-                        <input type="text" class="form-input" id="desire-1" placeholder="Desire #1">
-                        <input type="text" class="form-input" id="desire-2" placeholder="Desire #2">
-                        <input type="text" class="form-input" id="desire-3" placeholder="Desire #3">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Top 3 Objections</label>
-                    <div class="field-row-3col">
-                        <input type="text" class="form-input" id="objection-1" placeholder="Objection #1">
-                        <input type="text" class="form-input" id="objection-2" placeholder="Objection #2">
-                        <input type="text" class="form-input" id="objection-3" placeholder="Objection #3">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">What They've Already Tried That Failed</label>
-                    <textarea class="form-textarea" id="psych-failed" rows="3" placeholder="Diets, supplements, programs they've wasted money on..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Where They Hang Out Online</label>
-                    <textarea class="form-textarea" id="psych-hangouts" rows="3" placeholder="Subreddits, Facebook groups, Instagram hashtags, YouTube channels..."></textarea>
-                </div>
-            </div>
-
-            <!-- SECTION 4: COMPETITIVE LANDSCAPE -->
-            <div class="form-section">
-                <div class="section-number">Section 04</div>
-                <h2 class="section-heading">Competitive Landscape</h2>
-                <p class="section-desc">Who we're fighting against and how we win.</p>
-
-                <div class="form-group">
-                    <label class="form-label">Top 3 Competitor URLs</label>
-                    <div class="field-row-3col">
-                        <input type="url" class="form-input" id="comp-url-1" placeholder="https://competitor-1.com">
-                        <input type="url" class="form-input" id="comp-url-2" placeholder="https://competitor-2.com">
-                        <input type="url" class="form-input" id="comp-url-3" placeholder="https://competitor-3.com">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">What Competitors Say That Works</label>
-                    <textarea class="form-textarea" id="comp-hooks" rows="4" placeholder="Hooks, angles, claims they're running that seem to be converting..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">How This Client Is Different</label>
-                    <textarea class="form-textarea" id="comp-positioning" rows="4" placeholder="Why the customer should pick us over anyone else..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Proof Points</label>
-                    <textarea class="form-textarea" id="comp-proof" rows="5" placeholder="One per line: studies, testimonials, certifications, numbers, awards..."></textarea>
-                    <div class="form-help">One per line.</div>
-                </div>
-            </div>
-
-            <!-- SECTION 5: TRACKING & INFRASTRUCTURE -->
-            <div class="form-section">
-                <div class="section-number">Section 05</div>
-                <h2 class="section-heading">Tracking & Infrastructure</h2>
-                <p class="section-desc">The plumbing. So we can actually measure what we ship.</p>
-
-                <div class="field-row">
-                    <div class="form-group">
-                        <label class="form-label">Meta Pixel ID</label>
-                        <input type="text" class="form-input mono" id="track-pixel-id" placeholder="123456789012345">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Meta Ad Account ID</label>
-                        <input type="text" class="form-input mono" id="track-ad-account" placeholder="act_1234567890">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">CAPI Access Token</label>
-                    <div class="password-wrapper">
-                        <input type="password" class="form-input mono" id="track-capi-token" placeholder="EAAG...">
-                        <button type="button" class="password-toggle" onclick="togglePassword('track-capi-token', this)">Show</button>
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div class="form-group">
-                        <label class="form-label">Slack Channel ID</label>
-                        <input type="text" class="form-input mono" id="track-slack" placeholder="C01ABCDEFGH">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Google Drive Folder URL</label>
-                        <input type="url" class="form-input" id="track-drive" placeholder="https://drive.google.com/drive/folders/...">
-                    </div>
-                </div>
-            </div>
-        </form>
     </div>
 
-    <div class="draft-indicator" id="draft-indicator"><span class="dot"></span>Draft auto-saved</div>
+    <div class="toast" id="toast"></div>
 
-    <div class="submit-bar">
-        <a href="23-client-hub.html" class="back-link">← Back to Client Hub</a>
-        <button class="btn-submit" id="submit-btn" onclick="submitOnboarding()">Save & Continue to Image Ads</button>
-    </div>
-
-    <div class="toast-container" id="toast-container"></div>
-
+    <!-- Shared config — single source of truth for Supabase URL/key + n8n webhooks -->
+    <script src="config.js"></script>
     <script>
-        // Sidebar toggle
-        document.getElementById('sidebar-toggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('open');
-        });
-        document.addEventListener('click', function(e) {
-            if (window.innerWidth <= 768 && !e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
-                document.getElementById('sidebar').classList.remove('open');
-            }
-        });
-
-        // ─── Config ─────────────────────────────────────────────
+        // ============================================
+        // CONFIG (read from window.PROPAGANDA)
+        // ============================================
         const CONFIG = {
-            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
-            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
-            N8N_ONBOARD_WEBHOOK: 'https://n8n.dtthomas.cloud/webhook/client-onboard'
+            SUPABASE_URL: window.PROPAGANDA.SUPABASE_URL,
+            SUPABASE_KEY: window.PROPAGANDA.SUPABASE_ANON_KEY,
+            N8N_ONBOARD: window.PROPAGANDA.N8N.CLIENT_ONBOARD,
+            N8N_BRAND_SCRAPE: window.PROPAGANDA.N8N.BRAND_SCRAPE
         };
+        const HEADERS = window.PROPAGANDA.HEADERS;
 
-        const HEADERS = {
-            'apikey': CONFIG.SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-        };
+        // ============================================
+        // SLIDE STATE
+        // ============================================
+        const slides = Array.from(document.querySelectorAll('.slide'));
+        let currentIndex = 0;
+        let icps = [];           // saved ICPs
+        let currentICPDraft = {}; // draft of the ICP being filled
+        let icpInProgress = false; // are we inside the ICP slides flow?
+        const ICP_FIRST_INDEX = slides.findIndex(s => s.dataset.slide === 'icp-identity');
+        const ICP_LAST_INDEX = slides.findIndex(s => s.dataset.slide === 'icp-awareness');
 
-        const HEADERS_READ = {
-            'apikey': CONFIG.SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-        };
-
-        // ─── State ──────────────────────────────────────────────
-        let clientId = localStorage.getItem('selectedClientId') || null;
-        let isSubmitting = false;
-        let draftTimer = null;
-        const DRAFT_KEY = `onboardingDraft:${clientId || 'new'}`;
-
-        // Every field id we want to persist + serialize
-        const FIELD_IDS = [
-            'brand-name','brand-code','brand-website','brand-email','brand-logo-url',
-            'color-primary','hex-primary','color-secondary','hex-secondary','color-accent','hex-accent',
-            'brand-tone','brand-voice','brand-avoid',
-            'offer-product-name','offer-price','offer-description','offer-details','offer-guarantee','offer-mechanism','offer-awareness',
-            'psych-icp','pain-1','pain-2','pain-3','desire-1','desire-2','desire-3',
-            'objection-1','objection-2','objection-3','psych-failed','psych-hangouts',
-            'comp-url-1','comp-url-2','comp-url-3','comp-hooks','comp-positioning','comp-proof',
-            'track-pixel-id','track-ad-account','track-capi-token','track-slack','track-drive'
-        ];
-
-        // ─── Toast ──────────────────────────────────────────────
-        function showToast(msg, isError = false) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast' + (isError ? ' error' : '');
-            toast.textContent = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+        // ============================================
+        // NAVIGATION
+        // ============================================
+        function showSlide(index) {
+            slides.forEach((s, i) => s.classList.toggle('active', i === index));
+            currentIndex = index;
+            updateProgress();
+            updateNavButtons();
+            window.scrollTo(0, 0);
+            // Focus first input on slide
+            setTimeout(() => {
+                const firstInput = slides[index].querySelector('input, textarea, select');
+                if (firstInput) firstInput.focus();
+            }, 100);
         }
 
-        // ─── Color sync ─────────────────────────────────────────
-        function syncColor(input, hexId) {
-            document.getElementById(hexId).value = input.value;
+        function updateProgress() {
+            const totalSlides = slides.length - 1; // exclude success
+            const pct = Math.round(((currentIndex + 1) / totalSlides) * 100);
+            document.getElementById('progress-fill').style.width = pct + '%';
+            document.getElementById('current-step').textContent = currentIndex + 1;
+            document.getElementById('total-steps').textContent = totalSlides;
         }
-        function syncHex(input, colorId) {
-            const v = input.value.trim();
-            if (/^#[0-9a-fA-F]{6}$/.test(v)) {
-                document.getElementById(colorId).value = v;
+
+        function updateNavButtons() {
+            const back = document.getElementById('back-btn');
+            const next = document.getElementById('next-btn');
+            back.disabled = currentIndex === 0;
+            const slide = slides[currentIndex];
+            if (slide.dataset.slide === 'submit' || slide.dataset.slide === 'success') {
+                next.style.display = 'none';
+            } else {
+                next.style.display = '';
+                next.textContent = currentIndex === slides.length - 3 ? 'Review →' : 'Next →';
             }
         }
 
-        // ─── Password toggle ────────────────────────────────────
-        function togglePassword(id, btn) {
-            const el = document.getElementById(id);
-            if (el.type === 'password') { el.type = 'text'; btn.textContent = 'Hide'; }
-            else { el.type = 'password'; btn.textContent = 'Show'; }
-        }
+        function nextSlide() {
+            if (!validateCurrent()) return;
 
-        // ─── Supabase Helpers ───────────────────────────────────
-        async function sbGet(table, query = '') {
-            const url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}${query ? '?' + query : ''}`;
-            const res = await fetch(url, { headers: HEADERS_READ });
-            if (!res.ok) throw new Error(`GET ${table} failed: ${res.status}`);
-            return res.json();
-        }
+            // ICP flow handling
+            const slide = slides[currentIndex];
+            const slideKey = slide.dataset.slide;
 
-        // ─── Draft save ─────────────────────────────────────────
-        function collectFormState() {
-            const state = {};
-            FIELD_IDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) state[id] = el.value;
-            });
-            return state;
-        }
+            // If we're on icp-intro and there's no ICP being built, jump to tracking
+            if (slideKey === 'icp-intro' && !icpInProgress) {
+                jumpToSlide('tracking');
+                return;
+            }
 
-        function applyFormState(state) {
-            if (!state) return;
-            FIELD_IDS.forEach(id => {
-                if (state[id] != null) {
-                    const el = document.getElementById(id);
-                    if (el) el.value = state[id];
-                }
-            });
-            // Resync color pickers from hex
-            ['primary','secondary','accent'].forEach(key => {
-                const hex = document.getElementById('hex-'+key);
-                const color = document.getElementById('color-'+key);
-                if (hex && color && /^#[0-9a-fA-F]{6}$/.test(hex.value)) color.value = hex.value;
-            });
-        }
+            // If we're at the last ICP slide, save the ICP and ask if they want another
+            if (slideKey === 'icp-awareness') {
+                showToast('Use the "Save This ICP" button to finalize this avatar');
+                return;
+            }
 
-        function saveDraft() {
-            try {
-                const state = collectFormState();
-                localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
-                flashDraftIndicator();
-            } catch (e) {
-                console.warn('Draft save failed', e);
+            // Default: next slide
+            if (currentIndex < slides.length - 1) {
+                showSlide(currentIndex + 1);
+                saveDraft();
             }
         }
 
-        function flashDraftIndicator() {
-            const el = document.getElementById('draft-indicator');
-            el.classList.add('visible');
-            clearTimeout(flashDraftIndicator._t);
-            flashDraftIndicator._t = setTimeout(() => el.classList.remove('visible'), 1500);
-        }
-
-        function scheduleSave() {
-            clearTimeout(draftTimer);
-            draftTimer = setTimeout(saveDraft, 500);
-        }
-
-        function bindAutoSave() {
-            FIELD_IDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.addEventListener('input', scheduleSave);
-                    el.addEventListener('change', scheduleSave);
-                }
-            });
-        }
-
-        // ─── Prefill from DB then draft ─────────────────────────
-        async function prefillFromClient(id) {
-            try {
-                const rows = await sbGet('clients', `id=eq.${encodeURIComponent(id)}&select=*`);
-                if (!Array.isArray(rows) || rows.length === 0) return null;
-                const c = rows[0];
-
-                // Map flat client columns to form fields
-                if (c.name) document.getElementById('brand-name').value = c.name;
-                if (c.code) document.getElementById('brand-code').value = c.code;
-                if (c.website_url) document.getElementById('brand-website').value = c.website_url;
-                if (c.primary_contact_email) document.getElementById('brand-email').value = c.primary_contact_email;
-                if (c.slack_channel_id) document.getElementById('track-slack').value = c.slack_channel_id;
-                if (c.google_drive_folder) document.getElementById('track-drive').value = c.google_drive_folder;
-
-                // Chip label
-                const chip = document.getElementById('client-chip');
-                const chipLabel = document.getElementById('client-chip-label');
-                chip.style.display = 'inline-flex';
-                chipLabel.textContent = `Editing: ${c.name || c.code || id}`;
-
-                return c;
-            } catch (e) {
-                console.warn('Failed to prefill from client:', e);
-                return null;
+        function prevSlide() {
+            if (currentIndex > 0) {
+                showSlide(currentIndex - 1);
             }
         }
 
-        // ─── Validation ─────────────────────────────────────────
-        function validate() {
-            const required = document.querySelectorAll('[data-required]');
-            let firstInvalid = null;
-            let ok = true;
+        function jumpToSlide(slideKey) {
+            const idx = slides.findIndex(s => s.dataset.slide === slideKey);
+            if (idx >= 0) showSlide(idx);
+        }
+
+        // ============================================
+        // VALIDATION
+        // ============================================
+        function validateCurrent() {
+            const slide = slides[currentIndex];
+            const required = slide.querySelectorAll('[data-required]');
+            let firstError = null;
             required.forEach(el => {
-                el.classList.remove('invalid');
                 if (!el.value.trim()) {
-                    el.classList.add('invalid');
-                    ok = false;
-                    if (!firstInvalid) firstInvalid = el;
+                    el.classList.add('error');
+                    if (!firstError) firstError = el;
+                } else {
+                    el.classList.remove('error');
                 }
             });
-            // code format
-            const code = document.getElementById('brand-code');
-            if (code.value && !/^[A-Z]{3,5}$/.test(code.value.trim())) {
-                code.classList.add('invalid');
-                ok = false;
-                if (!firstInvalid) firstInvalid = code;
+            if (firstError) {
+                firstError.focus();
+                showToast('Required field missing', 'error');
+                return false;
             }
-            // email format
-            const email = document.getElementById('brand-email');
-            if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-                email.classList.add('invalid');
-                ok = false;
-                if (!firstInvalid) firstInvalid = email;
+            return true;
+        }
+
+        // ============================================
+        // ICP MANAGEMENT
+        // ============================================
+        function startNewICP() {
+            currentICPDraft = {};
+            icpInProgress = true;
+            // Update ICP number indicators
+            document.querySelectorAll('.icp-num').forEach(el => el.textContent = icps.length + 1);
+            // Clear all ICP slide inputs
+            document.querySelectorAll('.icp-slide input, .icp-slide textarea, .icp-slide select').forEach(el => {
+                el.value = '';
+                el.classList.remove('error');
+            });
+            jumpToSlide('icp-identity');
+        }
+
+        function saveCurrentICP() {
+            // Required: name
+            const nameEl = document.getElementById('icp-name');
+            if (!nameEl.value.trim()) {
+                jumpToSlide('icp-identity');
+                showToast('ICP name is required', 'error');
+                nameEl.focus();
+                return;
             }
-            if (!ok) {
-                showToast('Please fill required fields', true);
-                if (firstInvalid) {
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    setTimeout(() => firstInvalid.focus(), 400);
+
+            const icp = {
+                name: nameEl.value,
+                description: val('icp-description'),
+                goals_dreams: {
+                    public_goals: val('icp-public-goals'),
+                    secret_dreams: val('icp-secret-dreams'),
+                    identity_desires: val('icp-identity-desires'),
+                    current_process: val('icp-current-process')
+                },
+                fears_insecurities: {
+                    three_am_thoughts: val('icp-three-am'),
+                    secret_fears: val('icp-secret-fears'),
+                    failure_scenarios: val('icp-failures'),
+                    competitive_paranoia: val('icp-paranoia'),
+                    time_anxiety: val('icp-time-anxiety')
+                },
+                embarrassing_situations: {
+                    professional_shame: val('icp-prof-shame'),
+                    personal_inadequacy: val('icp-inadequacy'),
+                    social_exposure: val('icp-exposure'),
+                    past_failures: val('icp-past-failures'),
+                    status_threats: val('icp-status-threats')
+                },
+                product_transformation: {
+                    immediate_relief: val('icp-relief'),
+                    status_elevation: val('icp-status-elev'),
+                    confidence_boost: val('icp-confidence'),
+                    time_liberation: val('icp-time-lib'),
+                    competitive_advantage: val('icp-advantage')
+                },
+                obvious_choice: {
+                    psychological_fit: val('icp-psych-fit'),
+                    trust_triggers: val('icp-trust'),
+                    authority_positioning: val('icp-authority'),
+                    social_proof_alignment: val('icp-social-proof'),
+                    risk_reversal: val('icp-risk-rev')
+                },
+                failed_alternatives: {
+                    previous_solutions: val('icp-prev-sol'),
+                    false_promises: val('icp-false-prom'),
+                    diy_disasters: val('icp-diy'),
+                    competitor_disappointments: val('icp-comp-disap'),
+                    free_cheap_failures: val('icp-free-fail')
+                },
+                hesitation_reasons: {
+                    skepticism_sources: val('icp-skepticism'),
+                    investment_fears: val('icp-invest-fears'),
+                    change_resistance: val('icp-change-res'),
+                    perfectionism_paralysis: val('icp-perfectionism'),
+                    authority_doubts: val('icp-auth-doubts')
+                },
+                enemy_story: {
+                    external_villains: val('icp-villains'),
+                    system_failures: val('icp-systems'),
+                    bad_advice_sources: val('icp-bad-advice'),
+                    internal_saboteurs: val('icp-saboteurs'),
+                    competitive_threats: val('icp-comp-threats')
+                },
+                internal_dialogue: {
+                    self_talk_patterns: val('icp-self-talk'),
+                    justification_stories: val('icp-justification'),
+                    hope_vs_cynicism: val('icp-hope-cynic'),
+                    decision_paralysis: val('icp-paralysis'),
+                    success_fantasies: val('icp-fantasies')
+                },
+                market_pain_data: val('icp-pain-data'),
+                solution_validation_data: val('icp-solution-data'),
+                direct_competitors: val('icp-direct-comp'),
+                alternative_solutions: val('icp-alt-sol'),
+                customer_complaints: val('icp-cust-complaints'),
+                market_trends: val('icp-market-trends'),
+                decision_making_style: val('icp-decision'),
+                core_identity: val('icp-core-id'),
+                emotional_lever: val('icp-emo-lever'),
+                job_to_be_done: val('icp-jtbd'),
+                their_phrases: val('icp-phrases'),
+                power_words: val('icp-power-words'),
+                pushy_words_avoid: val('icp-pushy-words'),
+                emotional_language: val('icp-emo-lang'),
+                awareness_analysis: {
+                    most_aware: val('icp-most-aware'),
+                    product_aware: val('icp-product-aware'),
+                    solution_aware: val('icp-solution-aware'),
+                    problem_aware: val('icp-problem-aware'),
+                    unaware: val('icp-unaware')
+                },
+            };
+
+            icps.push(icp);
+            icpInProgress = false;
+            renderICPPills();
+            saveDraft();
+            showToast(`ICP "${icp.name}" saved`, 'success');
+            jumpToSlide('icp-intro');
+        }
+
+        function renderICPPills() {
+            const wrap = document.getElementById('icp-pills');
+            if (icps.length === 0) {
+                wrap.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-style:italic">No ICPs yet. Add one below.</div>';
+                return;
+            }
+            wrap.innerHTML = icps.map((icp, i) => `
+                <div class="icp-pill">
+                    <span class="num">#${i+1}</span>
+                    <span>${escapeHtml(icp.name)}</span>
+                    <span class="remove" onclick="removeICP(${i})">×</span>
+                </div>
+            `).join('');
+        }
+
+        function removeICP(i) {
+            icps.splice(i, 1);
+            renderICPPills();
+            saveDraft();
+        }
+
+        // ============================================
+        // BRAND SCRAPE
+        // ============================================
+        async function runBrandScrape() {
+            const url = document.getElementById('client-website').value;
+            if (!url) {
+                showToast('Add a website URL on the previous step first', 'error');
+                return;
+            }
+            const btn = document.getElementById('scrape-btn');
+            btn.disabled = true;
+            btn.textContent = 'Scanning...';
+
+            try {
+                const r = await fetch(CONFIG.N8N_BRAND_SCRAPE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ website_url: url })
+                });
+
+                if (!r.ok) throw new Error('Scrape webhook not configured yet');
+
+                const data = await r.json();
+
+                // Auto-populate brand fields
+                if (data.colors) {
+                    if (data.colors.primary) syncColor('primary', data.colors.primary);
+                    if (data.colors.secondary) syncColor('secondary', data.colors.secondary);
+                    if (data.colors.accent) syncColor('accent', data.colors.accent);
                 }
+                if (data.tone) document.getElementById('brand-tone').value = data.tone;
+                if (data.voice) document.getElementById('brand-voice').value = data.voice;
+
+                // Show preview
+                const result = document.getElementById('scrape-result');
+                result.style.display = 'block';
+                result.classList.add('success');
+                document.getElementById('scrape-colors').innerHTML = ['primary','secondary','accent']
+                    .map(c => `<div style="background:${data.colors?.[c] || '#333'}"></div>`).join('');
+                document.getElementById('scrape-tone').textContent = data.tone || 'No tone extracted';
+
+                btn.textContent = '✓ Scanned — Click NEXT';
+                showToast('Brand context extracted', 'success');
+            } catch (err) {
+                console.warn('Brand scrape failed:', err);
+                btn.disabled = false;
+                btn.textContent = 'Retry Scan';
+                showToast('Scrape failed. Fill manually on next slides.', 'error');
             }
-            return ok;
         }
 
-        // ─── Payload builder ────────────────────────────────────
-        function splitCsv(s) {
-            return (s || '').split(',').map(x => x.trim()).filter(Boolean);
+        // ============================================
+        // COLOR PICKER
+        // ============================================
+        function syncColor(name, hex) {
+            document.getElementById('swatch-' + name).style.background = hex;
+            document.getElementById('color-' + name).value = hex;
         }
-        function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', () => {
+                const colorInput = swatch.parentElement.querySelector('input[type="color"]');
+                if (colorInput) colorInput.click();
+            });
+        });
+        document.querySelectorAll('.color-pick input[type="text"]').forEach(input => {
+            input.addEventListener('input', e => {
+                const name = input.id.replace('color-', '');
+                if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) {
+                    document.getElementById('swatch-' + name).style.background = e.target.value;
+                }
+            });
+        });
 
+        // ============================================
+        // LOGO UPLOAD (drag & drop)
+        // ============================================
+        function setupDropzone() {
+            const dz = document.getElementById('logo-dropzone');
+            ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => {
+                e.preventDefault(); e.stopPropagation();
+                dz.classList.add('dragging');
+            }));
+            ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => {
+                e.preventDefault(); e.stopPropagation();
+                dz.classList.remove('dragging');
+            }));
+            dz.addEventListener('drop', e => {
+                const file = e.dataTransfer.files[0];
+                if (file) handleLogoFile(file);
+            });
+        }
+
+        async function handleLogoFile(file) {
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showStatus('Not an image', 'error'); return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showStatus('Too large (max 5MB)', 'error'); return;
+            }
+
+            // Local preview + read as data URL (used as fallback)
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('logo-img').src = dataUrl;
+            document.getElementById('logo-name').textContent = file.name;
+            document.getElementById('logo-empty').style.display = 'none';
+            document.getElementById('logo-preview').classList.add('visible');
+
+            // Logos are tiny (<50KB usually). Just save the data URL inline.
+            // No Storage bucket needed. No CDN. No CORS bullshit.
+            document.getElementById('brand-logo-url').value = dataUrl;
+            showStatus('✓ Saved', 'success');
+            saveDraft();
+        }
+
+        function clearLogo() {
+            document.getElementById('brand-logo-url').value = '';
+            document.getElementById('logo-input').value = '';
+            document.getElementById('logo-img').src = '';
+            document.getElementById('logo-empty').style.display = '';
+            document.getElementById('logo-preview').classList.remove('visible');
+            showStatus('', '');
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('upload-status');
+            el.textContent = msg;
+            el.className = 'upload-status ' + (type || '');
+        }
+
+        // ============================================
+        // DRAFT SAVE
+        // ============================================
+        const DRAFT_KEY = 'propaganda-onboarding-draft-v2';
+        function saveDraft() {
+            const data = collectAllFields();
+            data._icps = icps;
+            data._currentIndex = currentIndex;
+            try {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+            } catch (e) {}
+        }
+        function loadDraft() {
+            try {
+                const raw = localStorage.getItem(DRAFT_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                Object.entries(data).forEach(([k, v]) => {
+                    if (k.startsWith('_')) return;
+                    const el = document.getElementById(k);
+                    if (el && typeof v === 'string') el.value = v;
+                });
+                if (data._icps) icps = data._icps;
+                renderICPPills();
+                if (data._currentIndex != null && data._currentIndex < slides.length) {
+                    showSlide(data._currentIndex);
+                }
+                showToast('Draft restored');
+            } catch (e) {}
+        }
+        function clearDraft() {
+            try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+        }
+
+        // Auto-save on every input
+        document.addEventListener('input', e => {
+            if (e.target.matches('input, textarea, select')) {
+                clearTimeout(window._draftTimer);
+                window._draftTimer = setTimeout(saveDraft, 500);
+            }
+        });
+
+        // ============================================
+        // FIELD COLLECTION
+        // ============================================
+        function val(id) {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : '';
+        }
+
+        function collectAllFields() {
+            const ids = [
+                'client-name','client-code','client-website','client-email',
+                'brand-tone','brand-voice','brand-avoid','brand-logo-url',
+                'color-primary','color-secondary','color-accent',
+                'product-name','price-point','product-description',
+                'offer-details','guarantee','unique-mechanism',
+                'meta-pixel-id','meta-ad-account','capi-token',
+                'drive-folder',
+                // ICP fields (only persisted in draft, not submitted directly)
+                'icp-name','icp-description','icp-public-goals','icp-secret-dreams',
+                'icp-identity-desires','icp-current-process',
+                'icp-three-am','icp-secret-fears','icp-failures','icp-paranoia','icp-time-anxiety',
+                'icp-prof-shame','icp-inadequacy','icp-exposure','icp-past-failures','icp-status-threats',
+                'icp-relief','icp-status-elev','icp-confidence','icp-time-lib','icp-advantage',
+                'icp-psych-fit','icp-trust','icp-authority','icp-social-proof','icp-risk-rev',
+                'icp-prev-sol','icp-false-prom','icp-diy','icp-comp-disap','icp-free-fail',
+                'icp-skepticism','icp-invest-fears','icp-change-res','icp-perfectionism','icp-auth-doubts',
+                'icp-villains','icp-systems','icp-bad-advice','icp-saboteurs','icp-comp-threats',
+                'icp-self-talk','icp-justification','icp-hope-cynic','icp-paralysis','icp-fantasies',
+                'icp-pain-data','icp-solution-data',
+                'icp-direct-comp','icp-alt-sol','icp-cust-complaints','icp-market-trends',
+                'icp-decision','icp-core-id','icp-emo-lever','icp-jtbd',
+                'icp-phrases','icp-power-words','icp-pushy-words','icp-emo-lang',
+                'icp-most-aware','icp-product-aware','icp-solution-aware','icp-problem-aware','icp-unaware',
+            ];
+            const out = {};
+            ids.forEach(id => out[id] = val(id));
+            return out;
+        }
+
+        // ============================================
+        // SUBMIT
+        // ============================================
         function buildPayload() {
             return {
-                client_id: clientId,
+                client: {
+                    name: val('client-name'),
+                    code: val('client-code').toUpperCase(),
+                    website_url: val('client-website'),
+                    primary_contact_email: val('client-email'),
+                    google_drive_folder: val('drive-folder'),
+                    status: 'active'
+                },
                 brand: {
-                    name: val('brand-name'),
-                    code: val('brand-code'),
-                    website_url: val('brand-website'),
-                    contact_email: val('brand-email'),
+                    name: val('client-name'),
                     logo_url: val('brand-logo-url'),
-                    color_primary: val('hex-primary'),
-                    color_secondary: val('hex-secondary'),
-                    color_accent: val('hex-accent'),
+                    brand_colors: {
+                        primary: val('color-primary'),
+                        secondary: val('color-secondary'),
+                        accent: val('color-accent')
+                    },
                     tone: val('brand-tone'),
                     voice_guidelines: val('brand-voice'),
-                    avoid_words: splitCsv(val('brand-avoid'))
+                    avoid_words: val('brand-avoid').split(',').map(s => s.trim()).filter(Boolean)
                 },
                 offer: {
-                    product_name: val('offer-product-name'),
-                    price: val('offer-price'),
-                    description: val('offer-description'),
+                    name: val('product-name'),
+                    product_name: val('product-name'),
+                    price_point: val('price-point'),
+                    product_description: val('product-description'),
                     offer_details: val('offer-details'),
-                    guarantee: val('offer-guarantee'),
-                    unique_mechanism: val('offer-mechanism'),
-                    awareness_level: val('offer-awareness')
-                },
-                psychographics: {
-                    icp: val('psych-icp'),
-                    pain_points: [val('pain-1'), val('pain-2'), val('pain-3')].filter(Boolean),
-                    desires: [val('desire-1'), val('desire-2'), val('desire-3')].filter(Boolean),
-                    objections: [val('objection-1'), val('objection-2'), val('objection-3')].filter(Boolean),
-                    failed_attempts: val('psych-failed'),
-                    hangouts: val('psych-hangouts')
-                },
-                competition: {
-                    competitor_urls: [val('comp-url-1'), val('comp-url-2'), val('comp-url-3')].filter(Boolean),
-                    competitor_hooks: val('comp-hooks'),
-                    positioning: val('comp-positioning'),
-                    proof_points: val('comp-proof')
+                    guarantee: val('guarantee'),
+                    unique_mechanism: val('unique-mechanism')
                 },
                 tracking: {
-                    meta_pixel_id: val('track-pixel-id'),
-                    meta_ad_account_id: val('track-ad-account'),
-                    capi_token: val('track-capi-token'),
-                    slack_channel_id: val('track-slack'),
-                    drive_folder_url: val('track-drive')
-                }
+                    meta_pixel_id: val('meta-pixel-id'),
+                    meta_ad_account_id: val('meta-ad-account'),
+                    capi_access_token: val('capi-token')
+                },
+                icps: icps
             };
         }
 
-        // ─── Submit ─────────────────────────────────────────────
+        function renderReview() {
+            const p = buildPayload();
+            const summary = document.getElementById('review-summary');
+            summary.innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px">
+                    <div>
+                        <div class="icp-section-header">Client</div>
+                        <div style="font-size:14px">${escapeHtml(p.client.name || '—')} <span style="color:var(--text-muted);font-family:'Geist Mono',monospace;font-size:11px">${p.client.code}</span></div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${escapeHtml(p.client.website_url || '')}</div>
+                    </div>
+                    <div>
+                        <div class="icp-section-header">Offer</div>
+                        <div style="font-size:14px">${escapeHtml(p.offer.product_name || '—')}</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${escapeHtml(p.offer.price_point || '')}</div>
+                    </div>
+                    <div>
+                        <div class="icp-section-header">Brand</div>
+                        <div style="display:flex;gap:6px;align-items:center">
+                            <div style="width:18px;height:18px;border-radius:4px;background:${p.brand.brand_colors.primary};border:1px solid var(--border)"></div>
+                            <div style="width:18px;height:18px;border-radius:4px;background:${p.brand.brand_colors.secondary};border:1px solid var(--border)"></div>
+                            <div style="width:18px;height:18px;border-radius:4px;background:${p.brand.brand_colors.accent};border:1px solid var(--border)"></div>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">${escapeHtml((p.brand.tone || '').slice(0, 60))}</div>
+                    </div>
+                    <div>
+                        <div class="icp-section-header">ICPs (${icps.length})</div>
+                        ${icps.length > 0 ? icps.map(i => `<div style="font-size:13px">• ${escapeHtml(i.name)}</div>`).join('') : '<div style="font-size:11px;color:var(--text-muted)">None added</div>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // SUBMIT — direct Supabase REST inserts (no n8n)
+        // Sequential POSTs: clients → brand_profiles → offer_contexts → icps[] → onboarding_steps[]
+        // Each insert returns the new row's ID (Prefer: return=representation)
+        // ============================================
+        async function sbInsert(table, body) {
+            const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}`, {
+                method: 'POST',
+                headers: HEADERS,
+                body: JSON.stringify(body)
+            });
+            if (!r.ok) {
+                const errText = await r.text();
+                throw new Error(`${table} insert failed (${r.status}): ${errText}`);
+            }
+            const data = await r.json();
+            return Array.isArray(data) ? data[0] : data;
+        }
+
         async function submitOnboarding() {
-            if (isSubmitting) return;
-            if (!validate()) return;
-
             const payload = buildPayload();
-            isSubmitting = true;
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
-
-            try {
-                const res = await fetch(CONFIG.N8N_ONBOARD_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) throw new Error('Webhook returned ' + res.status);
-                const data = await res.json().catch(() => ({}));
-                const returnedId = data.client_id || data.id || (data.client && data.client.id) || clientId;
-                if (returnedId) localStorage.setItem('selectedClientId', returnedId);
-
-                // Clear draft
-                localStorage.removeItem(DRAFT_KEY);
-
-                showToast('Saved - redirecting...');
-                setTimeout(() => { window.location.href = '13-image-ad-generator.html'; }, 700);
-            } catch (e) {
-                console.error(e);
-                showToast('Save failed: ' + e.message, true);
-                btn.disabled = false;
-                btn.innerHTML = 'Save & Continue to Image Ads';
-                isSubmitting = false;
-            }
-        }
-
-        // ─── Init ───────────────────────────────────────────────
-        async function init() {
-            bindAutoSave();
-
-            // 1. DB prefill first (if clientId present)
-            if (clientId) {
-                await prefillFromClient(clientId);
+            if (!payload.client.name || !payload.client.code || !payload.client.website_url) {
+                showToast('Missing client basics', 'error');
+                jumpToSlide('basics');
+                return;
             }
 
-            // 2. Draft overrides DB (in-progress edits take precedence)
-            try {
-                const raw = localStorage.getItem(DRAFT_KEY);
-                if (raw) {
-                    applyFormState(JSON.parse(raw));
-                    showToast('Draft restored');
+            // Warn if ICP slides were filled out but never saved (icps array is empty
+            // but the icp-name input has a value — meaning they forgot to click "Save This ICP")
+            const draftIcpName = val('icp-name');
+            if (payload.icps.length === 0 && draftIcpName) {
+                const proceed = confirm(
+                    `You have an unsaved ICP "${draftIcpName}" in progress.\n\n` +
+                    `Click CANCEL to go back and click "Save This ICP" on the Awareness Levels slide.\n\n` +
+                    `Click OK to submit without it.`
+                );
+                if (!proceed) {
+                    jumpToSlide('icp-awareness');
+                    return;
                 }
-            } catch (e) {
-                console.warn('Draft restore failed', e);
+            }
+
+            // Warn if no ICPs at all (but allow them to proceed — ICPs are optional)
+            if (payload.icps.length === 0) {
+                const proceed = confirm(
+                    `No ICPs added yet.\n\n` +
+                    `You can add them later from the Image Ad Generator, but creative quality will be much higher with at least one ICP profile.\n\n` +
+                    `Click OK to submit without ICPs, or CANCEL to add one now.`
+                );
+                if (!proceed) {
+                    jumpToSlide('icp-intro');
+                    return;
+                }
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                // 1. INSERT clients → get client_id
+                showToast('Creating client...');
+                const client = await sbInsert('clients', {
+                    name: payload.client.name,
+                    code: payload.client.code,
+                    website_url: payload.client.website_url,
+                    primary_contact_email: payload.client.primary_contact_email,
+                    google_drive_folder: payload.client.google_drive_folder,
+                    status: 'active'
+                });
+                const clientId = client.id;
+                console.log('✓ client created:', clientId);
+
+                // 2. INSERT brand_profiles with client_id
+                showToast('Saving brand profile...');
+                const brand = await sbInsert('brand_profiles', {
+                    client_id: clientId,
+                    name: payload.brand.name,
+                    logo_url: payload.brand.logo_url,
+                    brand_colors: payload.brand.brand_colors,
+                    tone: payload.brand.tone,
+                    voice_guidelines: payload.brand.voice_guidelines,
+                    avoid_words: payload.brand.avoid_words,
+                    is_default: false
+                });
+                const brandId = brand.id;
+                console.log('✓ brand created:', brandId);
+
+                // 3. INSERT offer_contexts with brand_id
+                showToast('Saving offer...');
+                const offer = await sbInsert('offer_contexts', {
+                    brand_id: brandId,
+                    name: payload.offer.name,
+                    product_name: payload.offer.product_name,
+                    product_description: payload.offer.product_description,
+                    offer_details: payload.offer.offer_details,
+                    price_point: payload.offer.price_point,
+                    unique_mechanism: payload.offer.unique_mechanism,
+                    status: 'active'
+                });
+                const offerId = offer.id;
+                console.log('✓ offer created:', offerId);
+
+                // 4. INSERT each ICP with client_id
+                if (payload.icps && payload.icps.length > 0) {
+                    showToast(`Saving ${payload.icps.length} ICP${payload.icps.length > 1 ? 's' : ''}...`);
+                    for (const icp of payload.icps) {
+                        await sbInsert('icps', {
+                            client_id: clientId,
+                            name: icp.name,
+                            description: icp.description,
+                            goals_dreams: icp.goals_dreams,
+                            fears_insecurities: icp.fears_insecurities,
+                            embarrassing_situations: icp.embarrassing_situations,
+                            product_transformation: icp.product_transformation,
+                            obvious_choice: icp.obvious_choice,
+                            failed_alternatives: icp.failed_alternatives,
+                            hesitation_reasons: icp.hesitation_reasons,
+                            enemy_story: icp.enemy_story,
+                            internal_dialogue: icp.internal_dialogue,
+                            market_pain_data: icp.market_pain_data,
+                            solution_validation_data: icp.solution_validation_data,
+                            direct_competitors: icp.direct_competitors,
+                            alternative_solutions: icp.alternative_solutions,
+                            customer_complaints: icp.customer_complaints,
+                            market_trends: icp.market_trends,
+                            decision_making_style: icp.decision_making_style,
+                            core_identity: icp.core_identity,
+                            emotional_lever: icp.emotional_lever,
+                            job_to_be_done: icp.job_to_be_done,
+                            their_phrases: icp.their_phrases,
+                            power_words: icp.power_words,
+                            pushy_words_avoid: icp.pushy_words_avoid,
+                            emotional_language: icp.emotional_language,
+                            awareness_analysis: icp.awareness_analysis,
+                            status: 'active'
+                        });
+                    }
+                    console.log(`✓ ${payload.icps.length} ICPs created`);
+                }
+
+                // 5. INSERT 8 onboarding_steps (bulk)
+                const stepNames = [
+                    'Client intake & brand profile',
+                    'Offer context & positioning',
+                    'Swipe file curation',
+                    'Concept generation (week 1 batch)',
+                    'Copy generation',
+                    'Image render & review',
+                    'Meta ad upload & launch',
+                    'Reporting & iteration'
+                ];
+                const stepRows = stepNames.map((name, i) => ({
+                    client_id: clientId,
+                    step_number: i + 1,
+                    step_name: name,
+                    status: i === 0 ? 'complete' : 'pending',
+                    started_at: i === 0 ? new Date().toISOString() : null,
+                    completed_at: i === 0 ? new Date().toISOString() : null
+                }));
+                await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/onboarding_steps`, {
+                    method: 'POST',
+                    headers: HEADERS,
+                    body: JSON.stringify(stepRows)
+                });
+                console.log('✓ 8 onboarding steps created');
+
+                // Done — save client_id, clear draft, redirect
+                localStorage.setItem('selectedClientId', clientId);
+                clearDraft();
+                showToast(`✓ ${payload.client.name} onboarded`, 'success');
+                jumpToSlide('success');
+                setTimeout(() => {
+                    window.location.href = '13-image-ad-generator.html';
+                }, 1500);
+
+            } catch (err) {
+                console.error('Submit failed:', err);
+                btn.disabled = false;
+                btn.textContent = 'Save & Continue to Image Ad Generator →';
+                showToast('Submit failed — ' + err.message, 'error');
             }
         }
 
-        init();
+        // ============================================
+        // KEYBOARD NAV
+        // ============================================
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.target.matches('textarea')) {
+                e.preventDefault();
+                const slideKey = slides[currentIndex].dataset.slide;
+                if (slideKey === 'submit') return;
+                if (slideKey === 'icp-awareness') {
+                    saveCurrentICP();
+                } else {
+                    nextSlide();
+                }
+            } else if (e.key === 'Enter' && e.shiftKey && !e.target.matches('textarea')) {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // ============================================
+        // UTILS
+        // ============================================
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show ' + (type || '');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+        }
+
+        // Update review when reaching submit slide
+        const observer = new MutationObserver(() => {
+            const submitSlide = slides.find(s => s.dataset.slide === 'submit');
+            if (submitSlide && submitSlide.classList.contains('active')) {
+                renderReview();
+            }
+        });
+        slides.forEach(s => observer.observe(s, { attributes: true, attributeFilter: ['class'] }));
+
+        // Auto-uppercase code
+        document.getElementById('client-code').addEventListener('input', e => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // ============================================
+        // INIT
+        // ============================================
+        setupDropzone();
+        renderICPPills();
+        loadDraft();
+        showSlide(currentIndex);
     </script>
 </body>
 </html>

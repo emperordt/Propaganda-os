@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Brief — Propaganda OS</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+            --green: #4ade80;
+            --green-dim: #4ade8020;
+            --amber: #f8d47a;
+            --amber-dim: #f8d47a20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --red: #ff4444;
+            --red-dim: #ff444420;
+        }
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR (matches 26-creative-board) */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 220px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-section-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+        .sidebar-link {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: var(--orange); background: var(--orange-dim); }
+
+        /* LAYOUT — 3 column workspace + sticky right rail */
+        .workspace {
+            margin-left: 220px;
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            min-height: 100vh;
+        }
+        @media (max-width: 1400px) {
+            .workspace { grid-template-columns: 280px 1fr 300px; }
+        }
+        @media (max-width: 1100px) {
+            .workspace { grid-template-columns: 1fr; }
+        }
+
+        .col-context, .col-form, .col-score {
+            padding: 24px 22px;
+            min-height: 100vh;
+        }
+        .col-context {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        .col-score {
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* HEADERS */
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+        .page-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 22px;
+        }
+        .col-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* FORM CONTROLS */
+        .field { margin-bottom: 16px; }
+        .field-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .field-label .hint {
+            font-weight: 400;
+            color: var(--text-muted);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .input, .select, .textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            transition: border-color 0.15s ease;
+        }
+        .input:focus, .select:focus, .textarea:focus {
+            outline: none;
+            border-color: var(--orange);
+        }
+        .textarea { min-height: 70px; resize: vertical; line-height: 1.5; }
+        .input-mono { font-family: 'Geist Mono', monospace; font-size: 12px; }
+
+        /* RADIO GRID — for lead type, awareness, asset type */
+        .radio-grid {
+            display: grid;
+            gap: 6px;
+        }
+        .radio-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .radio-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .radio-tile {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.12s ease;
+            user-select: none;
+        }
+        .radio-tile:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .radio-tile.active {
+            background: var(--orange-dim);
+            border-color: var(--orange);
+            color: var(--orange);
+            font-weight: 600;
+        }
+        .radio-tile.disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* CHIP MULTI-SELECT */
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .chip {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.12s ease;
+        }
+        .chip:hover { border-color: var(--border-hover); }
+        .chip.active {
+            background: var(--orange-dim);
+            border-color: var(--orange);
+            color: var(--orange);
+            font-weight: 600;
+        }
+        .chip.add {
+            border-style: dashed;
+            color: var(--text-muted);
+        }
+
+        /* CONTEXT SUMMARY CARDS */
+        .summary-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+        .summary-card h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .summary-card .meta {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .summary-card p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .summary-card .tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .summary-card .tag {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .summary-empty {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 10px 0;
+        }
+
+        /* SWIPE PICKER — inline preview */
+        .swipe-selected-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .swipe-selected-row .swipe-thumb {
+            aspect-ratio: 3 / 4;
+        }
+        .swipe-selected-row .swipe-thumb img { object-fit: contain; background: #0a0a0a; }
+        .swipe-selected-row .swipe-thumb .zoom {
+            position: absolute; top: 4px; left: 4px;
+            width: 22px; height: 22px; border-radius: 4px;
+            background: rgba(0,0,0,0.7); color: var(--text-primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer;
+            opacity: 0; transition: opacity 0.12s ease;
+        }
+        .swipe-selected-row .swipe-thumb:hover .zoom { opacity: 1; }
+        .swipe-selected-row .swipe-thumb .remove {
+            position: absolute; top: 4px; right: 4px;
+            width: 22px; height: 22px; border-radius: 4px;
+            background: rgba(0,0,0,0.7); color: var(--red);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; cursor: pointer; font-weight: 700;
+            opacity: 0; transition: opacity 0.12s ease;
+        }
+        .swipe-selected-row .swipe-thumb:hover .remove { opacity: 1; }
+        .swipe-selected-row .swipe-thumb .check { display: none !important; }
+
+        /* LIGHTBOX */
+        .lightbox-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 400;
+            cursor: zoom-out;
+        }
+        .lightbox-overlay.open { display: flex; }
+        .lightbox-overlay img {
+            max-width: 92vw; max-height: 92vh;
+            object-fit: contain;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6);
+            border-radius: 6px;
+        }
+        .lightbox-overlay .lightbox-meta {
+            position: absolute;
+            top: 16px; left: 16px; right: 16px;
+            color: var(--text-secondary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            text-align: center;
+            pointer-events: none;
+        }
+        .lightbox-overlay .lightbox-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: #fff;
+            border: 0; cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .swipe-empty-state {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 12px;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 6px;
+        }
+        .swipe-browse-btn {
+            display: block;
+            width: 100%;
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.12s ease;
+        }
+        .swipe-browse-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .swipe-browse-btn .count {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 6px;
+            background: var(--orange);
+            color: #0f0f0f;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+        .swipe-thumb {
+            aspect-ratio: 1;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            background: var(--bg-tertiary);
+            transition: border-color 0.12s ease;
+            position: relative;
+        }
+        .swipe-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .swipe-thumb.active { border-color: var(--orange); }
+        .swipe-thumb .check {
+            position: absolute; top: 4px; right: 4px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--orange); color: #0f0f0f;
+            display: none; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+        }
+        .swipe-thumb.active .check { display: flex; }
+        .swipe-thumb .label {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            padding: 4px 6px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            color: var(--text-primary);
+            font-size: 10px;
+            font-family: 'Geist Mono', monospace;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            pointer-events: none;
+        }
+
+        /* SWIPE BROWSER MODAL */
+        .swipe-modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 22px 22px;
+            width: min(92vw, 1100px);
+            max-width: none;
+            min-width: 0;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .swipe-modal-head {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 14px;
+        }
+        .swipe-modal-head .modal-title { margin-bottom: 0; flex: 1; }
+        .swipe-modal-head .filter {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 6px 10px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            min-width: 220px;
+        }
+        .swipe-modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            padding: 4px;
+            flex: 1;
+        }
+        .swipe-modal-grid .swipe-thumb {
+            aspect-ratio: 3 / 4;
+            border-width: 3px;
+        }
+        .swipe-modal-foot {
+            margin-top: 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .swipe-modal-foot .count-pill {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            flex: 1;
+        }
+
+        /* WINNERS LIST */
+        .winner-item {
+            font-size: 11px;
+            padding: 6px 8px;
+            border-left: 2px solid var(--green);
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            margin-bottom: 4px;
+            font-family: 'Geist Mono', monospace;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        /* HOOK LIST */
+        .hook-item {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .hook-num {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 8px 4px 0;
+            min-width: 24px;
+        }
+        .hook-item .textarea { min-height: 38px; }
+
+        /* BUTTONS */
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn:hover:not(:disabled) { border-color: var(--border-hover); background: var(--bg-secondary); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0f0f0f;
+            font-weight: 600;
+        }
+        .btn-primary:hover:not(:disabled) { background: #ff6620; border-color: #ff6620; }
+        .btn-ghost {
+            background: transparent;
+            border: 1px dashed var(--border);
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+        .btn-success {
+            background: var(--green);
+            border-color: var(--green);
+            color: #0f0f0f;
+            font-weight: 600;
+        }
+        .btn-block { width: 100%; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* SCORE SLIDER */
+        .score-row { margin-bottom: 14px; }
+        .score-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .score-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .score-val {
+            font-family: 'Geist Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--orange);
+            min-width: 28px;
+            text-align: right;
+        }
+        .score-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .score-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            outline: none;
+        }
+        .score-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--orange);
+            cursor: pointer;
+        }
+        .score-slider::-moz-range-thumb {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--orange);
+            cursor: pointer;
+            border: 0;
+        }
+
+        /* ICE BIG NUMBER */
+        .ice-display {
+            text-align: center;
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin: 14px 0;
+        }
+        .ice-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+        .ice-value {
+            font-family: 'Geist Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .ice-value.pass { color: var(--green); }
+        .ice-value.fail { color: var(--text-muted); }
+        .ice-thresh {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .ice-thresh .pass { color: var(--green); }
+        .ice-thresh .fail { color: var(--red); }
+
+        /* STATUS PILL */
+        .status-pill {
+            display: inline-block;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .status-pill.idea        { background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border); }
+        .status-pill.approved    { background: var(--blue-dim);    color: var(--blue); }
+        .status-pill.copywriting { background: var(--purple-dim);  color: var(--purple); }
+        .status-pill.production  { background: var(--amber-dim);   color: var(--amber); }
+        .status-pill.revisions   { background: var(--pink-dim);    color: var(--pink); }
+        .status-pill.launched    { background: var(--orange-dim);  color: var(--orange); }
+        .status-pill.won         { background: var(--green-dim);   color: var(--green); }
+        .status-pill.lost        { background: var(--red-dim);     color: var(--red); }
+        .status-pill.rejected    { background: var(--red-dim);     color: var(--red); }
+
+        /* AUTO-NAME PREVIEW */
+        .name-preview {
+            background: var(--bg-tertiary);
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            color: var(--orange);
+            word-break: break-all;
+            margin-bottom: 14px;
+        }
+        .name-preview .placeholder { color: var(--text-muted); }
+
+        /* TOAST — bottom-left so it never covers any drawer or footer controls */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 240px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 13px;
+            z-index: 600;
+            transform: translateY(120%);
+            transition: transform 0.2s ease;
+            max-width: 320px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+        }
+        .toast.show { transform: translateY(0); }
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+
+        /* INFO TOOLTIP */
+        .info-tip { position: relative; display: inline-block; margin-left: 8px; cursor: help; }
+        .info-tip-icon {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px; font-weight: 700;
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+        .info-tip:hover .info-tip-icon { color: var(--orange); border-color: var(--orange); }
+        .info-tip-pop {
+            visibility: hidden; opacity: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-hover);
+            color: var(--text-secondary);
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            line-height: 1.55;
+            width: 340px;
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+            z-index: 500;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+            text-align: left;
+        }
+        .info-tip:hover .info-tip-pop { visibility: visible; opacity: 1; }
+        .info-tip-pop strong {
+            display: block;
+            color: var(--text-primary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 6px;
+        }
+        .info-tip-pop .axis { margin: 8px 0; padding-left: 8px; border-left: 2px solid var(--border); }
+        .info-tip-pop .axis b { color: var(--text-primary); font-weight: 600; }
+        .info-tip-pop .anchors {
+            color: var(--text-muted);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10.5px;
+            margin-top: 2px;
+        }
+        .info-tip-pop .formula {
+            margin-top: 10px; padding-top: 8px;
+            border-top: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+        }
+        .info-tip-pop .thresh { margin-top: 6px; color: var(--text-muted); font-size: 11px; }
+        .info-tip-pop .thresh b { color: var(--orange); }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 300;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            min-width: 380px;
+            max-width: 500px;
+        }
+        .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+
+        /* HELPER */
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stack { display: flex; flex-direction: column; gap: 10px; }
+        .vid-only { display: none; }
+        body.vid .vid-only { display: block; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="workspace">
+        <!-- ============= COL 1: CONTEXT ============= -->
+        <section class="col-context">
+            <div class="col-label">Research Context</div>
+
+            <div class="field">
+                <div class="field-label">Client</div>
+                <select id="client-select" class="select" onchange="onClientChange()">
+                    <option value="">Pick a client…</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Test Tag <span class="hint">optional grouping</span></div>
+                <input type="text" id="test-tag" class="input" placeholder='e.g. "Apr Sleep Funnel"' list="known-tags-list">
+                <datalist id="known-tags-list"></datalist>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Copy Doc <span class="hint">Google Doc / Drive URL</span></div>
+                <div style="display:flex;gap:6px;align-items:center">
+                    <input type="url" id="copy-doc-url" class="input" placeholder="https://docs.google.com/…" style="flex:1">
+                    <a id="copy-doc-open" target="_blank" rel="noopener" style="display:none;color:var(--blue);text-decoration:none;font-family:'Geist Mono',monospace;font-size:11px;border:1px solid var(--blue);padding:7px 9px;border-radius:6px">↗ Open</a>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">ICP</div>
+                <select id="icp-select" class="select" onchange="renderIcpSummary()">
+                    <option value="">Pick an ICP…</option>
+                </select>
+                <div id="icp-summary"></div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Brand</div>
+                <div id="brand-summary" class="summary-empty">Pick a client to see brand voice.</div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Offer</div>
+                <select id="offer-select" class="select" onchange="renderOfferSummary()">
+                    <option value="">Pick an offer…</option>
+                </select>
+                <div id="offer-summary"></div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Inspiration Swipe <span class="hint">optional</span></div>
+                <div id="swipe-selected" class="swipe-selected-row"></div>
+                <button type="button" class="swipe-browse-btn" onclick="openSwipeBrowser()">
+                    🔍 Browse Swipes <span class="count" id="swipe-count-pill" style="display:none">0</span>
+                </button>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Recent Winners</div>
+                <div id="winners-list" class="summary-empty">No winners yet for this client.</div>
+            </div>
+        </section>
+
+        <!-- ============= COL 2: BRIEF FORM ============= -->
+        <section class="col-form">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px">
+                <div class="page-title">Creative Brief</div>
+                <a href="26-creative-board.html" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-muted);text-decoration:none;padding:6px 10px;border:1px solid var(--border);border-radius:6px">← Pipeline</a>
+            </div>
+            <div class="page-sub">Full editor — opened from a card on the Pipeline. Edits save back to the same concept.</div>
+
+            <span id="status-pill" class="status-pill idea">IDEA</span>
+
+            <div class="name-preview" id="name-preview">
+                <span class="placeholder">Auto-name will appear once Lead Type / Angle / Format are set…</span>
+            </div>
+
+            <!-- BRIEF INPUTS — the auto-name fields -->
+            <div class="col-label">Brief Inputs</div>
+
+            <div class="field">
+                <div class="field-label">Lead Type <span class="hint">Masterson — drives awareness mapping</span></div>
+                <div class="radio-grid cols-3" id="lead-type-grid"></div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Awareness Level <span class="hint">Schwartz — auto-mapped from lead type</span></div>
+                <div class="radio-grid cols-3" id="awareness-grid"></div>
+            </div>
+
+            <div class="row-2">
+                <div class="field">
+                    <div class="field-label">Angle <span class="hint">short tag</span></div>
+                    <input id="angle" class="input input-mono" placeholder="Simplicity">
+                </div>
+                <div class="field">
+                    <div class="field-label">Format</div>
+                    <select id="format" class="select">
+                        <option value="UGC">UGC</option>
+                        <option value="Static">Static</option>
+                        <option value="Story">Story</option>
+                        <option value="TalkingHead">TalkingHead</option>
+                        <option value="Native">Native</option>
+                        <option value="Carousel">Carousel</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div class="field">
+                    <div class="field-label">Asset Type</div>
+                    <div class="radio-grid cols-3" id="asset-type-grid">
+                        <div class="radio-tile" data-asset="IMG">IMG</div>
+                        <div class="radio-tile" data-asset="VID">VID</div>
+                        <div class="radio-tile" data-asset="CAR">CAR</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="field-label">Concept Category <span class="hint">portfolio</span></div>
+                    <div class="radio-grid cols-3" id="category-grid">
+                        <div class="radio-tile" data-cat="Control" title="Variation of a proven winner. Min ICE 8.5">Control</div>
+                        <div class="radio-tile" data-cat="DataDriven" title="Test based on data signal. Min ICE 7.5">Data</div>
+                        <div class="radio-tile" data-cat="Innovation" title="Net-new angle/format. Min ICE 7.0">Innov</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Big Idea <span class="hint">1–2 sentences</span></div>
+                <textarea id="big-idea" class="textarea" placeholder="The core creative concept. e.g. 'Show contrast between struggling agency owners vs. our systematic approach. Use HUD Statement from Florida mansion as pattern interrupt.'"></textarea>
+            </div>
+
+            <!-- BRIEF BODY -->
+            <div class="col-label" style="margin-top:24px">Brief Body</div>
+
+            <div class="field">
+                <div class="field-label">
+                    <span>Hook Ideas <span class="hint">3–5 variants</span></span>
+                    <button class="btn btn-ghost btn-sm" onclick="addHook()">+ Add Hook</button>
+                </div>
+                <div id="hooks-list"></div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Body Framework</div>
+                <textarea id="body-framework" class="textarea" placeholder="Open with HUD, agitate inconsistent leads, reveal Growth Engine, CTA"></textarea>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Proof Points <span class="hint">tap to select; auto-loaded from offer</span></div>
+                <div id="proof-chips" class="chip-row"></div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Pain Focus <span class="hint">from offer + ICP fears</span></div>
+                <div id="pain-chips" class="chip-row"></div>
+            </div>
+
+            <div class="row-2">
+                <div class="field">
+                    <div class="field-label">CTA</div>
+                    <select id="cta" class="select">
+                        <option value="">— pick one —</option>
+                        <option>Growth Proposal Call</option>
+                        <option>Free Audit</option>
+                        <option>Case Study Download</option>
+                        <option>Framework Walkthrough</option>
+                        <option>Strategy Session</option>
+                        <option>Pipeline Review</option>
+                        <option>Book Demo</option>
+                        <option>Get Started</option>
+                        <option>Learn More</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <div class="field-label">Voice Notes</div>
+                    <input id="voice-notes" class="input" placeholder="Direct, no-fluff, slight provocation">
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Visual Direction</div>
+                <textarea id="visual-direction" class="textarea" placeholder="Florida mansion, MacBook, dark backdrop. Reference selected swipe."></textarea>
+            </div>
+
+            <div class="field vid-only">
+                <div class="field-label">Production Notes <span class="hint">video only</span></div>
+                <textarea id="production-notes" class="textarea" placeholder="CEO talent, single-take selfie, 90s. Props: HUD doc, MacBook."></textarea>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Awareness Copy Notes <span class="hint">how to talk to this awareness level</span></div>
+                <textarea id="awareness-notes" class="textarea" placeholder="PA — agitate problem, do NOT reveal mechanism upfront."></textarea>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Custom Image Prompt <span class="hint">override for image-gen workflow</span></div>
+                <textarea id="custom-prompt" class="textarea" placeholder="Optional. Used downstream by image-gen if set."></textarea>
+            </div>
+
+            <button class="btn btn-block btn-ghost" id="ai-fill-btn" onclick="aiFillBrief()" style="margin-top:8px;display:none">✨ AI Fill Brief Body</button>
+        </section>
+
+        <!-- ============= COL 3: ICE + APPROVAL ============= -->
+        <aside class="col-score">
+            <div class="col-label" style="display:flex;align-items:center;justify-content:space-between">
+                <span>Score &amp; Approve</span>
+                <span class="info-tip">
+                    <span class="info-tip-icon">?</span>
+                    <span class="info-tip-pop">
+                        <strong>How to score</strong>
+                        <div class="axis">
+                            <b>Impact</b> — How big the effect could be if it works.<br>
+                            <span class="anchors">10 breakthrough · 7-9 solid · 4-6 average · 1-3 limited</span>
+                        </div>
+                        <div class="axis">
+                            <b>Confidence</b> — Certainty we can execute well.<br>
+                            <span class="anchors">10 done before · 7-9 clear path · 4-6 unknowns · 1-3 many unknowns</span>
+                        </div>
+                        <div class="axis">
+                            <b>Ease</b> — Production simplicity.<br>
+                            <span class="anchors">10 single take · 7-9 simple setup · 4-6 multi-shot · 1-3 complex</span>
+                        </div>
+                        <div class="formula">ICE = (I + C + E) ÷ 3</div>
+                        <div class="thresh">
+                            Threshold to approve, by Concept Category:<br>
+                            <b>Control ≥ 8.5</b> · <b>Data-Driven ≥ 7.5</b> · <b>Innovation ≥ 7.0</b>
+                        </div>
+                    </span>
+                </span>
+            </div>
+
+            <div class="score-row">
+                <div class="score-head">
+                    <span class="score-name">Impact</span>
+                    <span class="score-val" id="impact-val">0</span>
+                </div>
+                <div class="score-hint">Effect if it works. 10 = could be a breakthrough.</div>
+                <input type="range" min="0" max="10" value="0" id="impact-slider" class="score-slider" oninput="onScoreChange()">
+            </div>
+            <div class="score-row">
+                <div class="score-head">
+                    <span class="score-name">Confidence</span>
+                    <span class="score-val" id="confidence-val">0</span>
+                </div>
+                <div class="score-hint">Certainty we can execute well. 10 = done it before.</div>
+                <input type="range" min="0" max="10" value="0" id="confidence-slider" class="score-slider" oninput="onScoreChange()">
+            </div>
+            <div class="score-row">
+                <div class="score-head">
+                    <span class="score-name">Ease</span>
+                    <span class="score-val" id="ease-val">0</span>
+                </div>
+                <div class="score-hint">Production simplicity. 10 = single selfie take.</div>
+                <input type="range" min="0" max="10" value="0" id="ease-slider" class="score-slider" oninput="onScoreChange()">
+            </div>
+
+            <div class="ice-display">
+                <div class="ice-label">ICE Score</div>
+                <div class="ice-value fail" id="ice-value">0.0</div>
+                <div class="ice-thresh" id="ice-thresh">Pick a Concept Category</div>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Hypothesis <span class="hint">a falsifiable prediction</span></div>
+                <textarea id="hypothesis" class="textarea" rows="5" placeholder="If we [change X], then [predicted result] because [why we believe this].&#10;&#10;Example: If we lead with HUD revenue proof in the hook (vs. our story-led control), then PA-level prospects will book at 20%+ lower CPL because credibility upfront cuts through their cynicism faster than narrative does."></textarea>
+            </div>
+
+            <div class="field">
+                <div class="field-label">Expected Outcome <span class="hint">concrete success criteria</span></div>
+                <textarea id="expected-outcome" class="textarea" rows="4" placeholder="What does winning look like? Metrics, thresholds, timeframe.&#10;&#10;Example: ≥20% lower CPL than control over 7 days, hook rate ≥25%, ≥30 booked calls at <$80 CPL, 1+ winner per 3 launched."></textarea>
+            </div>
+
+            <div class="stack" style="margin-top:18px">
+                <button class="btn btn-primary btn-block" onclick="saveBrief()">💾 Save Brief</button>
+                <button class="btn btn-block" onclick="rejectBrief()" style="border-color: var(--red); color: var(--red)">✕ Reject</button>
+            </div>
+
+            <div style="font-size:11px;color:var(--text-muted);margin-top:14px;line-height:1.5">
+                Save persists the brief without changing the stage. <a href="26-creative-board.html" style="color:var(--orange);text-decoration:none">Stage transitions happen on the Pipeline →</a>
+            </div>
+        </aside>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- ============= LIGHTBOX (full-size swipe viewer) ============= -->
+    <div class="lightbox-overlay" id="lightbox-overlay" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+        <div class="lightbox-meta" id="lightbox-meta"></div>
+        <img id="lightbox-img" alt="" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- ============= SWIPE BROWSER MODAL ============= -->
+    <div class="modal-overlay" id="swipe-modal-overlay">
+        <div class="swipe-modal">
+            <div class="swipe-modal-head">
+                <div class="modal-title">Inspiration Swipes</div>
+                <input type="text" id="swipe-modal-filter" class="filter" placeholder="Filter by headline or angle…" oninput="renderSwipeModalGrid()">
+            </div>
+            <div id="swipe-modal-grid" class="swipe-modal-grid"></div>
+            <div class="swipe-modal-foot">
+                <div class="count-pill" id="swipe-modal-count">0 selected</div>
+                <button class="btn" onclick="closeSwipeBrowser()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+    // ============================================
+    // CONFIG
+    // ============================================
+    const SUPABASE_URL = window.PROPAGANDA.SUPABASE_URL;
+    const HEADERS = window.PROPAGANDA.HEADERS;
+    const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+    const BRIEF_GENERATE = window.PROPAGANDA.N8N.BRIEF_GENERATE;
+    const SLACK_WEBHOOK = window.PROPAGANDA.N8N.CREATIVE_SLACK_NOTIFY;
+
+    // ============================================
+    // CONSTANTS
+    // ============================================
+    // Masterson 6 leads — canonical Direct → Indirect order
+    const LEAD_TYPES = [
+        { v: 'Offer',            d: '#1 Most direct. Flash the deal. Best for Most Aware / repeat buyers.' },
+        { v: 'Promise',          d: '#2 Lead with biggest claim, no deal yet. Best for Product Aware / on-the-fence.' },
+        { v: 'Problem-Solution', d: '#3 Empathize first, name the pain, then solve. Best for Solution / Problem Aware.' },
+        { v: 'Big Secret',       d: '#4 Tease insider info; delay the reveal. Best for skeptics, all awareness levels.' },
+        { v: 'Proclamation',     d: '#5 Shock with a bold, startling claim. Best for Completely Unaware / cold.' },
+        { v: 'Story',            d: '#6 Most indirect. Hide the promise inside a story. Best for cold / unaware audiences.' }
+    ];
+    const AWARENESS_LEVELS = ['Unaware', 'Problem Aware', 'Solution Aware', 'Product Aware', 'Most Aware'];
+    // Default lead → awareness mapping
+    const LEAD_TO_AWARE = {
+        'Story':            'Unaware',
+        'Problem-Solution': 'Problem Aware',
+        'Big Secret':       'Solution Aware',
+        'Promise':          'Product Aware',
+        'Proclamation':     'Problem Aware',
+        'Offer':            'Most Aware'
+    };
+    const CATEGORY_THRESHOLDS = { 'Control': 8.5, 'DataDriven': 7.5, 'Innovation': 7.0 };
+
+    // ============================================
+    // STATE
+    // ============================================
+    let clients = [], icps = [], brand = null, offers = [], swipes = [], winners = [], knownTags = [];
+    let selectedClientId  = localStorage.getItem('selectedClientId') || '';
+    let selectedIcpId     = '';
+    let selectedOfferId   = '';
+    let selectedSwipeIds  = new Set();   // multi-select supported in UI; we save first one to concepts.swipe_id
+    let leadType          = '';
+    let awarenessLevel    = '';
+    let assetType         = 'IMG';
+    let conceptCategory   = '';
+    let hooks             = ['', '', ''];
+    let proofPoints       = new Set();
+    let painPoints        = new Set();
+    let allProofs         = [];
+    let allPains          = [];
+    let editingConceptId  = null; // set when ?concept_id=… in URL — page becomes an editor
+    let editingStatus     = 'idea';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlConceptId = urlParams.get('concept_id');
+    if (urlConceptId) editingConceptId = urlConceptId;
+
+    // ============================================
+    // SUPABASE HELPERS
+    // ============================================
+    async function sbGet(path) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
+        if (!r.ok) return [];
+        return r.json();
+    }
+    async function sbPost(table, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+            method: 'POST', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) {
+            const t = await r.text();
+            throw new Error(`POST ${table}: ${t}`);
+        }
+        return r.json();
+    }
+    async function sbPatch(table, id, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+            method: 'PATCH', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) {
+            const t = await r.text();
+            throw new Error(`PATCH ${table}: ${t}`);
+        }
+        return r.json();
+    }
+
+    // ============================================
+    // LOADERS
+    // ============================================
+    async function loadClients() {
+        clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
+        const sel = document.getElementById('client-select');
+        sel.innerHTML = '<option value="">Pick a client…</option>' +
+            clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('');
+    }
+    async function loadKnownTags() {
+        if (!selectedClientId) { knownTags = []; renderTagDatalist(); return; }
+        const rows = await sbGet(`concepts?client_id=eq.${selectedClientId}&select=test_tag&test_tag=not.is.null&limit=200`);
+        knownTags = Array.from(new Set(rows.map(r => r.test_tag).filter(Boolean))).sort();
+        renderTagDatalist();
+    }
+    function renderTagDatalist() {
+        const dl = document.getElementById('known-tags-list');
+        if (!dl) return;
+        dl.innerHTML = knownTags.map(t => `<option value="${escapeAttr(t)}">`).join('');
+    }
+    async function loadIcps() {
+        if (!selectedClientId) { icps = []; renderIcpSelect(); return; }
+        icps = await sbGet(`icps?client_id=eq.${selectedClientId}&status=eq.active&order=created_at.desc`);
+        renderIcpSelect();
+    }
+    function renderIcpSelect() {
+        const sel = document.getElementById('icp-select');
+        sel.innerHTML = '<option value="">Pick an ICP…</option>' +
+            icps.map(i => `<option value="${i.id}" ${i.id === selectedIcpId ? 'selected' : ''}>${i.name}</option>`).join('');
+    }
+    async function loadBrand() {
+        if (!selectedClientId) { brand = null; renderBrandSummary(); return; }
+        const rows = await sbGet(`brand_profiles?client_id=eq.${selectedClientId}&order=is_default.desc,created_at.desc&limit=1`);
+        brand = rows[0] || null;
+        renderBrandSummary();
+    }
+    async function loadOffers() {
+        if (!brand) { offers = []; renderOfferSelect(); return; }
+        offers = await sbGet(`offer_contexts?brand_id=eq.${brand.id}&order=created_at.desc`);
+        renderOfferSelect();
+    }
+    function renderOfferSelect() {
+        const sel = document.getElementById('offer-select');
+        sel.innerHTML = '<option value="">Pick an offer…</option>' +
+            offers.map(o => `<option value="${o.id}" ${o.id === selectedOfferId ? 'selected' : ''}>${o.name || o.product_name}</option>`).join('');
+    }
+    async function loadSwipes() {
+        const niche = brand?.niche || '';
+        let q = 'image_ad_swipes?order=created_at.desc&limit=20';
+        if (niche) q += `&niche=eq.${encodeURIComponent(niche)}`;
+        swipes = await sbGet(q);
+        renderSwipeGrid();
+    }
+    async function loadWinners() {
+        if (!selectedClientId) { winners = []; renderWinners(); return; }
+        winners = await sbGet(`creatives?client_id=eq.${selectedClientId}&performance=in.(winner,heavy_winner)&order=updated_at.desc&limit=5`);
+        renderWinners();
+    }
+    async function loadAll() {
+        await loadClients();
+        if (selectedClientId) {
+            await Promise.all([loadKnownTags(), loadIcps(), loadBrand(), loadWinners()]);
+            await loadOffers();
+            await loadSwipes();
+        }
+        renderAll();
+        if (editingConceptId) await loadEditingConcept();
+    }
+
+    async function loadEditingConcept() {
+        const rows = await sbGet(`concepts?id=eq.${editingConceptId}&select=*`);
+        const c = rows[0];
+        if (!c) return;
+        // Hydrate state
+        selectedClientId = c.client_id || selectedClientId;
+        selectedIcpId    = c.icp_id    || '';
+        selectedOfferId  = c.offer_id  || '';
+        document.getElementById('test-tag').value = c.test_tag || '';
+        const cdInput = document.getElementById('copy-doc-url');
+        const cdOpen  = document.getElementById('copy-doc-open');
+        cdInput.value = c.copy_doc_url || '';
+        if (c.copy_doc_url) { cdOpen.href = c.copy_doc_url; cdOpen.style.display = 'inline-block'; }
+        else                { cdOpen.removeAttribute('href'); cdOpen.style.display = 'none'; }
+        cdInput.oninput = () => {
+            const v = (cdInput.value || '').trim();
+            if (v) { cdOpen.href = v; cdOpen.style.display = 'inline-block'; }
+            else   { cdOpen.removeAttribute('href'); cdOpen.style.display = 'none'; }
+        };
+        // Stash created_at for name preview
+        window._editingConceptCreatedAt = c.created_at;
+        if (c.swipe_id) selectedSwipeIds.add(c.swipe_id);
+        leadType         = c.lead_type || '';
+        awarenessLevel   = c.awareness_level || '';
+        assetType        = c.asset_type || 'IMG';
+        conceptCategory  = c.concept_category || '';
+        editingStatus    = c.status || 'draft';
+        document.getElementById('angle').value = c.angle || '';
+        document.getElementById('format').value = c.format || 'UGC';
+        document.getElementById('big-idea').value = c.big_idea || '';
+        document.getElementById('hypothesis').value = c.hypothesis || '';
+        document.getElementById('expected-outcome').value = c.expected_outcome || '';
+        document.getElementById('impact-slider').value = c.impact || 0;
+        document.getElementById('confidence-slider').value = c.confidence || 0;
+        document.getElementById('ease-slider').value = c.ease || 0;
+        const bj = c.brief_json || {};
+        hooks = (bj.hook_ideas && bj.hook_ideas.length ? bj.hook_ideas : ['','','']);
+        proofPoints = new Set(bj.proof_points || []);
+        painPoints  = new Set(bj.pain_focus  || []);
+        document.getElementById('body-framework').value = bj.body_framework || '';
+        document.getElementById('cta').value = bj.cta || '';
+        document.getElementById('voice-notes').value = bj.voice_notes || '';
+        document.getElementById('visual-direction').value = bj.visual_direction || '';
+        document.getElementById('production-notes').value = bj.production_notes || '';
+        document.getElementById('awareness-notes').value = bj.awareness_copy_notes || '';
+        document.getElementById('custom-prompt').value = bj.custom_image_prompt || '';
+        // Re-load deps
+        await Promise.all([loadKnownTags(), loadIcps(), loadBrand(), loadWinners()]);
+        await loadOffers();
+        await loadSwipes();
+        renderAll();
+    }
+
+    // ============================================
+    // RENDER
+    // ============================================
+    function renderAll() {
+        renderLeadTypes();
+        renderAwareness();
+        renderAssetType();
+        renderCategory();
+        renderHooks();
+        renderProofChips();
+        renderPainChips();
+        renderIcpSummary();
+        renderBrandSummary();
+        renderOfferSummary();
+        renderSwipeGrid();
+        renderWinners();
+        onScoreChange();
+        updateNamePreview();
+        updateStatusPill();
+        toggleAiFillButton();
+    }
+
+    function renderLeadTypes() {
+        const grid = document.getElementById('lead-type-grid');
+        grid.innerHTML = LEAD_TYPES.map(lt =>
+            `<div class="radio-tile ${leadType === lt.v ? 'active' : ''}" data-lead="${lt.v}" title="${lt.d}">${lt.v}</div>`
+        ).join('');
+        grid.querySelectorAll('[data-lead]').forEach(el => {
+            el.onclick = () => {
+                leadType = el.dataset.lead;
+                if (!awarenessLevel) awarenessLevel = LEAD_TO_AWARE[leadType] || '';
+                renderAll();
+            };
+        });
+    }
+    function renderAwareness() {
+        const grid = document.getElementById('awareness-grid');
+        grid.innerHTML = AWARENESS_LEVELS.map(a =>
+            `<div class="radio-tile ${awarenessLevel === a ? 'active' : ''}" data-aware="${a}">${a.replace(' Aware', '')}</div>`
+        ).join('');
+        grid.querySelectorAll('[data-aware]').forEach(el => {
+            el.onclick = () => { awarenessLevel = el.dataset.aware; renderAll(); };
+        });
+    }
+    function renderAssetType() {
+        const grid = document.getElementById('asset-type-grid');
+        grid.querySelectorAll('[data-asset]').forEach(el => {
+            el.classList.toggle('active', el.dataset.asset === assetType);
+            el.onclick = () => { assetType = el.dataset.asset; document.body.classList.toggle('vid', assetType === 'VID'); renderAll(); };
+        });
+        document.body.classList.toggle('vid', assetType === 'VID');
+    }
+    function renderCategory() {
+        const grid = document.getElementById('category-grid');
+        grid.querySelectorAll('[data-cat]').forEach(el => {
+            el.classList.toggle('active', el.dataset.cat === conceptCategory);
+            el.onclick = () => { conceptCategory = el.dataset.cat; onScoreChange(); };
+        });
+    }
+    function renderHooks() {
+        const list = document.getElementById('hooks-list');
+        if (hooks.length < 1) hooks = [''];
+        list.innerHTML = hooks.map((h, i) => `
+            <div class="hook-item">
+                <div class="hook-num">H${i+1}</div>
+                <textarea class="textarea hook-ta" data-i="${i}" placeholder="Hook variant ${i+1}…">${escapeHtml(h || '')}</textarea>
+            </div>
+        `).join('');
+        list.querySelectorAll('.hook-ta').forEach(ta => {
+            ta.oninput = (e) => { hooks[+e.target.dataset.i] = e.target.value; };
+        });
+    }
+    window.addHook = function() {
+        if (hooks.length >= 8) return;
+        hooks.push('');
+        renderHooks();
+    };
+    function renderProofChips() {
+        const wrap = document.getElementById('proof-chips');
+        wrap.innerHTML = allProofs.map(p =>
+            `<span class="chip ${proofPoints.has(p) ? 'active' : ''}" data-v="${escapeAttr(p)}">${escapeHtml(p)}</span>`
+        ).join('') + `<span class="chip add" onclick="addCustomProof()">+ add</span>`;
+        wrap.querySelectorAll('.chip[data-v]').forEach(el => {
+            el.onclick = () => {
+                const v = el.dataset.v;
+                if (proofPoints.has(v)) proofPoints.delete(v); else proofPoints.add(v);
+                renderProofChips();
+            };
+        });
+    }
+    window.addCustomProof = function() {
+        const v = prompt('Add proof point:');
+        if (!v) return;
+        if (!allProofs.includes(v)) allProofs.push(v);
+        proofPoints.add(v);
+        renderProofChips();
+    };
+    function renderPainChips() {
+        const wrap = document.getElementById('pain-chips');
+        wrap.innerHTML = allPains.map(p =>
+            `<span class="chip ${painPoints.has(p) ? 'active' : ''}" data-v="${escapeAttr(p)}">${escapeHtml(p)}</span>`
+        ).join('') + `<span class="chip add" onclick="addCustomPain()">+ add</span>`;
+        wrap.querySelectorAll('.chip[data-v]').forEach(el => {
+            el.onclick = () => {
+                const v = el.dataset.v;
+                if (painPoints.has(v)) painPoints.delete(v); else painPoints.add(v);
+                renderPainChips();
+            };
+        });
+    }
+    window.addCustomPain = function() {
+        const v = prompt('Add pain point:');
+        if (!v) return;
+        if (!allPains.includes(v)) allPains.push(v);
+        painPoints.add(v);
+        renderPainChips();
+    };
+
+    function renderIcpSummary() {
+        const sel = document.getElementById('icp-select');
+        selectedIcpId = sel.value;
+        const wrap = document.getElementById('icp-summary');
+        if (!selectedIcpId) { wrap.innerHTML = ''; return; }
+        const icp = icps.find(i => i.id === selectedIcpId);
+        if (!icp) { wrap.innerHTML = ''; return; }
+        const aware = (icp.awareness_analysis && icp.awareness_analysis[awarenessLevel?.toLowerCase().replace(' aware','_aware')?.replace(' ', '_')]) || null;
+        wrap.innerHTML = `
+            <div class="summary-card">
+                <h4>${escapeHtml(icp.name)}</h4>
+                ${icp.description ? `<p>${escapeHtml(icp.description)}</p>` : ''}
+                ${icp.core_identity ? `<div class="meta">Identity</div><p>${escapeHtml(icp.core_identity)}</p>` : ''}
+                ${icp.emotional_lever ? `<div class="meta">Emotional lever</div><p>${escapeHtml(icp.emotional_lever)}</p>` : ''}
+                ${icp.their_phrases ? `<div class="meta">How they talk</div><p>${escapeHtml(icp.their_phrases.slice(0, 200))}${icp.their_phrases.length > 200 ? '…' : ''}</p>` : ''}
+            </div>
+        `;
+        // Pre-fill awareness notes from ICP if empty
+        const an = document.getElementById('awareness-notes');
+        if (!an.value && aware) an.value = (typeof aware === 'string' ? aware : JSON.stringify(aware));
+        // Merge ICP fears into pain pool
+        rebuildPainPool();
+    }
+
+    function renderBrandSummary() {
+        const wrap = document.getElementById('brand-summary');
+        if (!brand) { wrap.innerHTML = '<div class="summary-empty">No brand profile yet for this client.</div>'; return; }
+        const colors = Array.isArray(brand.brand_colors) ? brand.brand_colors : (brand.brand_colors && typeof brand.brand_colors === 'object' ? Object.values(brand.brand_colors) : []);
+        wrap.innerHTML = `
+            <div class="summary-card">
+                <h4>${escapeHtml(brand.name)}</h4>
+                ${brand.tone ? `<div class="meta">Tone</div><p>${escapeHtml(brand.tone)}</p>` : ''}
+                ${brand.voice_guidelines ? `<div class="meta">Voice</div><p>${escapeHtml(brand.voice_guidelines.slice(0,180))}${(brand.voice_guidelines||'').length > 180 ? '…' : ''}</p>` : ''}
+                ${brand.avoid_words?.length ? `<div class="meta">Avoid</div><div class="tags">${brand.avoid_words.map(w => `<span class="tag">${escapeHtml(w)}</span>`).join('')}</div>` : ''}
+            </div>
+        `;
+        // Pre-fill voice notes if empty
+        const vn = document.getElementById('voice-notes');
+        if (!vn.value && brand.tone) vn.value = brand.tone + (brand.voice_guidelines ? ' — ' + brand.voice_guidelines.slice(0, 80) : '');
+    }
+
+    function renderOfferSummary() {
+        const sel = document.getElementById('offer-select');
+        selectedOfferId = sel.value;
+        const wrap = document.getElementById('offer-summary');
+        if (!selectedOfferId) { wrap.innerHTML = ''; allProofs = []; allPains = []; renderProofChips(); renderPainChips(); return; }
+        const o = offers.find(x => x.id === selectedOfferId);
+        if (!o) return;
+        wrap.innerHTML = `
+            <div class="summary-card">
+                <h4>${escapeHtml(o.product_name || o.name)}</h4>
+                ${o.unique_mechanism ? `<div class="meta">Mechanism</div><p>${escapeHtml(o.unique_mechanism)}</p>` : ''}
+                ${o.price_point ? `<div class="meta">Price</div><p>${escapeHtml(o.price_point)}</p>` : ''}
+                ${o.proof_points?.length ? `<div class="meta">Proof</div><div class="tags">${o.proof_points.slice(0,4).map(p => `<span class="tag">${escapeHtml(p)}</span>`).join('')}</div>` : ''}
+            </div>
+        `;
+        // Build pools
+        allProofs = Array.from(new Set([...(o.proof_points || []), ...allProofs]));
+        rebuildPainPool();
+        renderProofChips();
+    }
+
+    function rebuildPainPool() {
+        const o = offers.find(x => x.id === selectedOfferId);
+        const icp = icps.find(i => i.id === selectedIcpId);
+        const offerPains = o?.pain_points || [];
+        const icpPains = [];
+        if (icp?.fears_insecurities) {
+            for (const k of Object.keys(icp.fears_insecurities)) {
+                const v = icp.fears_insecurities[k];
+                if (typeof v === 'string' && v.length < 80) icpPains.push(v);
+            }
+        }
+        const seen = new Set();
+        allPains = [...offerPains, ...icpPains, ...allPains].filter(p => p && (seen.has(p) ? false : seen.add(p)));
+        renderPainChips();
+    }
+
+    function renderSwipeGrid() {
+        // Inline preview: only show selected swipes (or empty state).
+        const wrap = document.getElementById('swipe-selected');
+        const pill = document.getElementById('swipe-count-pill');
+        const selected = swipes.filter(s => selectedSwipeIds.has(s.id));
+        if (pill) {
+            if (selected.length) { pill.style.display = 'inline-block'; pill.textContent = String(selected.length); }
+            else                 { pill.style.display = 'none'; }
+        }
+        if (!selected.length) {
+            wrap.innerHTML = `<div class="swipe-empty-state" style="grid-column:1/-1">${swipes.length ? 'No swipes selected. Click Browse to pick.' : 'No swipes yet for this niche.'}</div>`;
+            return;
+        }
+        // Click image → lightbox. Click remove (×) → deselect. Click zoom (🔍) → lightbox.
+        wrap.innerHTML = selected.map(s => `
+            <div class="swipe-thumb active" data-id="${s.id}" title="${escapeAttr(s.headline_text || s.copy_angle || 'Click to view full size')}" onclick="openLightbox('${s.id}')">
+                ${s.image_url ? `<img src="${s.image_url}" loading="lazy">` : ''}
+                <div class="zoom" title="View full size">⤢</div>
+                <div class="remove" title="Remove" onclick="event.stopPropagation(); toggleSwipe('${s.id}')">×</div>
+                ${s.copy_angle ? `<div class="label">${escapeHtml(s.copy_angle)}</div>` : ''}
+            </div>
+        `).join('');
+    }
+
+    window.openLightbox = function(swipeId) {
+        const s = swipes.find(x => x.id === swipeId);
+        if (!s || !s.image_url) return;
+        document.getElementById('lightbox-img').src = s.image_url;
+        document.getElementById('lightbox-meta').textContent = s.headline_text || s.copy_angle || '';
+        document.getElementById('lightbox-overlay').classList.add('open');
+    };
+    window.closeLightbox = function() {
+        document.getElementById('lightbox-overlay').classList.remove('open');
+        document.getElementById('lightbox-img').src = '';
+    };
+
+    window.openSwipeBrowser = function() {
+        document.getElementById('swipe-modal-filter').value = '';
+        renderSwipeModalGrid();
+        document.getElementById('swipe-modal-overlay').classList.add('open');
+    };
+    window.closeSwipeBrowser = function() {
+        document.getElementById('swipe-modal-overlay').classList.remove('open');
+    };
+    window.renderSwipeModalGrid = function() {
+        const grid = document.getElementById('swipe-modal-grid');
+        const filterRaw = (document.getElementById('swipe-modal-filter').value || '').trim().toLowerCase();
+        const filtered = !filterRaw ? swipes : swipes.filter(s => {
+            const blob = `${s.headline_text || ''} ${s.copy_angle || ''} ${s.niche || ''} ${s.body_copy || ''}`.toLowerCase();
+            return blob.includes(filterRaw);
+        });
+        if (!filtered.length) {
+            grid.innerHTML = `<div class="summary-empty" style="grid-column:1/-1;padding:30px">No swipes match.</div>`;
+        } else {
+            grid.innerHTML = filtered.map(s => `
+                <div class="swipe-thumb ${selectedSwipeIds.has(s.id) ? 'active' : ''}" data-id="${s.id}" title="${escapeAttr(s.headline_text || s.copy_angle || '')}" onclick="toggleSwipe('${s.id}')">
+                    ${s.image_url ? `<img src="${s.image_url}" loading="lazy">` : ''}
+                    <div class="check">✓</div>
+                    <div class="modal-zoom" title="View full size" onclick="event.stopPropagation(); openLightbox('${s.id}')" style="position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:4px;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer">⤢</div>
+                    ${s.copy_angle || s.headline_text ? `<div class="label">${escapeHtml(s.copy_angle || s.headline_text)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        document.getElementById('swipe-modal-count').textContent = `${selectedSwipeIds.size} selected`;
+    };
+    window.toggleSwipe = function(id) {
+        if (selectedSwipeIds.has(id)) selectedSwipeIds.delete(id);
+        else selectedSwipeIds.add(id);
+        // Pre-fill visual direction with first selected swipe's recreation prompt
+        const first = swipes.find(s => selectedSwipeIds.has(s.id));
+        const vd = document.getElementById('visual-direction');
+        if (first && vd && !vd.value && first.recreation_prompt) {
+            vd.value = first.recreation_prompt.slice(0, 240);
+        }
+        renderSwipeGrid();
+        // If modal is open, refresh it too.
+        if (document.getElementById('swipe-modal-overlay').classList.contains('open')) {
+            renderSwipeModalGrid();
+        }
+    };
+
+    function renderWinners() {
+        const wrap = document.getElementById('winners-list');
+        if (!winners.length) { wrap.innerHTML = '<div class="summary-empty">No winners yet for this client.</div>'; return; }
+        wrap.innerHTML = winners.map(w => `<div class="winner-item" title="${escapeAttr(w.hook_text || '')}">${escapeHtml(w.name || 'unnamed')}</div>`).join('');
+    }
+
+    function onScoreChange() {
+        const i = +document.getElementById('impact-slider').value;
+        const c = +document.getElementById('confidence-slider').value;
+        const e = +document.getElementById('ease-slider').value;
+        document.getElementById('impact-val').textContent = i;
+        document.getElementById('confidence-val').textContent = c;
+        document.getElementById('ease-val').textContent = e;
+        const ice = i + c + e === 0 ? 0 : ((i + c + e) / 3);
+        const iceEl = document.getElementById('ice-value');
+        const threshEl = document.getElementById('ice-thresh');
+        iceEl.textContent = ice.toFixed(1);
+        if (!conceptCategory) {
+            iceEl.classList.remove('pass'); iceEl.classList.add('fail');
+            threshEl.innerHTML = 'Pick a Concept Category';
+        } else {
+            const t = CATEGORY_THRESHOLDS[conceptCategory];
+            const passes = ice >= t;
+            iceEl.classList.toggle('pass', passes);
+            iceEl.classList.toggle('fail', !passes);
+            threshEl.innerHTML = passes
+                ? `<span class="pass">✓ Passes ${conceptCategory} threshold (≥ ${t})</span>`
+                : `<span class="fail">Below ${conceptCategory} threshold (≥ ${t})</span>`;
+        }
+        // Approve only enabled when passes threshold AND scoring done AND brief minimally complete
+        const canApprove = !!(conceptCategory && ice >= (CATEGORY_THRESHOLDS[conceptCategory] || 99) && leadType && awarenessLevel && document.getElementById('angle').value && document.getElementById('big-idea').value);
+        const ab = document.getElementById('approve-btn');
+        if (ab) ab.disabled = !canApprove;
+    }
+
+    function updateNamePreview() {
+        const angle = document.getElementById('angle').value.trim();
+        const format = document.getElementById('format').value;
+        const client = clients.find(cl => cl.id === selectedClientId);
+        if (!client || !angle) {
+            document.getElementById('name-preview').innerHTML = '<span class="placeholder">Auto-name will appear once Client + Angle are set…</span>';
+            return;
+        }
+        const ts = window._editingConceptCreatedAt ? new Date(window._editingConceptCreatedAt) : new Date();
+        const yy = String(ts.getUTCFullYear()).slice(-2);
+        const mm = String(ts.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(ts.getUTCDate()).padStart(2, '0');
+        const date = yy + mm + dd;
+        const aware = ({ 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' })[awarenessLevel] || null;
+        const leadCode = ({ 'Story':'Story','Problem-Solution':'ProbSol','Big Secret':'BigSec','Promise':'Promise','Proclamation':'Proclam','Offer':'Offer' })[leadType] || null;
+        const segments = [client.code, date, angle, format];
+        if (aware)    segments.push(aware);
+        if (leadCode) segments.push(leadCode);
+        if (assetType) segments.push(assetType);
+        segments.push('B1', 'H1');
+        document.getElementById('name-preview').textContent = segments.join('-');
+    }
+
+    function updateStatusPill() {
+        const pill = document.getElementById('status-pill');
+        pill.className = 'status-pill ' + editingStatus;
+        pill.textContent = editingStatus.toUpperCase();
+    }
+
+    function toggleAiFillButton() {
+        const btn = document.getElementById('ai-fill-btn');
+        btn.style.display = BRIEF_GENERATE ? 'block' : 'none';
+    }
+
+    // ============================================
+    // CHANGE HANDLERS
+    // ============================================
+    window.onClientChange = async function() {
+        selectedClientId = document.getElementById('client-select').value;
+        localStorage.setItem('selectedClientId', selectedClientId);
+        selectedIcpId = '';
+        selectedOfferId = '';
+        selectedSwipeIds.clear();
+        if (selectedClientId) {
+            await Promise.all([loadKnownTags(), loadIcps(), loadBrand(), loadWinners()]);
+            await loadOffers();
+            await loadSwipes();
+        }
+        renderAll();
+    };
+    document.getElementById('angle').addEventListener('input', updateNamePreview);
+    document.getElementById('format').addEventListener('change', updateNamePreview);
+    document.getElementById('big-idea').addEventListener('input', onScoreChange);
+
+    // ============================================
+    // AI FILL (optional — only if BRIEF_GENERATE webhook set)
+    // ============================================
+    window.aiFillBrief = async function() {
+        if (!BRIEF_GENERATE) { toast('AI fill not configured yet', 'error'); return; }
+        toast('Generating brief…');
+        try {
+            const r = await fetch(BRIEF_GENERATE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_id: selectedClientId,
+                    brand_id: brand?.id,
+                    offer_id: selectedOfferId,
+                    icp_id:   selectedIcpId,
+                    swipe_ids: Array.from(selectedSwipeIds),
+                    lead_type: leadType,
+                    awareness_level: awarenessLevel,
+                    angle: document.getElementById('angle').value,
+                    big_idea: document.getElementById('big-idea').value,
+                    asset_type: assetType
+                })
+            });
+            if (!r.ok) throw new Error('Webhook failed: ' + r.status);
+            const out = await r.json();
+            if (out.hook_ideas) hooks = out.hook_ideas.slice(0, 8);
+            if (out.body_framework) document.getElementById('body-framework').value = out.body_framework;
+            if (out.proof_points) { proofPoints = new Set(out.proof_points); allProofs = Array.from(new Set([...allProofs, ...out.proof_points])); }
+            if (out.pain_focus)   { painPoints  = new Set(out.pain_focus);   allPains  = Array.from(new Set([...allPains,  ...out.pain_focus])); }
+            if (out.cta) document.getElementById('cta').value = out.cta;
+            if (out.visual_direction) document.getElementById('visual-direction').value = out.visual_direction;
+            if (out.production_notes) document.getElementById('production-notes').value = out.production_notes;
+            if (out.awareness_copy_notes) document.getElementById('awareness-notes').value = out.awareness_copy_notes;
+            if (out.voice_notes) document.getElementById('voice-notes').value = out.voice_notes;
+            if (out.custom_image_prompt) document.getElementById('custom-prompt').value = out.custom_image_prompt;
+            renderHooks(); renderProofChips(); renderPainChips();
+            toast('Brief filled', 'success');
+        } catch (e) { toast('AI fill failed: ' + e.message, 'error'); }
+    };
+
+    // ============================================
+    // SAVE / APPROVE / REJECT
+    // ============================================
+    function gatherBrief() {
+        return {
+            hook_ideas:           hooks.filter(h => h && h.trim()),
+            body_framework:       document.getElementById('body-framework').value,
+            proof_points:         Array.from(proofPoints),
+            pain_focus:           Array.from(painPoints),
+            cta:                  document.getElementById('cta').value,
+            visual_direction:     document.getElementById('visual-direction').value,
+            production_notes:     document.getElementById('production-notes').value,
+            awareness_copy_notes: document.getElementById('awareness-notes').value,
+            voice_notes:          document.getElementById('voice-notes').value,
+            custom_image_prompt:  document.getElementById('custom-prompt').value
+        };
+    }
+
+    // Build the brief row to save. Status is preserved (stage transitions live on the pipeline).
+    function gatherConceptRow() {
+        const angle  = document.getElementById('angle').value.trim();
+        const format = document.getElementById('format').value;
+        const big    = document.getElementById('big-idea').value.trim();
+        if (!selectedClientId) throw new Error('Pick a client');
+        if (!angle)            throw new Error('Angle is required');
+        if (!format)           throw new Error('Format is required');
+        const i = +document.getElementById('impact-slider').value     || null;
+        const c = +document.getElementById('confidence-slider').value || null;
+        const e = +document.getElementById('ease-slider').value       || null;
+        const tag = (document.getElementById('test-tag').value || '').trim() || null;
+        const copyDocUrl = (document.getElementById('copy-doc-url').value || '').trim() || null;
+        return {
+            client_id:        selectedClientId,
+            test_tag:         tag,
+            copy_doc_url:     copyDocUrl,
+            angle, format,
+            lead_type:        leadType         || null,
+            awareness_level:  awarenessLevel   || null,
+            asset_type:       assetType,
+            offer_id:         selectedOfferId  || null,
+            icp_id:           selectedIcpId    || null,
+            swipe_id:         selectedSwipeIds.size ? Array.from(selectedSwipeIds)[0] : null,
+            big_idea:         big || null,
+            concept_category: conceptCategory  || null,
+            impact:     i ? Math.max(1, Math.min(10, i)) : null,
+            confidence: c ? Math.max(1, Math.min(10, c)) : null,
+            ease:       e ? Math.max(1, Math.min(10, e)) : null,
+            hypothesis:        document.getElementById('hypothesis').value || null,
+            expected_outcome:  document.getElementById('expected-outcome').value || null,
+            brief_json:        gatherBrief()
+        };
+    }
+
+    window.saveBrief = async function() {
+        try {
+            const row = gatherConceptRow();
+            if (editingConceptId) {
+                await sbPatch('concepts', editingConceptId, row);
+            } else {
+                // Creating from scratch — default to 'idea' stage
+                row.status = 'idea';
+                const created = await sbPost('concepts', row);
+                editingConceptId = created[0].id;
+                editingStatus = 'idea';
+                window._editingConceptCreatedAt = created[0].created_at;
+                updateNamePreview();
+                const u = new URL(window.location.href);
+                u.searchParams.set('concept_id', editingConceptId);
+                window.history.replaceState({}, '', u);
+            }
+            updateStatusPill();
+            toast('Saved ✓', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    window.rejectBrief = async function() {
+        if (!editingConceptId) { toast('Save a draft first', 'error'); return; }
+        const reason = prompt('Rejection reason:');
+        if (!reason) return;
+        try {
+            await sbPatch('concepts', editingConceptId, {
+                status: 'rejected',
+                rejected_at: new Date().toISOString(),
+                rejection_reason: reason
+            });
+            editingStatus = 'rejected';
+            updateStatusPill();
+            toast('Rejected', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // ============================================
+    // UTILS
+    // ============================================
+    function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
+    function escapeAttr(s) { return String(s ?? '').replace(/"/g, '&quot;'); }
+    function toast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + (type || '');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ============================================
+    // INIT
+    // ============================================
+    loadAll();
+    </script>
+</body>
+</html>

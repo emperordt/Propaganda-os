@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests — Propaganda OS</title>
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd7016f791a85d9b66018_Geist-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdn.prod.website-files.com/68ebcfae353873d3845aaa3f/68ebd9b6adb71eac8c5883db_GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --border: #3a3835;
+            --border-hover: #444240;
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c0b8;
+            --text-muted: #8a8680;
+            --accent: #f5f5f5;
+            --accent-dim: #f5f5f515;
+            --orange: #fd5106;
+            --orange-dim: #fd510620;
+            --green: #4ade80;
+            --green-dim: #4ade8020;
+            --amber: #f8d47a;
+            --amber-dim: #f8d47a20;
+            --blue: #60a5fa;
+            --blue-dim: #60a5fa20;
+            --purple: #a78bfa;
+            --purple-dim: #a78bfa20;
+            --red: #ff4444;
+            --red-dim: #ff444420;
+            --pink: #f472b6;
+            --pink-dim: #f472b620;
+        }
+        body {
+            font-family: 'Geist', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: 220px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            font-family: 'Geist Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--accent);
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+        .sidebar-section { padding: 0 12px; margin-bottom: 8px; }
+        .sidebar-section-label {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 8px 4px;
+        }
+        .sidebar-link {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .sidebar-link.active { color: var(--orange); background: var(--orange-dim); }
+
+        /* MAIN */
+        .main {
+            margin-left: 220px;
+            padding: 22px 28px;
+            min-height: 100vh;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+        .page-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        /* TOP BAR */
+        .top-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .top-bar-group { display: flex; align-items: center; gap: 8px; }
+        .top-bar label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-select, .form-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 11px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            min-width: 140px;
+        }
+        .form-select:focus, .form-input:focus { outline: none; border-color: var(--orange); }
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover:not(:disabled) { border-color: var(--border-hover); background: var(--bg-secondary); }
+        .btn-primary {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0f0f0f;
+            font-weight: 600;
+        }
+        .btn-primary:hover:not(:disabled) { background: #ff6620; border-color: #ff6620; }
+        .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+        /* TABLE */
+        .table-wrap {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            /* visible so kebab popup menus aren't clipped at row edges */
+            overflow: visible;
+        }
+        table.tests {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+        table.tests thead th {
+            text-align: left;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+            white-space: nowrap;
+        }
+        table.tests tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+        table.tests tbody tr {
+            cursor: pointer;
+            transition: background 0.12s ease;
+        }
+        table.tests tbody tr:hover { background: var(--bg-tertiary); }
+        table.tests tbody tr:last-child td { border-bottom: none; }
+        /* Row outline by status / winner */
+        table.tests tbody tr.row-running     td:first-child { box-shadow: inset 4px 0 0 0 var(--orange); }
+        table.tests tbody tr.row-won         td:first-child { box-shadow: inset 4px 0 0 0 var(--green); }
+        table.tests tbody tr.row-lost        td:first-child { box-shadow: inset 4px 0 0 0 var(--red); }
+        table.tests tbody tr.row-inconclusive td:first-child { box-shadow: inset 4px 0 0 0 var(--amber); }
+        table.tests tbody tr.row-running     { background: linear-gradient(90deg, var(--orange-dim) 0%, transparent 8%); }
+        table.tests tbody tr.row-won         { background: linear-gradient(90deg, var(--green-dim)  0%, transparent 8%); }
+        table.tests tbody tr.row-lost        { background: linear-gradient(90deg, var(--red-dim)    0%, transparent 8%); }
+        table.tests tbody tr.row-inconclusive { background: linear-gradient(90deg, var(--amber-dim) 0%, transparent 8%); }
+        table.tests tbody tr.row-running:hover,
+        table.tests tbody tr.row-won:hover,
+        table.tests tbody tr.row-lost:hover,
+        table.tests tbody tr.row-inconclusive:hover { background: var(--bg-tertiary); }
+        .col-name { font-weight: 500; color: var(--text-primary); min-width: 220px; }
+        .col-name .date-range {
+            display: block;
+            font-weight: 400;
+            font-size: 10px;
+            font-family: 'Geist Mono', monospace;
+            color: var(--text-muted);
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        /* Row action kebab */
+        .col-actions { width: 32px; padding: 0 !important; position: relative; }
+        .row-kebab {
+            background: transparent;
+            border: 0;
+            color: var(--text-muted);
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .row-kebab:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .row-menu {
+            position: absolute;
+            top: 100%; right: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-hover);
+            border-radius: 6px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+            min-width: 140px;
+            z-index: 50;
+            padding: 4px;
+            display: none;
+        }
+        .row-menu.open { display: block; }
+        .row-menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 7px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .row-menu button:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .row-menu button.danger { color: var(--red); }
+        .row-menu button.danger:hover { background: var(--red-dim); }
+        .col-num { font-family: 'Geist Mono', monospace; text-align: right; }
+
+        .pill {
+            display: inline-block;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pill-platform { background: var(--blue-dim);   color: var(--blue); }
+        .pill-type     { background: var(--purple-dim); color: var(--purple); }
+        .pill-client   { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); font-family: 'Geist Mono', monospace; }
+        /* Merged outcome pill: running → orange, won → green, lost → red, inconclusive → yellow, archived → muted */
+        .pill-outcome-running      { background: var(--orange-dim); color: var(--orange); }
+        .pill-outcome-won          { background: var(--green-dim);  color: var(--green); }
+        .pill-outcome-lost         { background: var(--red-dim);    color: var(--red); }
+        .pill-outcome-inconclusive { background: var(--amber-dim);  color: var(--amber); }
+        .pill-outcome-complete     { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); }
+        .pill-outcome-archived     { background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border); }
+        .pct-pos { color: var(--green); font-weight: 700; }
+        .pct-neg { color: var(--red);   font-weight: 700; }
+        .pct-flat{ color: var(--text-muted); }
+        .sig-flag { color: var(--orange); font-size: 14px; }
+        .empty-row {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 60px 20px;
+            font-style: italic;
+        }
+
+        /* DRAWER */
+        .drawer {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: 600px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            z-index: 200;
+            transform: translateX(100%);
+            transition: transform 0.2s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .drawer.open { transform: translateX(0); }
+        .drawer-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .drawer-title {
+            font-weight: 600;
+            font-size: 14px;
+            flex: 1;
+        }
+        .drawer-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 22px;
+        }
+        .drawer-body { padding: 16px 22px; flex: 1; overflow-y: auto; }
+        .drawer-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .field label .hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-muted); }
+        .field input, .field select, .field textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 11px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 13px;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            outline: none; border-color: var(--orange);
+        }
+        .field textarea { min-height: 70px; resize: vertical; line-height: 1.5; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+        .compute-strip {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        .compute-cell { text-align: center; }
+        .compute-cell .nm {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .compute-cell .vl {
+            font-family: 'Geist Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+        .section-h {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin: 18px 0 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 300;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            width: 720px;
+            max-width: 95vw;
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+        .modal-actions {
+            display: flex; gap: 8px; justify-content: flex-end;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* TOAST — bottom-left so it never covers any drawer or footer controls */
+        .toast {
+            position: fixed;
+            bottom: 22px; left: 240px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 16px;
+            font-size: 13px;
+            z-index: 600;
+            transform: translateY(120%);
+            transition: transform 0.2s ease;
+            max-width: 320px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+        }
+        .toast.show { transform: translateY(0); }
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+
+        /* DASHBOARD STRIP */
+        .dash {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr) auto;
+            gap: 10px;
+            margin-bottom: 18px;
+            align-items: stretch;
+        }
+        .dash-stat {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            display: flex; flex-direction: column;
+        }
+        .dash-stat .nm {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .dash-stat .vl {
+            font-family: 'Geist Mono', monospace;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .dash-stat .sub {
+            font-size: 11px; color: var(--text-muted); margin-top: 2px;
+        }
+        .dash-stat.win .vl { color: var(--green); }
+        .dash-stat.lost .vl { color: var(--red); }
+        .dash-stat.run .vl { color: var(--orange); }
+        .dash-range {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex; flex-direction: column; gap: 6px;
+            min-width: 240px;
+        }
+        .dash-range .nm {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .dash-range .row {
+            display: flex; gap: 6px; align-items: center;
+        }
+        .dash-range input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            padding: 4px 6px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            flex: 1;
+            min-width: 0;
+        }
+        .dash-range .preset-row { display:flex; gap: 4px; flex-wrap: wrap; }
+        .dash-range .preset {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            padding: 2px 6px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .dash-range .preset:hover, .dash-range .preset.active {
+            border-color: var(--orange); color: var(--orange);
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Tests</div>
+                <div class="page-subtitle">Scientific archive of every marketing test, scoped per client. Hypothesis → result → learnings.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <span id="client-badge" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-muted);padding:6px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;display:none"></span>
+                <button class="btn" onclick="loadAll()">↻ Refresh</button>
+            </div>
+        </div>
+
+        <div class="dash" id="dash">
+            <div class="dash-stat"><div class="nm">Tests Launched</div><div class="vl" id="d-launched">—</div><div class="sub" id="d-launched-sub">in range</div></div>
+            <div class="dash-stat run"><div class="nm">Running</div><div class="vl" id="d-running">—</div><div class="sub">live now</div></div>
+            <div class="dash-stat win"><div class="nm">Wins</div><div class="vl" id="d-wins">—</div><div class="sub" id="d-wins-sub">variant beat control</div></div>
+            <div class="dash-stat lost"><div class="nm">Losses</div><div class="vl" id="d-losses">—</div><div class="sub">variant lost / inconclusive</div></div>
+            <div class="dash-stat"><div class="nm">Win Rate</div><div class="vl" id="d-winrate">—</div><div class="sub" id="d-winrate-sub">of completed</div></div>
+            <div class="dash-range">
+                <div class="nm">Date Range</div>
+                <div class="row">
+                    <input type="date" id="dash-from" onchange="onDashRangeChange()">
+                    <input type="date" id="dash-to" onchange="onDashRangeChange()">
+                </div>
+                <div class="preset-row">
+                    <span class="preset" data-days="7" onclick="setDashPreset(7)">7d</span>
+                    <span class="preset" data-days="30" onclick="setDashPreset(30)">30d</span>
+                    <span class="preset" data-days="90" onclick="setDashPreset(90)">90d</span>
+                    <span class="preset" data-days="365" onclick="setDashPreset(365)">1y</span>
+                    <span class="preset" data-days="0" onclick="setDashPreset(0)">All</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-bar">
+            <div class="top-bar-group">
+                <label>Client</label>
+                <select id="client-select" class="form-select" onchange="onClientChange()">
+                    <option value="">Select client…</option>
+                </select>
+            </div>
+            <div class="top-bar-group">
+                <label>Type</label>
+                <select id="type-filter" class="form-select" onchange="renderTable()">
+                    <option value="">All types</option>
+                </select>
+            </div>
+            <div class="top-bar-group">
+                <label>Platform</label>
+                <select id="platform-filter" class="form-select" onchange="renderTable()">
+                    <option value="">All platforms</option>
+                </select>
+            </div>
+            <div class="top-bar-group">
+                <label>Outcome</label>
+                <select id="status-filter" class="form-select" onchange="renderTable()">
+                    <option value="">All</option>
+                    <option value="running">Running</option>
+                    <option value="won">Won</option>
+                    <option value="lost">Lost</option>
+                    <option value="inconclusive">Inconclusive</option>
+                    <option value="archived">Archived</option>
+                </select>
+            </div>
+            <div style="flex:1"></div>
+            <span id="row-count" style="font-size:11px;color:var(--text-muted)">—</span>
+            <button class="btn btn-primary" onclick="openNewTest()">+ New Test</button>
+        </div>
+
+        <div class="table-wrap">
+            <table class="tests">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Platform</th>
+                        <th>Primary Metric</th>
+                        <th class="col-num">Original</th>
+                        <th class="col-num">Variant</th>
+                        <th class="col-num">% Diff</th>
+                        <th>20%+</th>
+                        <th class="col-num">Conf</th>
+                        <th>Outcome</th>
+                        <th class="col-actions"></th>
+                    </tr>
+                </thead>
+                <tbody id="tests-body"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- DRAWER (edit existing test) -->
+    <aside class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="drawer-title" id="drawer-title">—</div>
+            <button class="drawer-close" onclick="closeDrawer()">×</button>
+        </div>
+        <div class="drawer-body" id="drawer-body"></div>
+        <div class="drawer-footer">
+            <button class="btn btn-danger" onclick="archiveTest()">Archive</button>
+            <div style="flex:1"></div>
+            <button class="btn btn-primary" onclick="saveDrawer()">💾 Save</button>
+        </div>
+    </aside>
+
+    <!-- + NEW TEST MODAL -->
+    <div class="modal-overlay" id="new-test-modal">
+        <div class="modal">
+            <div class="modal-title">+ New Test</div>
+
+            <div class="row-2">
+                <div class="field">
+                    <label>Client</label>
+                    <select id="nt-client">
+                        <option value="">— pick a client —</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Created By</label>
+                    <input type="text" id="nt-by" placeholder="Your name">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Name <span class="hint">— short, scannable</span></label>
+                <input type="text" id="nt-name" placeholder='e.g. "Ads → iClose direct funnel"'>
+            </div>
+
+            <div class="row-4">
+                <div class="field">
+                    <label>Type</label>
+                    <select id="nt-type">
+                        <option value="">— pick —</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Platform</label>
+                    <select id="nt-platform">
+                        <option value="">— pick —</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Confidence <span class="hint">— target</span></label>
+                    <select id="nt-confidence">
+                        <option value="90">90%</option>
+                        <option value="95" selected>95%</option>
+                        <option value="99">99%</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Status</label>
+                    <select id="nt-status">
+                        <option value="running">Running</option>
+                        <option value="complete">Complete</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div class="field">
+                    <label>Start Date</label>
+                    <input type="date" id="nt-start">
+                </div>
+                <div class="field">
+                    <label>End Date</label>
+                    <input type="date" id="nt-end">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div class="field" style="grid-column: span 1">
+                    <label>Primary Metric <span class="hint">— what you're measuring</span></label>
+                    <input type="text" id="nt-metric" list="metric-options" placeholder='e.g. "Cost per Application", "Open Rate %", "ROAS"' oninput="autoDetectDirection()">
+                </div>
+                <div class="field">
+                    <label>Direction <span class="hint">— what's "better"?</span></label>
+                    <select id="nt-direction" onchange="recomputeNew()">
+                        <option value="lower_better">↓ Lower is better (cost-style)</option>
+                        <option value="higher_better">↑ Higher is better (rate / ROAS)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field" style="display:none">
+                <datalist id="metric-options">
+                    <option value="Cost per Application">
+                    <option value="Cost per Appointment">
+                    <option value="Cost per Acquisition">
+                    <option value="Cost per Qualified Call">
+                    <option value="Cost per Lead">
+                    <option value="Cost per Click">
+                    <option value="Cost per View Content">
+                    <option value="ROAS">
+                    <option value="Application Completion %">
+                    <option value="Hook Rate">
+                    <option value="CTR">
+                    <option value="Conversion Rate">
+                    <option value="Open Rate %">
+                    <option value="Reply Rate %">
+                </datalist>
+            </div>
+
+            <div class="row-4">
+                <div class="field">
+                    <label>Original Label</label>
+                    <input type="text" id="nt-orig-label" placeholder='"Typeform"' value="Original">
+                </div>
+                <div class="field">
+                    <label>Original Value</label>
+                    <input type="number" step="any" id="nt-orig" oninput="recomputeNew()">
+                </div>
+                <div class="field">
+                    <label>Variant Label</label>
+                    <input type="text" id="nt-var-label" placeholder='"iClose"' value="Variant">
+                </div>
+                <div class="field">
+                    <label>Variant Value</label>
+                    <input type="number" step="any" id="nt-var" oninput="recomputeNew()">
+                </div>
+            </div>
+
+            <div class="compute-strip">
+                <div class="compute-cell">
+                    <div class="nm">% Change</div>
+                    <div class="vl" id="nt-pct">—</div>
+                </div>
+                <div class="compute-cell">
+                    <div class="nm">≥ 20%?</div>
+                    <div class="vl" id="nt-sig">—</div>
+                </div>
+                <div class="compute-cell">
+                    <div class="nm">Winner <span class="hint">— pick manually</span></div>
+                    <select id="nt-winner" style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:6px;border-radius:6px;font-size:12px">
+                        <option value="">—</option>
+                        <option value="Original">Original</option>
+                        <option value="Variant">Variant</option>
+                        <option value="Inconclusive">Inconclusive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-h">Hypothesis &amp; Plan</div>
+            <div class="field">
+                <label>Hypothesis</label>
+                <textarea id="nt-hypothesis" placeholder='What you expect to happen and why'></textarea>
+            </div>
+            <div class="field">
+                <label>Test Parameters</label>
+                <textarea id="nt-parameters" placeholder='Sample size, budget, duration, what stays constant'></textarea>
+            </div>
+
+            <div class="section-h">Results &amp; Learnings <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted)">(can fill in later)</span></div>
+            <div class="field">
+                <label>Results Analysis</label>
+                <textarea id="nt-results" placeholder='Raw numbers, what the data shows'></textarea>
+            </div>
+            <div class="field">
+                <label>Learnings</label>
+                <textarea id="nt-learnings" placeholder='What it means. Why one won. Pattern to apply elsewhere.'></textarea>
+            </div>
+            <div class="field">
+                <label>Follow-up Actions</label>
+                <textarea id="nt-followup" placeholder='Roll out the winner, plan a sister test, etc.'></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn" onclick="closeNewTest()">Cancel</button>
+                <button class="btn btn-primary" onclick="createTest()">Create Test</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="config.js"></script>
+    <script>
+    // ============================================
+    // CONFIG
+    // ============================================
+    const SUPABASE_URL = window.PROPAGANDA.SUPABASE_URL;
+    const HEADERS = window.PROPAGANDA.HEADERS;
+    const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+
+    const TEST_TYPES = [
+        'Ad Creative (Image)','Ad Creative (Video)','Ad Creative (Carousel)',
+        'Headline','Hook','Copy',
+        'Landing Page','User Flow / Funnel',
+        'Audience / Targeting','Bidding / Budget',
+        'Offer / Pricing','Email','Psychology / Framing','Other'
+    ];
+    const PLATFORMS = ['Facebook / Meta','Google','TikTok','YouTube','Email','Website','LinkedIn','X / Twitter','Reddit','Other'];
+
+    // ============================================
+    // STATE
+    // ============================================
+    let clients = [];
+    let tests = [];
+    let selectedClientId = localStorage.getItem('selectedClientId') || '';
+    let activeTest = null;
+    let prefillFromConcept = null; // {client_id, concept_id, name}
+
+    const params = new URLSearchParams(location.search);
+    if (params.get('from_concept')) {
+        prefillFromConcept = {
+            concept_id: params.get('from_concept'),
+            client_id: params.get('client_id') || '',
+            name: params.get('name') || ''
+        };
+        if (prefillFromConcept.client_id) selectedClientId = prefillFromConcept.client_id;
+    }
+
+    // ============================================
+    // SUPABASE HELPERS
+    // ============================================
+    async function sbGet(path) {
+        try {
+            const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
+            if (!r.ok) return [];
+            return r.json();
+        } catch (e) { return []; }
+    }
+    async function sbPost(table, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+            method: 'POST', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+    async function sbPatch(table, id, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+            method: 'PATCH', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+
+    // ============================================
+    // INIT FILTER OPTIONS
+    // ============================================
+    function fillOptions() {
+        const tf = document.getElementById('type-filter');
+        const pf = document.getElementById('platform-filter');
+        TEST_TYPES.forEach(t => { tf.appendChild(new Option(t, t)); });
+        PLATFORMS.forEach(p => { pf.appendChild(new Option(p, p)); });
+        const ntType = document.getElementById('nt-type');
+        TEST_TYPES.forEach(t => { ntType.appendChild(new Option(t, t)); });
+        const ntPlat = document.getElementById('nt-platform');
+        PLATFORMS.forEach(p => { ntPlat.appendChild(new Option(p, p)); });
+    }
+
+    // ============================================
+    // LOADERS
+    // ============================================
+    async function loadClients() {
+        clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
+        const sel = document.getElementById('client-select');
+        sel.innerHTML = '<option value="">All clients</option>' +
+            clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        // Mirror options into the New Test modal client picker
+        const ntSel = document.getElementById('nt-client');
+        if (ntSel) {
+            ntSel.innerHTML = '<option value="">— pick a client —</option>' +
+                clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        }
+        updateClientBadge();
+    }
+    async function loadTests() {
+        const q = selectedClientId
+            ? `marketing_tests?client_id=eq.${selectedClientId}&order=created_at.desc&limit=500`
+            : `marketing_tests?order=created_at.desc&limit=500`;
+        tests = await sbGet(q);
+        renderTable();
+        renderDash();
+    }
+    // ============================================
+    // DASHBOARD STATS
+    // ============================================
+    function getDashRange() {
+        const from = document.getElementById('dash-from').value;
+        const to   = document.getElementById('dash-to').value;
+        return { from: from || null, to: to || null };
+    }
+    window.setDashPreset = function(days) {
+        const today = new Date();
+        const to = today.toISOString().slice(0,10);
+        let from = '';
+        if (days > 0) {
+            const start = new Date(today.getTime() - days * 86400000);
+            from = start.toISOString().slice(0,10);
+        }
+        document.getElementById('dash-from').value = from;
+        document.getElementById('dash-to').value = days > 0 ? to : '';
+        document.querySelectorAll('.dash-range .preset').forEach(el => {
+            el.classList.toggle('active', String(el.dataset.days) === String(days));
+        });
+        renderDash();
+    };
+    window.onDashRangeChange = function() {
+        document.querySelectorAll('.dash-range .preset').forEach(el => el.classList.remove('active'));
+        renderDash();
+    };
+    function inDashRange(t) {
+        const { from, to } = getDashRange();
+        const created = (t.created_at || '').slice(0,10);
+        if (from && created < from) return false;
+        if (to && created > to) return false;
+        return true;
+    }
+    function renderDash() {
+        const inRange = (tests || []).filter(inDashRange);
+        const launched = inRange.length;
+        const running  = inRange.filter(t => t.status === 'running').length;
+        const completed = inRange.filter(t => t.status === 'complete');
+        const wins    = completed.filter(t => t.winner === 'Variant').length;
+        const losses  = completed.filter(t => t.winner === 'Original').length;
+        const inconclusive = completed.filter(t => t.winner === 'Inconclusive').length;
+        // Win rate excludes inconclusive from the denominator since they're "no answer"
+        const decisive = wins + losses;
+        const winRate = decisive ? Math.round((wins / decisive) * 100) : null;
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        set('d-launched', launched);
+        set('d-running',  running);
+        set('d-wins',     wins);
+        set('d-losses',   losses);
+        set('d-winrate',  winRate == null ? '—' : winRate + '%');
+        set('d-winrate-sub', decisive
+            ? `of ${decisive} decisive${inconclusive ? ` · ${inconclusive} inconclusive` : ''}`
+            : (inconclusive ? `${inconclusive} inconclusive` : 'no completed yet'));
+        set('d-wins-sub', wins ? `${wins} of ${decisive} decisive` : 'variant beat control');
+        const { from, to } = getDashRange();
+        set('d-launched-sub', from || to ? `${from || '∞'} → ${to || 'today'}` : 'all time');
+    }
+
+    function clientLabel(client_id) {
+        const c = clients.find(x => x.id === client_id);
+        return c ? `${c.code}` : '—';
+    }
+    function clientName(client_id) {
+        const c = clients.find(x => x.id === client_id);
+        return c ? c.name : '—';
+    }
+    async function loadAll() {
+        await loadClients();
+        await loadTests();
+        // If we arrived with a from_concept link, auto-open the New Test modal pre-filled
+        if (prefillFromConcept) {
+            openNewTest(prefillFromConcept);
+            prefillFromConcept = null;
+            // Clean URL
+            const u = new URL(location.href);
+            u.searchParams.delete('from_concept');
+            u.searchParams.delete('client_id');
+            u.searchParams.delete('name');
+            history.replaceState({}, '', u);
+        }
+    }
+
+    // ============================================
+    // RENDER TABLE
+    // ============================================
+    function renderTable() {
+        const typeFilter = document.getElementById('type-filter').value;
+        const platFilter = document.getElementById('platform-filter').value;
+        const statFilter = document.getElementById('status-filter').value;
+
+        const rows = tests.filter(t =>
+            (!typeFilter || t.test_type === typeFilter) &&
+            (!platFilter || t.platform === platFilter) &&
+            (!statFilter || outcomeOf(t).key === statFilter)
+        );
+        document.getElementById('row-count').textContent = `${rows.length} of ${tests.length}`;
+
+        const tbody = document.getElementById('tests-body');
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="12" class="empty-row">${tests.length === 0 ? 'No tests yet — click + New Test' : 'No tests match these filters'}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(t => renderRow(t)).join('');
+        tbody.querySelectorAll('tr[data-id]').forEach(tr => {
+            tr.onclick = (ev) => {
+                // Ignore clicks inside the actions column (kebab + menu)
+                if (ev.target.closest('.col-actions')) return;
+                openDrawer(tr.dataset.id);
+            };
+        });
+        tbody.querySelectorAll('.row-kebab').forEach(btn => {
+            btn.onclick = (ev) => {
+                ev.stopPropagation();
+                const id = btn.dataset.kebab;
+                const menu = tbody.querySelector(`.row-menu[data-menu="${id}"]`);
+                const wasOpen = menu.classList.contains('open');
+                // Close all other menus
+                tbody.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+                if (!wasOpen) menu.classList.add('open');
+            };
+        });
+        tbody.querySelectorAll('.row-menu button[data-action]').forEach(btn => {
+            btn.onclick = (ev) => {
+                ev.stopPropagation();
+                const action = btn.dataset.action;
+                const id = btn.dataset.id;
+                tbody.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+                if (action === 'archive')   archiveTest(id);
+                if (action === 'duplicate') duplicateTest(id);
+                if (action === 'delete')    deleteTest(id);
+            };
+        });
+    }
+
+    // Close any open kebab menus when clicking outside.
+    document.addEventListener('click', (ev) => {
+        if (!ev.target.closest('.row-menu') && !ev.target.closest('.row-kebab')) {
+            document.querySelectorAll('.row-menu.open').forEach(m => m.classList.remove('open'));
+        }
+    });
+
+    window.archiveTest = async function(id) {
+        try {
+            await sbPatch('marketing_tests', id, { status: 'archived' });
+            const t = tests.find(x => x.id === id);
+            if (t) t.status = 'archived';
+            renderTable();
+            renderDash();
+            toast('Test archived', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.duplicateTest = async function(id) {
+        const t = tests.find(x => x.id === id);
+        if (!t) return;
+        // Strip server-managed fields; everything else copies. Generated columns (pct_change, significant) re-derive on insert.
+        const { id: _id, created_at, updated_at, pct_change, significant, ...copy } = t;
+        copy.name = (t.name || 'Untitled') + ' (copy)';
+        copy.status = 'running';
+        copy.winner = null;
+        try {
+            const rows = await sbPost('marketing_tests', copy);
+            if (rows[0]) {
+                tests.unshift(rows[0]);
+                renderTable();
+                renderDash();
+                toast('Test duplicated', 'success');
+                openDrawer(rows[0].id);
+            }
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.deleteTest = async function(id) {
+        const t = tests.find(x => x.id === id);
+        if (!t) return;
+        if (!confirm(`Delete "${t.name}"? This cannot be undone.`)) return;
+        try {
+            const url = `${SUPABASE_URL}/rest/v1/marketing_tests?id=eq.${id}`;
+            const res = await fetch(url, { method: 'DELETE', headers: HEADERS });
+            if (!res.ok) throw new Error('Delete failed');
+            tests = tests.filter(x => x.id !== id);
+            renderTable();
+            renderDash();
+            toast('Test deleted', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // Derive a single "outcome" view from status + winner — drives both the pill and the row outline.
+    function outcomeOf(t) {
+        if (t.status === 'archived') return { key: 'archived',     label: 'ARCHIVED' };
+        if (t.status === 'running')  return { key: 'running',      label: 'RUNNING' };
+        // status === 'complete'
+        if (t.winner === 'Variant')      return { key: 'won',          label: 'WON' };
+        if (t.winner === 'Original')     return { key: 'lost',         label: 'LOST' };
+        if (t.winner === 'Inconclusive') return { key: 'inconclusive', label: 'INCONCLUSIVE' };
+        return { key: 'complete', label: 'COMPLETE' };
+    }
+    function rowStatusClass(t) {
+        const o = outcomeOf(t);
+        if (o.key === 'running') return 'row-running';
+        if (o.key === 'won')     return 'row-won';
+        if (o.key === 'lost')    return 'row-lost';
+        if (o.key === 'inconclusive') return 'row-inconclusive';
+        return '';
+    }
+    function fmtDateShort(d) {
+        if (!d) return '';
+        // d is YYYY-MM-DD; render as M/D (e.g. 4/29)
+        const [y, m, day] = d.split('-');
+        return `${parseInt(m,10)}/${parseInt(day,10)}`;
+    }
+    function renderDateRange(t) {
+        if (!t.start_date && !t.end_date) return '';
+        const s = fmtDateShort(t.start_date);
+        const e = t.end_date ? fmtDateShort(t.end_date) : 'live';
+        return `<span class="date-range">${s || '?'} → ${e}</span>`;
+    }
+    function renderRow(t) {
+        const pct = t.pct_change == null ? null : +t.pct_change;
+        // Direction-aware: improvement = green, regression = red. Use inline style so we don't fight class specificity.
+        const dir = t.metric_direction || 'lower_better';
+        const imp = pct == null ? null : pctIsImprovement(pct, dir);
+        const pctStyle = pct == null ? '' : `style="color:${pctColor(pct, dir)};font-weight:700"`;
+        const pctText = pct == null ? '—' : (pct > 0 ? '+' : '') + pct.toFixed(1) + '%';
+        const sigClr = t.significant ? (imp ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
+        const sig = t.significant ? `<span style="color:${sigClr};font-size:14px">●</span>` : '<span style="color:var(--text-muted)">○</span>';
+        const conf = t.confidence_level ? `${t.confidence_level}%` : '—';
+        const rowCls = rowStatusClass(t);
+        return `
+            <tr data-id="${t.id}" class="${rowCls}">
+                <td><span class="pill pill-client" title="${escapeAttr(clientName(t.client_id))}">${escapeHtml(clientLabel(t.client_id))}</span></td>
+                <td class="col-name">${escapeHtml(t.name)}${renderDateRange(t)}</td>
+                <td>${t.test_type ? `<span class="pill pill-type">${escapeHtml(t.test_type)}</span>` : '—'}</td>
+                <td>${t.platform ? `<span class="pill pill-platform">${escapeHtml(t.platform)}</span>` : '—'}</td>
+                <td>${escapeHtml(t.primary_metric || '—')}</td>
+                <td class="col-num">${formatNum(t.original_performance)}</td>
+                <td class="col-num">${formatNum(t.variant_performance)}</td>
+                <td class="col-num" ${pctStyle}>${pctText}</td>
+                <td>${sig}</td>
+                <td class="col-num">${conf}</td>
+                <td>${(() => {
+                    const o = outcomeOf(t);
+                    return `<span class="pill pill-outcome-${o.key}">${o.label}</span>`;
+                })()}</td>
+                <td class="col-actions">
+                    <button class="row-kebab" data-kebab="${t.id}" title="More actions">⋯</button>
+                    <div class="row-menu" data-menu="${t.id}">
+                        <button data-action="archive"   data-id="${t.id}">📦 Archive</button>
+                        <button data-action="duplicate" data-id="${t.id}">⧉ Duplicate</button>
+                        <button data-action="delete"    data-id="${t.id}" class="danger">🗑 Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+    function formatNum(n) {
+        if (n == null) return '—';
+        return Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    // ============================================
+    // NEW TEST MODAL
+    // ============================================
+    window.openNewTest = function(prefill) {
+        const today = new Date().toISOString().slice(0,10);
+        // Default client: prefill > active filter > empty (modal will require user to pick).
+        const presetClient = prefill?.client_id || selectedClientId || '';
+        document.getElementById('nt-client').value       = presetClient;
+        document.getElementById('nt-name').value         = prefill?.name || '';
+        document.getElementById('nt-by').value           = localStorage.getItem('username') || '';
+        document.getElementById('nt-type').value         = '';
+        document.getElementById('nt-platform').value     = '';
+        document.getElementById('nt-confidence').value   = '95';
+        document.getElementById('nt-direction').value    = 'lower_better';
+        document.getElementById('nt-status').value       = 'running';
+        document.getElementById('nt-start').value        = today;
+        document.getElementById('nt-end').value          = '';
+        document.getElementById('nt-metric').value       = '';
+        document.getElementById('nt-orig-label').value   = 'Original';
+        document.getElementById('nt-orig').value         = '';
+        document.getElementById('nt-var-label').value    = 'Variant';
+        document.getElementById('nt-var').value          = '';
+        document.getElementById('nt-winner').value       = '';
+        document.getElementById('nt-pct').textContent    = '—';
+        document.getElementById('nt-sig').textContent    = '—';
+        ['nt-hypothesis','nt-parameters','nt-results','nt-learnings','nt-followup'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('new-test-modal').classList.add('open');
+        // Stash concept_id if pre-filled
+        document.getElementById('new-test-modal').dataset.conceptId = prefill?.concept_id || '';
+    };
+    window.closeNewTest = function() {
+        document.getElementById('new-test-modal').classList.remove('open');
+    };
+    // Direction-aware: an "improvement" is positive pct for higher_better metrics,
+    // negative pct for lower_better (cost-style) metrics.
+    function pctIsImprovement(pct, direction) {
+        if (pct === 0) return null;
+        return direction === 'higher_better' ? pct > 0 : pct < 0;
+    }
+    function pctColor(pct, direction) {
+        const imp = pctIsImprovement(pct, direction);
+        if (imp === null) return 'var(--text-muted)';
+        return imp ? 'var(--green)' : 'var(--red)';
+    }
+
+    // Sniff direction from common metric names. User can override.
+    const HIGHER_BETTER = /\b(roas|rate|ctr|hook rate|completion|conversion|open|reply|click[\s-]?through|engagement|score)\b/i;
+    const LOWER_BETTER  = /\b(cost|cpa|cpl|cpc|cpm|spend|bounce)\b/i;
+    window.autoDetectDirection = function() {
+        const m = (document.getElementById('nt-metric').value || '').trim();
+        if (!m) return;
+        const sel = document.getElementById('nt-direction');
+        if (LOWER_BETTER.test(m))  sel.value = 'lower_better';
+        else if (HIGHER_BETTER.test(m)) sel.value = 'higher_better';
+        recomputeNew();
+    };
+
+    window.recomputeNew = function() {
+        const o = parseFloat(document.getElementById('nt-orig').value);
+        const v = parseFloat(document.getElementById('nt-var').value);
+        if (isNaN(o) || isNaN(v) || o === 0) {
+            document.getElementById('nt-pct').textContent = '—';
+            document.getElementById('nt-sig').textContent = '—';
+            return;
+        }
+        const pct = (v - o) / Math.abs(o) * 100;
+        const dir = document.getElementById('nt-direction').value || 'lower_better';
+        const imp = pctIsImprovement(pct, dir);
+        document.getElementById('nt-pct').textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+        document.getElementById('nt-pct').style.color = pctColor(pct, dir);
+        const sig = Math.abs(pct) >= 20;
+        // "20%+" significance flag — green when significant AND an improvement, red when significant regression.
+        const sigText = sig ? (imp ? '✓ Yes (improvement)' : '✓ Yes (regression)') : '✗ No';
+        document.getElementById('nt-sig').textContent = sigText;
+        document.getElementById('nt-sig').style.color = sig ? (imp ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
+    };
+    window.createTest = async function() {
+        try {
+            const clientId = document.getElementById('nt-client').value;
+            if (!clientId) throw new Error('Client is required');
+            const name = document.getElementById('nt-name').value.trim();
+            if (!name) throw new Error('Name is required');
+            const by = document.getElementById('nt-by').value.trim();
+            if (by) localStorage.setItem('username', by);
+            const conceptId = document.getElementById('new-test-modal').dataset.conceptId || null;
+            const num = (id) => {
+                const v = document.getElementById(id).value;
+                return v === '' ? null : parseFloat(v);
+            };
+            const body = {
+                client_id: clientId,
+                concept_id: conceptId,
+                name,
+                test_type: document.getElementById('nt-type').value || null,
+                platform:  document.getElementById('nt-platform').value || null,
+                status:    document.getElementById('nt-status').value || 'running',
+                confidence_level: parseInt(document.getElementById('nt-confidence').value, 10) || 95,
+                metric_direction: document.getElementById('nt-direction').value || 'lower_better',
+                start_date:document.getElementById('nt-start').value || null,
+                end_date:  document.getElementById('nt-end').value || null,
+                primary_metric:       document.getElementById('nt-metric').value || null,
+                original_label:       document.getElementById('nt-orig-label').value || null,
+                original_performance: num('nt-orig'),
+                variant_label:        document.getElementById('nt-var-label').value || null,
+                variant_performance:  num('nt-var'),
+                winner:               document.getElementById('nt-winner').value || null,
+                hypothesis:           document.getElementById('nt-hypothesis').value || null,
+                test_parameters:      document.getElementById('nt-parameters').value || null,
+                results:              document.getElementById('nt-results').value || null,
+                learnings:            document.getElementById('nt-learnings').value || null,
+                followup:             document.getElementById('nt-followup').value || null,
+                created_by:           by || null
+            };
+            const rows = await sbPost('marketing_tests', body);
+            closeNewTest();
+            await loadTests();
+            toast('Test logged', 'success');
+            if (rows[0]) openDrawer(rows[0].id);
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // ============================================
+    // DRAWER
+    // ============================================
+    function openDrawer(id) {
+        const t = tests.find(x => x.id === id);
+        if (!t) return;
+        activeTest = t;
+        document.getElementById('drawer-title').textContent = t.name;
+        const pct = t.pct_change == null ? '—' : (t.pct_change > 0 ? '+' : '') + (+t.pct_change).toFixed(2) + '%';
+        const pctClr = t.pct_change == null ? 'var(--text-muted)' : pctColor(+t.pct_change, t.metric_direction || 'lower_better');
+        const sigImp = t.pct_change != null && pctIsImprovement(+t.pct_change, t.metric_direction || 'lower_better');
+        const sigClr = t.significant ? (sigImp ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
+        const sigText = t.significant ? (sigImp ? '✓ Yes (improvement)' : '✓ Yes (regression)') : '✗ No';
+        document.getElementById('drawer-body').innerHTML = `
+            <div class="row-2">
+                <div class="field">
+                    <label>Name</label>
+                    <input id="d-name" type="text" value="${escapeAttr(t.name || '')}">
+                </div>
+                <div class="field">
+                    <label>Status</label>
+                    <select id="d-status">
+                        <option value="running"  ${t.status==='running'?'selected':''}>Running</option>
+                        <option value="complete" ${t.status==='complete'?'selected':''}>Complete</option>
+                        <option value="archived" ${t.status==='archived'?'selected':''}>Archived</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row-3">
+                <div class="field">
+                    <label>Type</label>
+                    <select id="d-type">
+                        <option value="">—</option>
+                        ${TEST_TYPES.map(x => `<option ${t.test_type===x?'selected':''}>${x}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Platform</label>
+                    <select id="d-platform">
+                        <option value="">—</option>
+                        ${PLATFORMS.map(x => `<option ${t.platform===x?'selected':''}>${x}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Primary Metric</label>
+                    <input id="d-metric" type="text" value="${escapeAttr(t.primary_metric||'')}">
+                </div>
+            </div>
+            <div class="row-4">
+                <div class="field"><label>Start</label><input id="d-start" type="date" value="${t.start_date||''}"></div>
+                <div class="field"><label>End</label><input id="d-end" type="date" value="${t.end_date||''}"></div>
+                <div class="field">
+                    <label>Confidence Target</label>
+                    <select id="d-confidence">
+                        <option value="90" ${(t.confidence_level||95)==90?'selected':''}>90%</option>
+                        <option value="95" ${(t.confidence_level||95)==95?'selected':''}>95%</option>
+                        <option value="99" ${(t.confidence_level||95)==99?'selected':''}>99%</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Direction</label>
+                    <select id="d-direction" onchange="recomputeDrawer()">
+                        <option value="lower_better"  ${(t.metric_direction||'lower_better')==='lower_better'?'selected':''}>↓ Lower better</option>
+                        <option value="higher_better" ${t.metric_direction==='higher_better'?'selected':''}>↑ Higher better</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row-4">
+                <div class="field">
+                    <label>Original Label</label>
+                    <input id="d-orig-label" type="text" value="${escapeAttr(t.original_label||'')}">
+                </div>
+                <div class="field">
+                    <label>Original Value</label>
+                    <input id="d-orig" type="number" step="any" value="${t.original_performance ?? ''}" oninput="recomputeDrawer()">
+                </div>
+                <div class="field">
+                    <label>Variant Label</label>
+                    <input id="d-var-label" type="text" value="${escapeAttr(t.variant_label||'')}">
+                </div>
+                <div class="field">
+                    <label>Variant Value</label>
+                    <input id="d-var" type="number" step="any" value="${t.variant_performance ?? ''}" oninput="recomputeDrawer()">
+                </div>
+            </div>
+            <div class="compute-strip">
+                <div class="compute-cell">
+                    <div class="nm">% Change</div>
+                    <div class="vl" id="d-pct" style="color:${pctClr}">${pct}</div>
+                </div>
+                <div class="compute-cell">
+                    <div class="nm">≥ 20%?</div>
+                    <div class="vl" id="d-sig" style="color:${sigClr}">${sigText}</div>
+                </div>
+                <div class="compute-cell">
+                    <div class="nm">Winner <span style="color:var(--text-muted);font-weight:400">— auto-completes</span></div>
+                    <select id="d-winner" onchange="onWinnerChange()" style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:6px;border-radius:6px;font-size:12px">
+                        <option value="">—</option>
+                        <option value="Original" ${t.winner==='Original'?'selected':''}>Original</option>
+                        <option value="Variant" ${t.winner==='Variant'?'selected':''}>Variant</option>
+                        <option value="Inconclusive" ${t.winner==='Inconclusive'?'selected':''}>Inconclusive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="section-h">Hypothesis &amp; Plan</div>
+            <div class="field"><label>Hypothesis</label><textarea id="d-hyp" rows="2">${escapeHtml(t.hypothesis||'')}</textarea></div>
+            <div class="field"><label>Test Parameters</label><textarea id="d-params" rows="2">${escapeHtml(t.test_parameters||'')}</textarea></div>
+            <div class="section-h">Results &amp; Learnings</div>
+            <div class="field"><label>Results Analysis</label><textarea id="d-results" rows="3">${escapeHtml(t.results||'')}</textarea></div>
+            <div class="field"><label>Learnings</label><textarea id="d-learn" rows="3">${escapeHtml(t.learnings||'')}</textarea></div>
+            <div class="field"><label>Follow-up Actions</label><textarea id="d-follow" rows="2">${escapeHtml(t.followup||'')}</textarea></div>
+            ${t.concept_id ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px">Linked concept: <a href="25-creative-brief.html?concept_id=${t.concept_id}" style="color:var(--orange);text-decoration:none" target="_blank">↗ open brief</a></div>` : ''}
+        `;
+        document.getElementById('drawer').classList.add('open');
+    }
+    window.closeDrawer = function() {
+        document.getElementById('drawer').classList.remove('open');
+        activeTest = null;
+    };
+    // When the user picks a winner, auto-flip status to 'complete' so the dashboard counts it.
+    window.onWinnerChange = function() {
+        const winner = document.getElementById('d-winner').value;
+        if (winner) {
+            const status = document.getElementById('d-status');
+            if (status.value === 'running') status.value = 'complete';
+        }
+    };
+    window.recomputeDrawer = function() {
+        const o = parseFloat(document.getElementById('d-orig').value);
+        const v = parseFloat(document.getElementById('d-var').value);
+        if (isNaN(o) || isNaN(v) || o === 0) {
+            document.getElementById('d-pct').textContent = '—';
+            document.getElementById('d-sig').textContent = '—';
+            return;
+        }
+        const pct = (v - o) / Math.abs(o) * 100;
+        const dir = document.getElementById('d-direction')?.value || 'lower_better';
+        const imp = pctIsImprovement(pct, dir);
+        document.getElementById('d-pct').textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+        document.getElementById('d-pct').style.color = pctColor(pct, dir);
+        const sig = Math.abs(pct) >= 20;
+        document.getElementById('d-sig').textContent = sig ? (imp ? '✓ Yes (improvement)' : '✓ Yes (regression)') : '✗ No';
+        document.getElementById('d-sig').style.color = sig ? (imp ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
+    };
+    window.saveDrawer = async function() {
+        if (!activeTest) return;
+        try {
+            const num = (id) => {
+                const v = document.getElementById(id).value;
+                return v === '' ? null : parseFloat(v);
+            };
+            const body = {
+                name: document.getElementById('d-name').value.trim(),
+                status: document.getElementById('d-status').value,
+                test_type: document.getElementById('d-type').value || null,
+                platform:  document.getElementById('d-platform').value || null,
+                confidence_level: parseInt(document.getElementById('d-confidence').value, 10) || 95,
+                metric_direction: document.getElementById('d-direction')?.value || 'lower_better',
+                primary_metric: document.getElementById('d-metric').value || null,
+                start_date: document.getElementById('d-start').value || null,
+                end_date:   document.getElementById('d-end').value || null,
+                original_label:       document.getElementById('d-orig-label').value || null,
+                original_performance: num('d-orig'),
+                variant_label:        document.getElementById('d-var-label').value || null,
+                variant_performance:  num('d-var'),
+                winner: document.getElementById('d-winner').value || null,
+                hypothesis:      document.getElementById('d-hyp').value || null,
+                test_parameters: document.getElementById('d-params').value || null,
+                results:         document.getElementById('d-results').value || null,
+                learnings:       document.getElementById('d-learn').value || null,
+                followup:        document.getElementById('d-follow').value || null
+            };
+            await sbPatch('marketing_tests', activeTest.id, body);
+            Object.assign(activeTest, body);
+            // Re-fetch so we get updated generated columns
+            const fresh = await sbGet(`marketing_tests?id=eq.${activeTest.id}`);
+            if (fresh[0]) {
+                Object.assign(activeTest, fresh[0]);
+                const idx = tests.findIndex(x => x.id === activeTest.id);
+                if (idx >= 0) tests[idx] = activeTest;
+            }
+            renderTable();
+            toast('Saved ✓', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.archiveTest = async function() {
+        if (!activeTest) return;
+        try {
+            await sbPatch('marketing_tests', activeTest.id, { status: 'archived' });
+            activeTest.status = 'archived';
+            renderTable();
+            closeDrawer();
+            toast('Archived', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // ============================================
+    // CHANGE HANDLERS
+    // ============================================
+    window.onClientChange = async function() {
+        selectedClientId = document.getElementById('client-select').value;
+        localStorage.setItem('selectedClientId', selectedClientId);
+        updateClientBadge();
+        await loadTests();
+    };
+    function updateClientBadge() {
+        const c = clients.find(x => x.id === selectedClientId);
+        const b = document.getElementById('client-badge');
+        if (c) { b.textContent = `Active: ${c.name} (${c.code})`; b.style.display = 'inline-block'; }
+        else   { b.style.display = 'none'; }
+    }
+
+    // ============================================
+    // UTILS + INIT
+    // ============================================
+    function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
+    function escapeAttr(s) { return String(s ?? '').replace(/"/g, '&quot;'); }
+    function toast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + (type || '');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    fillOptions();
+    setDashPreset(30); // default to last 30d (sets inputs + active class; renderDash will run after loadTests fills `tests`)
+    loadAll();
+    </script>
+</body>
+</html>

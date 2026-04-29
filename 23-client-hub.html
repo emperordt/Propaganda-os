@@ -477,58 +477,7 @@
     </style>
 </head>
 <body>
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">PROPAGANDA//OS</div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">CLIENTS</div>
-            <a href="23-client-hub.html" class="sidebar-link active">Client Hub</a>
-            <a href="24-onboarding.html" class="sidebar-link">Onboarding</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">YOUTUBE</div>
-            <a href="01-generation-hub.html" class="sidebar-link">Generate</a>
-            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
-            <a href="03-face-library.html" class="sidebar-link">Face Library</a>
-            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">TWITTER</div>
-            <a href="08-twitter-generator.html" class="sidebar-link">Generate</a>
-            <a href="11-twitter-swipes.html" class="sidebar-link">Swipes</a>
-            <a href="09-twitter-scraper.html" class="sidebar-link">Scraper</a>
-            <a href="10-hook-bank.html" class="sidebar-link">Hook Bank</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">IMAGE ADS</div>
-            <a href="12-brand-profiles.html" class="sidebar-link">Brands & Offers</a>
-            <a href="13-image-ad-generator.html" class="sidebar-link">Generator</a>
-            <a href="14-image-ad-review.html" class="sidebar-link">Review</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">VIDEO ADS</div>
-            <a href="06-ad-swipes.html" class="sidebar-link">Swipe Library</a>
-            <a href="07-ad-generator.html" class="sidebar-link">Generator</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">LANDING PAGES</div>
-            <a href="18-lp-swipes.html" class="sidebar-link">Swipe Library</a>
-            <a href="19-lp-generator.html" class="sidebar-link">Generator</a>
-            <a href="21-lp-editor.html" class="sidebar-link">Editor</a>
-            <a href="20-lp-deploy.html" class="sidebar-link">Deploy</a>
-            <a href="22-lp-history.html" class="sidebar-link">History</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">TOOLS</div>
-            <a href="15-funnel-calculator.html" class="sidebar-link">Funnel Math</a>
-            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
-            <a href="17-angle-generator.html" class="sidebar-link">Angle Generator</a>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">OTHER</div>
-            <a href="05-history.html" class="sidebar-link">History</a>
-        </div>
-    </aside>
+    <aside class="sidebar" id="sidebar"></aside>
 
     <button class="sidebar-toggle" id="sidebar-toggle">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -572,7 +521,7 @@
                     <option value="paused">Paused</option>
                     <option value="offboarded">Offboarded</option>
                 </select>
-                <button class="btn-new" onclick="openClientModal()">+ Add Client</button>
+                <button class="btn-new" onclick="startOnboarding()">+ Add Client</button>
             </div>
         </div>
 
@@ -630,20 +579,19 @@
                 document.getElementById('sidebar').classList.remove('open');
             }
         });
+    </script>
 
-        // ─── Config ─────────────────────────────────────────────
+    <!-- Shared config — single source of truth for Supabase URL/key + n8n webhooks -->
+    <script src="config.js"></script>
+    <script>
+        // ─── Config (read from window.PROPAGANDA via config.js) ──
         const CONFIG = {
-            SUPABASE_URL: 'https://wqclspynbdghfsosqygg.supabase.co',
-            SUPABASE_ANON_KEY: 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av',
-            N8N_ONBOARD_WEBHOOK: 'https://n8n.dtthomas.cloud/webhook/client-onboard'
+            SUPABASE_URL: window.PROPAGANDA.SUPABASE_URL,
+            SUPABASE_ANON_KEY: window.PROPAGANDA.SUPABASE_ANON_KEY,
+            N8N_ONBOARD_WEBHOOK: window.PROPAGANDA.N8N.CLIENT_ONBOARD
         };
 
-        const HEADERS = {
-            'apikey': CONFIG.SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-        };
+        const HEADERS = window.PROPAGANDA.HEADERS;
 
         const HEADERS_READ = {
             'apikey': CONFIG.SUPABASE_ANON_KEY,
@@ -718,7 +666,7 @@
                 grid.innerHTML = `
                     <div class="empty-state">
                         <p>${allClients.length === 0 ? 'No clients yet' : 'No clients match this filter'}</p>
-                        ${allClients.length === 0 ? '<button class="btn-new" onclick="openClientModal()">+ Add Your First Client</button>' : ''}
+                        ${allClients.length === 0 ? '<button class="btn-new" onclick="startOnboarding()">+ Add Your First Client</button>' : ''}
                     </div>
                 `;
                 return;
@@ -774,8 +722,15 @@
             }
         }
 
-        // ─── Add Client Modal ───────────────────────────────────
-        function openClientModal() {
+        // ─── Start Onboarding (redirect to Typeform-style flow) ──
+        function startOnboarding() {
+            // Clear any previously selected client so the onboarding starts fresh
+            localStorage.removeItem('selectedClientId');
+            window.location.href = '24-onboarding.html';
+        }
+
+        // ─── Legacy Add Client Modal (kept for fallback) ────────
+        function _legacyOpenClientModal() {
             document.getElementById('qc-name').value = '';
             document.getElementById('qc-code').value = '';
             document.getElementById('qc-website').value = '';

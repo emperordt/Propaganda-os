@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
             --bg-primary: #0f0f0f;
             --bg-secondary: #141414;
@@ -35,8 +34,9 @@
             --purple-dim: #a78bfa20;
             --red: #ff4444;
             --red-dim: #ff444420;
+            --pink: #f472b6;
+            --pink-dim: #f472b620;
         }
-
         body {
             font-family: 'Geist', Arial, sans-serif;
             background: var(--bg-primary);
@@ -90,46 +90,33 @@
         /* MAIN */
         .main {
             margin-left: 220px;
-            padding: 24px 32px;
+            padding: 22px 28px;
             min-height: 100vh;
         }
-
         .page-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 12px;
         }
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        .page-subtitle {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
+        .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+        .page-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
         /* TOP BAR */
         .top-bar {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 14px 18px;
-            margin-bottom: 20px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
-        .top-bar-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .top-bar-group { display: flex; align-items: center; gap: 8px; }
         .top-bar label {
             font-size: 11px;
             color: var(--text-muted);
@@ -140,52 +127,73 @@
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             color: var(--text-primary);
-            padding: 8px 12px;
+            padding: 7px 11px;
             border-radius: 6px;
             font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
-            min-width: 180px;
-            transition: border-color 0.15s ease;
+            min-width: 160px;
         }
-        .form-select:focus, .form-input:focus {
-            outline: none;
-            border-color: var(--orange);
-        }
+        .form-select:focus, .form-input:focus { outline: none; border-color: var(--orange); }
         .btn {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             color: var(--text-primary);
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 6px;
             font-family: 'Geist', Arial, sans-serif;
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.15s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .btn:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+        .btn:hover:not(:disabled) { border-color: var(--border-hover); background: var(--bg-secondary); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-primary {
             background: var(--orange);
             border-color: var(--orange);
             color: #0f0f0f;
             font-weight: 600;
         }
-        .btn-primary:hover { background: #ff6620; border-color: #ff6620; }
+        .btn-primary:hover:not(:disabled) { background: #ff6620; border-color: #ff6620; }
+        .btn-success { background: var(--green); border-color: var(--green); color: #0f0f0f; font-weight: 600; }
+        .btn-danger  { background: transparent; border-color: var(--red); color: var(--red); }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
 
-        /* KANBAN */
+        /* FILTER PILLS */
+        .filter-group { display: flex; gap: 4px; flex-wrap: wrap; }
+        .filter-pill {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            user-select: none;
+            transition: all 0.12s ease;
+        }
+        .filter-pill:hover { color: var(--text-secondary); border-color: var(--border-hover); }
+        .filter-pill.active { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+        .filter-pill.winners.active { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+        /* KANBAN — 7 columns */
         .kanban {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-            min-height: calc(100vh - 220px);
+            grid-template-columns: repeat(7, minmax(180px, 1fr));
+            gap: 10px;
+            min-height: calc(100vh - 280px);
+            overflow-x: auto;
+            padding-bottom: 8px;
         }
-        @media (max-width: 1400px) {
-            .kanban { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 900px) {
-            .kanban { grid-template-columns: 1fr; }
-        }
-
+        @media (max-width: 1500px) { .kanban { grid-template-columns: repeat(7, 200px); } }
         .column {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -195,45 +203,54 @@
             min-height: 400px;
         }
         .column.drag-over { border-color: var(--orange); background: var(--orange-dim); }
-
+        .column.drag-blocked { border-color: var(--red); background: var(--red-dim); }
         .column-header {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border);
         }
         .column-title {
             font-family: 'Geist Mono', monospace;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
         }
         .column-count {
             font-family: 'Geist Mono', monospace;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             background: var(--bg-tertiary);
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 10px;
         }
-        .column[data-status="draft"] .column-title { color: var(--text-muted); }
-        .column[data-status="rendered"] .column-title { color: var(--blue); }
-        .column[data-status="reviewed"] .column-title { color: var(--amber); }
-        .column[data-status="approved"] .column-title { color: var(--green); }
-        .column[data-status="launched"] .column-title { color: var(--purple); }
-
+        .column[data-stage="idea"]       .column-title { color: var(--text-muted); }
+        .column[data-stage="approved"]    .column-title { color: var(--blue); }
+        .column[data-stage="copywriting"] .column-title { color: var(--purple); }
+        .column[data-stage="production"]  .column-title { color: var(--amber); }
+        .column[data-stage="revisions"]   .column-title { color: var(--pink); }
+        .column[data-stage="launched"]    .column-title { color: var(--orange); }
+        .column[data-stage="won"]         .column-title { color: var(--green); }
+        .column[data-stage="lost"]        .column-title { color: var(--red); }
         .column-body {
-            padding: 12px;
+            padding: 10px;
             flex: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+        }
+        .column-empty {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 24px 8px;
+            font-style: italic;
         }
 
-        /* CARDS */
+        /* CARD */
         .card {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
@@ -246,69 +263,29 @@
         .card:hover { border-color: var(--border-hover); transform: translateY(-1px); }
         .card.dragging { opacity: 0.4; cursor: grabbing; }
         .card.selected { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
-
-        .card-checkbox {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 18px;
-            height: 18px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--bg-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: transparent;
-            z-index: 2;
-        }
-        .card-checkbox.checked {
-            background: var(--orange);
-            border-color: var(--orange);
-            color: #0f0f0f;
-        }
-
-        .card-thumb {
-            width: 100%;
-            aspect-ratio: 1;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .card-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .card-thumb-placeholder {
-            color: var(--text-muted);
-            font-size: 11px;
-            text-align: center;
-            padding: 12px;
-        }
-
         .card-name {
             font-family: 'Geist Mono', monospace;
             font-size: 10px;
             color: var(--text-primary);
             font-weight: 600;
             word-break: break-all;
-            line-height: 1.3;
+            line-height: 1.35;
             margin-bottom: 6px;
         }
-
+        .card-big-idea {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         .card-pills {
             display: flex;
             gap: 4px;
             flex-wrap: wrap;
-            margin-bottom: 6px;
         }
         .pill {
             font-family: 'Geist Mono', monospace;
@@ -317,48 +294,67 @@
             padding: 2px 6px;
             border-radius: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
-        .pill-ua { background: var(--red-dim); color: var(--red); }
-        .pill-pa { background: var(--orange-dim); color: var(--orange); }
-        .pill-sa { background: var(--amber-dim); color: var(--amber); }
-        .pill-pra { background: var(--green-dim); color: var(--green); }
-        .pill-ma { background: var(--blue-dim); color: var(--blue); }
-
-        .card-hook {
-            font-size: 11px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
+        .pill-ua  { background: var(--red-dim);    color: var(--red); }
+        .pill-pa  { background: var(--orange-dim); color: var(--orange); }
+        .pill-sa  { background: var(--amber-dim);  color: var(--amber); }
+        .pill-pra { background: var(--green-dim);  color: var(--green); }
+        .pill-ma  { background: var(--blue-dim);   color: var(--blue); }
+        .pill-lead   { background: var(--purple-dim); color: var(--purple); }
+        .pill-asset  { background: var(--accent-dim); color: var(--text-secondary); border: 1px solid var(--border); }
+        .pill-ice    { background: var(--green-dim);  color: var(--green); font-weight: 700; }
+        .pill-ice.mid{ background: var(--amber-dim);  color: var(--amber); }
+        .pill-ice.low{ background: var(--red-dim);    color: var(--red); }
+        .pill-creatives { background: var(--orange-dim); color: var(--orange); }
+        .pill-tag { background: var(--pink-dim); color: var(--pink); }
+        .pill-doc { background: var(--blue-dim); color: var(--blue); text-decoration: none; cursor: pointer; }
+        .pill-doc:hover { background: var(--blue); color: #0f0f0f; }
         .perf-badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            font-size: 14px;
-            z-index: 1;
+            top: 8px; right: 10px;
+            font-size: 16px;
+        }
+        .card-checkbox {
+            position: absolute;
+            top: 8px; left: 8px;
+            width: 16px; height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            color: transparent;
+            z-index: 2;
+        }
+        .card-checkbox.checked {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0f0f0f;
+        }
+        .card-thumbs {
+            display: flex;
+            gap: 3px;
+            margin-top: 6px;
+        }
+        .card-thumbs .mini-thumb {
+            width: 26px;
+            height: 26px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .card-thumbs .mini-thumb img {
+            width: 100%; height: 100%; object-fit: cover;
         }
 
-        /* EMPTY COLUMN STATE */
-        .column-empty {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 11px;
-            padding: 30px 12px;
-            font-style: italic;
-        }
-
-        /* DETAIL PANEL */
-        .panel {
+        /* DRAWER */
+        .drawer {
             position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 520px;
+            top: 0; right: 0; bottom: 0;
+            width: 540px;
             background: var(--bg-secondary);
             border-left: 1px solid var(--border);
             z-index: 200;
@@ -368,91 +364,404 @@
             display: flex;
             flex-direction: column;
         }
-        .panel.open { transform: translateX(0); }
-        .panel-header {
-            padding: 18px 24px;
+        .drawer.open { transform: translateX(0); }
+        .drawer-header {
+            padding: 16px 22px;
             border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
-        .panel-title {
+        .drawer-title {
             font-family: 'Geist Mono', monospace;
             font-size: 11px;
             color: var(--text-primary);
             word-break: break-all;
+            flex: 1;
         }
-        .panel-close {
+        .drawer-close {
             background: none;
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            font-size: 20px;
-            padding: 0;
+            font-size: 22px;
+            padding: 0 4px;
         }
-        .panel-body {
-            padding: 18px 24px;
+        .drawer-body {
+            padding: 16px 22px;
             flex: 1;
             overflow-y: auto;
         }
-        .panel-image {
-            width: 100%;
-            border-radius: 8px;
-            margin-bottom: 18px;
-            border: 1px solid var(--border);
-        }
-        .panel-section { margin-bottom: 18px; }
-        .panel-label {
-            font-family: 'Geist Mono', monospace;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-        .panel-input, .panel-textarea, .panel-select {
-            width: 100%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-family: 'Geist', Arial, sans-serif;
-            font-size: 13px;
-        }
-        .panel-textarea { min-height: 80px; resize: vertical; }
-        .panel-input:focus, .panel-textarea:focus, .panel-select:focus {
-            outline: none;
-            border-color: var(--orange);
-        }
-        .panel-actions {
-            padding: 18px 24px;
+        .drawer-footer {
+            padding: 14px 22px;
             border-top: 1px solid var(--border);
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
+        .stage-badge {
+            display: inline-block;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stage-badge.idea        { background: var(--bg-tertiary);  color: var(--text-muted); border: 1px solid var(--border); }
+        .stage-badge.approved    { background: var(--blue-dim);     color: var(--blue); }
+        .stage-badge.copywriting { background: var(--purple-dim);   color: var(--purple); }
+        .stage-badge.production  { background: var(--amber-dim);    color: var(--amber); }
+        .stage-badge.revisions   { background: var(--pink-dim);     color: var(--pink); }
+        .stage-badge.launched    { background: var(--orange-dim);   color: var(--orange); }
+        .stage-badge.won         { background: var(--green-dim);    color: var(--green); }
+        .stage-badge.lost        { background: var(--red-dim);      color: var(--red); }
+        .stage-badge.rejected    { background: var(--red-dim);      color: var(--red); }
+        .drawer-section { margin-bottom: 18px; }
+        .drawer-section h4 {
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+        .drawer-row { margin-bottom: 10px; }
+        .drawer-row label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .drawer-row input,
+        .drawer-row select,
+        .drawer-row textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 12.5px;
+        }
+        .drawer-row input:focus,
+        .drawer-row select:focus,
+        .drawer-row textarea:focus { outline: none; border-color: var(--orange); }
+        .drawer-row textarea { min-height: 60px; resize: vertical; line-height: 1.5; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        .ice-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .ice-cell {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+        .ice-cell .nm { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .ice-cell .vl { font-family: 'Geist Mono', monospace; font-size: 18px; font-weight: 700; color: var(--orange); }
+        .ice-cell input[type=range] { width: 100%; }
+        .ice-summary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            margin-top: 6px;
+        }
+        .ice-summary .ice-num {
+            font-family: 'Geist Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .ice-summary.pass .ice-num { color: var(--green); }
+        .ice-summary.fail .ice-num { color: var(--red); }
+        .ice-summary .ice-thresh { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .creatives-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .creative-card {
+            display: grid;
+            grid-template-columns: 96px 1fr;
+            gap: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            transition: border-color 0.12s ease;
+        }
+        .creative-card:hover { border-color: var(--border-hover); }
+        .creative-card.winner-heavy_winner { border-color: var(--green); box-shadow: 0 0 0 1px var(--green-dim); }
+        .creative-card.winner-winner { border-color: var(--green); }
+        .creative-card.winner-loser { border-color: var(--red); }
+        .creative-card.winner-test { border-color: var(--amber); }
+        .creative-card-thumb {
+            width: 96px; height: 96px;
+            background: #0a0a0a;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            cursor: zoom-in;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .creative-card-thumb img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+        }
+        .creative-card-thumb .video-badge {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--blue);
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.4));
+            font-size: 32px;
+        }
+        .creative-card-thumb .empty-thumb {
+            color: var(--text-muted); font-size: 22px;
+        }
+        .creative-card-body {
+            display: flex; flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .creative-card-name {
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .creative-card-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+        }
+        .creative-card-meta .pill {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+        }
+        .creative-card-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .creative-card-links a {
+            font-size: 11px;
+            color: var(--blue);
+            text-decoration: none;
+            border: 1px solid var(--blue);
+            background: var(--blue-dim);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'Geist Mono', monospace;
+        }
+        .creative-card-links a:hover { background: var(--blue); color: #0f0f0f; }
+        .creative-card-perf {
+            display: flex; gap: 6px; align-items: center;
+            margin-top: auto;
+        }
+        .creative-card-perf select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: 'Geist Mono', monospace;
+            flex: 1;
+        }
+        .creative-card-perf .del {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--red); padding: 3px 7px; border-radius: 4px;
+            cursor: pointer; font-size: 11px;
+        }
+        .creative-card-perf .del:hover { border-color: var(--red); background: var(--red-dim); }
 
-        /* BULK ACTIONS BAR */
+        /* Drop zone */
+        .creative-drop {
+            margin-top: 10px;
+            padding: 18px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.12s ease;
+            background: var(--bg-tertiary);
+        }
+        .creative-drop:hover, .creative-drop.dragover {
+            border-color: var(--orange);
+            color: var(--orange);
+            background: var(--orange-dim);
+        }
+        .creative-drop strong { color: var(--text-primary); display: block; margin-bottom: 4px; }
+        .creative-drop input[type="file"] { display: none; }
+        .creative-attach-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .creative-attach-row input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+        }
+        .creative-thumb-empty {
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-muted);
+            padding: 18px 6px;
+            font-style: italic;
+            grid-column: 1 / -1;
+            background: var(--bg-tertiary);
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+        }
+        .inspo-thumb {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            background: #0a0a0a;
+            border: 2px solid var(--orange);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: zoom-in;
+        }
+        .inspo-thumb img { width: 100%; height: 100%; object-fit: contain; }
+        .inspo-thumb .label {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            padding: 6px 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            color: var(--text-primary);
+            font-size: 11px;
+            font-family: 'Geist Mono', monospace;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .inspo-thumb .zoom-hint {
+            position: absolute; top: 6px; right: 6px;
+            background: rgba(0,0,0,0.7); color: #fff;
+            padding: 3px 7px; border-radius: 4px;
+            font-size: 11px; font-family: 'Geist Mono', monospace;
+        }
+        .lightbox-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 400;
+            cursor: zoom-out;
+        }
+        .lightbox-overlay.open { display: flex; }
+        .lightbox-overlay img {
+            max-width: 92vw; max-height: 92vh;
+            object-fit: contain;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6);
+            border-radius: 6px;
+        }
+        .lightbox-overlay .lightbox-meta {
+            position: absolute;
+            top: 16px; left: 16px; right: 16px;
+            color: var(--text-secondary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            text-align: center;
+            pointer-events: none;
+        }
+        .lightbox-overlay .lightbox-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); color: #fff;
+            border: 0; cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hooks-preview {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .hooks-preview ol { padding-left: 16px; margin: 0; }
+        .hooks-preview li { margin-bottom: 3px; }
+        .empty-rich {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 8px;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            text-align: center;
+        }
+        .brief-cta {
+            background: linear-gradient(180deg, var(--orange-dim), transparent);
+            border: 1px solid var(--orange);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+        .brief-cta-title {
+            font-family: 'Geist Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--orange);
+            margin-bottom: 6px;
+            letter-spacing: 0.04em;
+        }
+        .brief-cta-body {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .brief-cta .btn { width: 100%; justify-content: center; }
+        .brief-cta-mini {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--orange);
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .brief-cta-mini a { color: var(--orange); text-decoration: none; }
+        .brief-cta-mini a:hover { text-decoration: underline; }
+
+        /* BULK BAR */
         .bulk-bar {
             position: fixed;
-            bottom: 24px;
+            bottom: 22px;
             left: 50%;
             transform: translateX(-50%) translateY(150%);
             background: var(--bg-secondary);
             border: 1px solid var(--orange);
             border-radius: 12px;
-            padding: 12px 18px;
+            padding: 10px 16px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             z-index: 150;
             transition: transform 0.2s ease;
         }
-        .bulk-bar.visible {
-            transform: translateX(-50%) translateY(0);
-        }
+        .bulk-bar.visible { transform: translateX(-50%) translateY(0); }
         .bulk-count {
             font-family: 'Geist Mono', monospace;
             font-size: 12px;
@@ -462,14 +771,12 @@
             border-right: 1px solid var(--border);
         }
 
-        /* MODAL */
+        /* MODALS */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: rgba(0,0,0,0.7);
             display: none;
-            align-items: center;
-            justify-content: center;
+            align-items: center; justify-content: center;
             z-index: 300;
         }
         .modal-overlay.open { display: flex; }
@@ -477,117 +784,175 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 24px;
-            min-width: 400px;
-            max-width: 500px;
+            padding: 22px;
+            min-width: 420px;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 18px;
-        }
-        .modal-field { margin-bottom: 14px; }
-        .modal-field label {
-            display: block;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-        .modal-field input, .modal-field textarea {
-            width: 100%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-family: 'Geist', Arial, sans-serif;
-            font-size: 13px;
-        }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
         .modal-actions {
             display: flex;
             gap: 8px;
             justify-content: flex-end;
-            margin-top: 18px;
+            margin-top: 16px;
         }
 
-        /* TOAST */
+        /* TOAST — bottom-left so it never covers the drawer close (top-right) or footer buttons (bottom-right) */
         .toast {
             position: fixed;
-            top: 24px;
-            right: 24px;
+            bottom: 22px; left: 240px;  /* clear of the 220px sidebar */
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 12px 18px;
+            padding: 11px 16px;
             font-size: 13px;
-            z-index: 400;
-            transform: translateX(120%);
+            z-index: 600;
+            transform: translateY(140%);
             transition: transform 0.2s ease;
             max-width: 320px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
         }
-        .toast.show { transform: translateX(0); }
+        .toast.show { transform: translateY(0); }
         .toast.success { border-color: var(--green); }
-        .toast.error { border-color: var(--red); }
+        .toast.error   { border-color: var(--red); }
 
-        /* EMPTY STATE */
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
+        /* INFO TOOLTIP — hover the ? icon for a rich popover */
+        .info-tip {
+            position: relative;
+            display: inline-block;
+            margin-left: 8px;
+            cursor: help;
+        }
+        .info-tip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
             color: var(--text-muted);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            user-select: none;
+            transition: all 0.15s ease;
         }
-        .empty-state h3 {
+        .info-tip:hover .info-tip-icon { color: var(--orange); border-color: var(--orange); }
+        .info-tip-pop {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-hover);
             color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 600;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-family: 'Geist', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            line-height: 1.55;
+            width: 340px;
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+            z-index: 500;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+            text-align: left;
         }
+        .info-tip:hover .info-tip-pop { visibility: visible; opacity: 1; }
 
-        /* PERFORMANCE BADGE COLORS */
-        .perf-heavy_winner { color: #ffd700; }
-        .perf-winner { color: var(--green); }
-        .perf-average { color: var(--text-muted); }
-        .perf-loser { color: var(--red); }
-        .perf-fatigued { color: var(--amber); }
+        /* COPY DOC ROW + DRAWER COLLAPSE */
+        .copy-doc-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 6px;
+            align-items: center;
+        }
+        .copy-doc-row input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 9px;
+            border-radius: 6px;
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+            min-width: 0;
+        }
+        .drawer-collapse { margin-bottom: 18px; }
+        .drawer-collapse summary {
+            cursor: pointer;
+            list-style: none;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 8px 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .drawer-collapse summary::-webkit-details-marker { display: none; }
+        .drawer-collapse summary:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+        .drawer-collapse[open] summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-color: var(--border-hover); color: var(--text-primary); }
+        .drawer-collapse[open] summary .caret { transform: rotate(180deg); }
+        .drawer-collapse summary .caret { transition: transform 0.15s ease; display: inline-block; }
+        .drawer-section-nested {
+            margin-bottom: 0 !important;
+            padding: 12px;
+            border: 1px solid var(--border-hover);
+            border-top: 0;
+            border-radius: 0 0 6px 6px;
+            background: var(--bg-secondary);
+        }
+        .info-tip-pop strong {
+            display: block;
+            color: var(--text-primary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 6px;
+        }
+        .info-tip-pop .axis {
+            margin: 8px 0;
+            padding-left: 8px;
+            border-left: 2px solid var(--border);
+        }
+        .info-tip-pop .axis b { color: var(--text-primary); font-weight: 600; }
+        .info-tip-pop .anchors {
+            color: var(--text-muted);
+            font-family: 'Geist Mono', monospace;
+            font-size: 10.5px;
+            margin-top: 2px;
+        }
+        .info-tip-pop .formula {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Geist Mono', monospace;
+            font-size: 11px;
+        }
+        .info-tip-pop .thresh { margin-top: 6px; color: var(--text-muted); font-size: 11px; }
+        .info-tip-pop .thresh b { color: var(--orange); }
     </style>
 </head>
 <body>
-    <aside class="sidebar">
-        <div class="sidebar-brand">PROPAGANDA//OS</div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">Operations</div>
-            <a href="23-client-hub.html" class="sidebar-link">Client Hub</a>
-            <a href="24-onboarding.html" class="sidebar-link">Onboarding</a>
-            <a href="13-image-ad-generator.html" class="sidebar-link">Image Ad Generator</a>
-            <a href="26-creative-board.html" class="sidebar-link active">Creative Pipeline</a>
-            <a href="12-brand-profiles.html" class="sidebar-link">Brand Profiles</a>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">YouTube</div>
-            <a href="01-generation-hub.html" class="sidebar-link">Generation Hub</a>
-            <a href="02-swipe-file.html" class="sidebar-link">Swipe File</a>
-            <a href="04-output-review.html" class="sidebar-link">Output Review</a>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">Image Ads</div>
-            <a href="14-image-ad-review.html" class="sidebar-link">Image Ad Review</a>
-            <a href="16-copy-scorer.html" class="sidebar-link">Copy Scorer</a>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">Landing Pages</div>
-            <a href="19-lp-generator.html" class="sidebar-link">LP Generator</a>
-            <a href="20-lp-deploy.html" class="sidebar-link">LP Deploy</a>
-        </div>
-    </aside>
+    <aside class="sidebar" id="sidebar"></aside>
 
     <main class="main">
         <div class="page-header">
             <div>
                 <div class="page-title">Creative Pipeline</div>
-                <div class="page-subtitle">Internal kanban board for image ad production</div>
+                <div class="page-subtitle">Idea → Approved → Copywriting → Production → Revisions → Launched → Won / Lost</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
                 <span id="client-badge" style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-muted);padding:6px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;display:none"></span>
@@ -599,603 +964,1345 @@
             <div class="top-bar-group">
                 <label>Client</label>
                 <select id="client-select" class="form-select" onchange="onClientChange()">
-                    <option value="">Select client...</option>
+                    <option value="">Select client…</option>
                 </select>
             </div>
             <div class="top-bar-group">
-                <label>Batch</label>
-                <select id="batch-select" class="form-select" onchange="onBatchChange()">
-                    <option value="">All batches</option>
+                <label>Test Tag</label>
+                <select id="tag-select" class="form-select" onchange="onTagChange()">
+                    <option value="">All tags</option>
                 </select>
             </div>
-            <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
+            <button class="btn btn-primary" onclick="openIdeaModal()">+ New Idea</button>
         </div>
 
-        <div id="board-container">
-            <div class="kanban" id="kanban">
-                <div class="column" data-status="draft" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'draft')">
-                    <div class="column-header">
-                        <span class="column-title">Draft</span>
-                        <span class="column-count" id="count-draft">0</span>
-                    </div>
-                    <div class="column-body" id="col-draft"></div>
+        <div class="top-bar">
+            <div class="top-bar-group">
+                <label>Lead</label>
+                <div class="filter-group" id="lead-filter"></div>
+            </div>
+            <div class="top-bar-group">
+                <label>Asset</label>
+                <div class="filter-group" id="asset-filter"></div>
+            </div>
+            <div class="top-bar-group">
+                <label>Show</label>
+                <div class="filter-group">
+                    <span class="filter-pill winners" id="winners-filter">★ Winners only</span>
                 </div>
-                <div class="column" data-status="rendered" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'rendered')">
-                    <div class="column-header">
-                        <span class="column-title">Rendered</span>
-                        <span class="column-count" id="count-rendered">0</span>
-                    </div>
-                    <div class="column-body" id="col-rendered"></div>
-                </div>
-                <div class="column" data-status="reviewed" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'reviewed')">
-                    <div class="column-header">
-                        <span class="column-title">Reviewed</span>
-                        <span class="column-count" id="count-reviewed">0</span>
-                    </div>
-                    <div class="column-body" id="col-reviewed"></div>
-                </div>
-                <div class="column" data-status="approved" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'approved')">
-                    <div class="column-header">
-                        <span class="column-title">Approved</span>
-                        <span class="column-count" id="count-approved">0</span>
-                    </div>
-                    <div class="column-body" id="col-approved"></div>
-                </div>
-                <div class="column" data-status="launched" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'launched')">
-                    <div class="column-header">
-                        <span class="column-title">Launched</span>
-                        <span class="column-count" id="count-launched">0</span>
-                    </div>
-                    <div class="column-body" id="col-launched"></div>
-                </div>
+            </div>
+            <div style="flex:1"></div>
+            <span style="font-size:11px;color:var(--text-muted)" id="filter-count">—</span>
+        </div>
+
+        <div class="kanban" id="kanban">
+            <div class="column" data-stage="idea"       ondragover="onDragOver(event,'idea')"       ondragleave="onDragLeave(event)" ondrop="onDrop(event,'idea')">
+                <div class="column-header"><span class="column-title">Idea</span><span class="column-count" id="count-idea">0</span></div>
+                <div class="column-body" id="col-idea"></div>
+            </div>
+            <div class="column" data-stage="approved"   ondragover="onDragOver(event,'approved')"   ondragleave="onDragLeave(event)" ondrop="onDrop(event,'approved')">
+                <div class="column-header"><span class="column-title">Approved</span><span class="column-count" id="count-approved">0</span></div>
+                <div class="column-body" id="col-approved"></div>
+            </div>
+            <div class="column" data-stage="copywriting" ondragover="onDragOver(event,'copywriting')" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'copywriting')">
+                <div class="column-header"><span class="column-title">Copywriting</span><span class="column-count" id="count-copywriting">0</span></div>
+                <div class="column-body" id="col-copywriting"></div>
+            </div>
+            <div class="column" data-stage="production" ondragover="onDragOver(event,'production')" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'production')">
+                <div class="column-header"><span class="column-title">Production</span><span class="column-count" id="count-production">0</span></div>
+                <div class="column-body" id="col-production"></div>
+            </div>
+            <div class="column" data-stage="revisions"  ondragover="onDragOver(event,'revisions')"  ondragleave="onDragLeave(event)" ondrop="onDrop(event,'revisions')">
+                <div class="column-header"><span class="column-title">Revisions</span><span class="column-count" id="count-revisions">0</span></div>
+                <div class="column-body" id="col-revisions"></div>
+            </div>
+            <div class="column" data-stage="launched"   ondragover="onDragOver(event,'launched')"   ondragleave="onDragLeave(event)" ondrop="onDrop(event,'launched')">
+                <div class="column-header"><span class="column-title">Launched</span><span class="column-count" id="count-launched">0</span></div>
+                <div class="column-body" id="col-launched"></div>
+            </div>
+            <div class="column" data-stage="won"        ondragover="onDragOver(event,'won')"        ondragleave="onDragLeave(event)" ondrop="onDrop(event,'won')">
+                <div class="column-header"><span class="column-title">Won</span><span class="column-count" id="count-won">0</span></div>
+                <div class="column-body" id="col-won"></div>
+            </div>
+            <div class="column" data-stage="lost"       ondragover="onDragOver(event,'lost')"       ondragleave="onDragLeave(event)" ondrop="onDrop(event,'lost')">
+                <div class="column-header"><span class="column-title">Lost</span><span class="column-count" id="count-lost">0</span></div>
+                <div class="column-body" id="col-lost"></div>
             </div>
         </div>
     </main>
 
-    <!-- DETAIL PANEL -->
-    <aside class="panel" id="detail-panel">
-        <div class="panel-header">
-            <div class="panel-title" id="panel-title">—</div>
-            <button class="panel-close" onclick="closePanel()">×</button>
+    <!-- DRAWER -->
+    <aside class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div>
+                <div class="drawer-title" id="drawer-title">—</div>
+                <span class="stage-badge idea" id="drawer-stage">IDEA</span>
+            </div>
+            <button class="drawer-close" onclick="closeDrawer()">×</button>
         </div>
-        <div class="panel-body" id="panel-body"></div>
-        <div class="panel-actions">
-            <button class="btn" onclick="rerenderCreative()">↻ Re-render</button>
-            <button class="btn" onclick="duplicateCreative()">⧉ Duplicate</button>
-            <button class="btn" onclick="downloadCreative()">↓ Download</button>
-            <button class="btn" onclick="archiveCreative()" style="margin-left:auto">Archive</button>
-        </div>
+        <div class="drawer-body" id="drawer-body"></div>
+        <div class="drawer-footer" id="drawer-footer"></div>
     </aside>
 
-    <!-- BULK ACTIONS BAR -->
+    <!-- BULK BAR -->
     <div class="bulk-bar" id="bulk-bar">
         <span class="bulk-count" id="bulk-count">0 selected</span>
-        <button class="btn" onclick="downloadSelected()">↓ Download ZIP</button>
-        <button class="btn" onclick="bulkSetStatus('approved')">✓ Approve</button>
-        <button class="btn" onclick="bulkSetStatus('launched')">→ Launched</button>
-        <button class="btn" onclick="bulkArchive()">Archive</button>
+        <button class="btn" onclick="bulkArchiveDownload()">↓ Download images</button>
+        <button class="btn btn-danger" onclick="bulkReject()">Reject</button>
         <button class="btn" onclick="clearSelection()">Clear</button>
     </div>
 
-    <!-- NEW BATCH MODAL -->
-    <div class="modal-overlay" id="batch-modal">
+    <!-- + NEW IDEA MODAL -->
+    <div class="modal-overlay" id="idea-modal">
         <div class="modal">
-            <div class="modal-title">+ New Batch</div>
-            <div class="modal-field">
-                <label>Week Number</label>
-                <input type="number" id="batch-week" min="1" max="53">
+            <div class="modal-title">+ New Idea</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+                Capture the angle + idea now. Lead type, awareness level, and full ICE score get filled at the approval stage.
             </div>
-            <div class="modal-field">
-                <label>Year</label>
-                <input type="number" id="batch-year">
+
+            <div class="row-2">
+                <div class="drawer-row">
+                    <label>Submitter</label>
+                    <input type="text" id="idea-submitter" placeholder="Your name">
+                </div>
+                <div class="drawer-row">
+                    <label>Creative Category</label>
+                    <select id="idea-category">
+                        <option value="">— pick —</option>
+                        <option value="Control">Control (proven winner variation)</option>
+                        <option value="DataDriven">Data-Driven (signal from data)</option>
+                        <option value="Innovation">Innovation (net-new angle)</option>
+                    </select>
+                </div>
             </div>
-            <div class="modal-field">
-                <label>Due Date</label>
-                <input type="date" id="batch-due">
+
+            <div class="row-3">
+                <div class="drawer-row">
+                    <label>Angle <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— short tag</span></label>
+                    <input type="text" id="idea-angle" placeholder='e.g. "MansionTour", "HUDProof", "Simplicity"'>
+                </div>
+                <div class="drawer-row">
+                    <label>Format <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— type to add new</span></label>
+                    <input type="text" id="idea-format" list="format-list" placeholder="UGC, Static, Story, TalkingHead, Native, Carousel…">
+                    <datalist id="format-list"></datalist>
+                </div>
+                <div class="drawer-row">
+                    <label>Asset</label>
+                    <select id="idea-asset">
+                        <option>IMG</option>
+                        <option>VID</option>
+                        <option>CAR</option>
+                    </select>
+                </div>
             </div>
-            <div class="modal-field">
-                <label>Strategy Notes</label>
-                <textarea id="batch-notes" rows="3"></textarea>
+
+            <div class="drawer-row">
+                <label>Big Idea / Description <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— be specific. cover core message · why it works · proof · concrete example. <span style="color:var(--green)">Strong: "House Tour: $0 to $3M w/ Client Acquisition System"</span> · <span style="color:var(--red)">Weak: "Success story"</span></span></label>
+                <textarea id="idea-big" rows="5" placeholder='Example: "Show contrast between struggling agency owners vs. our systematic approach to client acquisition. Use HUD Statement from my Florida Mansion as pattern interrupt to establish credibility before revealing the Growth Engine. Must cover: initial struggle, discovery moment, proof (HUD + revenue dashboard), transformation, system reveal. CTA: Growth Proposal Call."'></textarea>
             </div>
+
+            <div class="row-2">
+                <div class="drawer-row">
+                    <label>
+                        Initial Confidence
+                        <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— gut-feel 1–10 (full ICE filled at approval)</span>
+                    </label>
+                    <div style="display:flex;gap:10px;align-items:center">
+                        <input type="range" min="1" max="10" value="5" id="idea-confidence" oninput="document.getElementById('idea-confidence-v').textContent = this.value">
+                        <span id="idea-confidence-v" style="font-family:'Geist Mono',monospace;font-size:18px;font-weight:700;color:var(--orange);min-width:24px;text-align:right">5</span>
+                    </div>
+                </div>
+                <div class="drawer-row">
+                    <label>Test Tag <span style="color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— optional, group ideas under one test</span></label>
+                    <input type="text" id="idea-tag" list="tag-list" placeholder='e.g. "Apr Sleep Funnel"'>
+                    <datalist id="tag-list"></datalist>
+                </div>
+            </div>
+
             <div class="modal-actions">
-                <button class="btn" onclick="closeBatchModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="createBatch()">Create</button>
+                <button class="btn" onclick="closeIdeaModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createIdea()">Create Idea</button>
             </div>
         </div>
     </div>
 
-    <!-- TOAST -->
+    <!-- WIN/LOSS MODAL -->
+    <div class="modal-overlay" id="outcome-modal">
+        <div class="modal">
+            <div class="modal-title" id="outcome-modal-title">Mark Outcome</div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Capture what made this work (or not) — feeds the playbook.</p>
+            <div class="drawer-row">
+                <label>Why? (notes for the playbook)</label>
+                <textarea id="outcome-notes" rows="3" placeholder="What worked / what didn't"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeOutcomeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmOutcome()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============= LIGHTBOX (full-size inspo viewer) ============= -->
+    <div class="lightbox-overlay" id="lightbox-overlay" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+        <div class="lightbox-meta" id="lightbox-meta"></div>
+        <img id="lightbox-img" alt="" onclick="event.stopPropagation()">
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script type="module">
         import JSZip from 'https://cdn.skypack.dev/jszip';
         window.JSZip = JSZip;
     </script>
-
+    <script src="config.js"></script>
     <script>
-        // ============================================
-        // CONFIG
-        // ============================================
-        const SUPABASE_URL = 'https://wqclspynbdghfsosqygg.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_TnW2BTNaZvow6Gm8DbxU-w_5YyQN3Av';
-        const HEADERS = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-        };
-        const HEADERS_READ = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
-        const WF09_WEBHOOK = 'https://n8n.dtthomas.cloud/webhook/image-ad-render';
+    // ============================================
+    // CONSTANTS
+    // ============================================
+    const SUPABASE_URL = window.PROPAGANDA.SUPABASE_URL;
+    const HEADERS = window.PROPAGANDA.HEADERS;
+    const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+    const SLACK_WEBHOOK = window.PROPAGANDA.N8N.CREATIVE_SLACK_NOTIFY;
 
-        // ============================================
-        // STATE
-        // ============================================
-        let clients = [];
-        let batches = [];
-        let creatives = [];
-        let selectedClientId = localStorage.getItem('selectedClientId') || '';
-        let selectedBatchId = localStorage.getItem('selectedBatchId') || '';
-        let selectedCreatives = new Set();
-        let activeCreative = null;
+    const STAGE_ORDER = ['idea','approved','copywriting','production','revisions','launched','won','lost'];
+    // status values map directly to stage columns (won and lost are separate columns).
+    const STAGE_FOR_STATUS = (s) => s;
+    // Stages where the concept lifecycle is complete (no further advance).
+    const TERMINAL_STAGES = new Set(['won','lost']);
+    const LEAD_TYPES  = ['Offer','Promise','Problem-Solution','Big Secret','Proclamation','Story'];
+    const ASSET_TYPES = ['IMG','VID','CAR'];
+    const CATEGORY_THRESH = { 'Control': 8.5, 'DataDriven': 7.5, 'Innovation': 7.0 };
+    const AWARE_CODE = { 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' };
+    const LEAD_CODE  = { 'Story':'Story','Problem-Solution':'ProbSol','Big Secret':'BigSec','Promise':'Promise','Proclamation':'Proclam','Offer':'Offer' };
 
-        // ============================================
-        // SUPABASE HELPERS
-        // ============================================
-        async function sbGet(path) {
-            try {
-                const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
-                if (!r.ok) return [];
-                return await r.json();
-            } catch (e) { return []; }
-        }
-        async function sbPost(table, body) {
-            const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-                method: 'POST', headers: HEADERS, body: JSON.stringify(body)
-            });
-            if (!r.ok) throw new Error('POST failed');
+    // ============================================
+    // STATE
+    // ============================================
+    let clients = [];
+    let concepts = [];
+    let creativesByConcept = {};   // concept_id → array of creatives
+    let selectedClientId = localStorage.getItem('selectedClientId') || '';
+    let selectedTag      = localStorage.getItem('selectedTag') || '';
+    let selectedConceptIds = new Set();
+    let activeConcept = null;
+    let pendingOutcomeConceptId = null;
+    let pendingOutcomeStatus = null;
+
+    let leadFilter  = new Set(JSON.parse(localStorage.getItem('boardLeadFilter')  || '[]'));
+    let assetFilter = new Set(JSON.parse(localStorage.getItem('boardAssetFilter') || '[]'));
+    let winnersOnly = localStorage.getItem('boardWinnersOnly') === '1';
+
+    // ============================================
+    // SUPABASE HELPERS
+    // ============================================
+    async function sbGet(path) {
+        try {
+            const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
+            if (!r.ok) return [];
             return await r.json();
-        }
-        async function sbPatch(table, id, body) {
-            const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-                method: 'PATCH', headers: HEADERS, body: JSON.stringify(body)
-            });
-            if (!r.ok) throw new Error('PATCH failed');
-            return await r.json();
-        }
+        } catch (e) { return []; }
+    }
+    async function sbPost(table, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+            method: 'POST', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+    async function sbPatch(table, id, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+            method: 'PATCH', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
 
-        // ============================================
-        // LOADERS
-        // ============================================
-        async function loadClients() {
-            clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
-            const sel = document.getElementById('client-select');
-            sel.innerHTML = '<option value="">Select client...</option>' +
-                clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('');
-            updateClientBadge();
-        }
+    // ============================================
+    // LOADERS
+    // ============================================
+    async function loadClients() {
+        clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
+        const sel = document.getElementById('client-select');
+        sel.innerHTML = '<option value="">Select client…</option>' +
+            clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+        updateClientBadge();
+    }
+    async function loadConcepts() {
+        if (!selectedClientId) { concepts = []; renderBoard(); renderTagSelect(); return; }
+        let path = `concepts?client_id=eq.${selectedClientId}&status=neq.rejected&order=created_at.desc&limit=500`;
+        if (selectedTag) path += `&test_tag=eq.${encodeURIComponent(selectedTag)}`;
+        concepts = await sbGet(path);
+        await loadCreativesForVisibleStages();
+        renderBoard();
+        renderTagSelect();
+        renderFormatDatalist();
+    }
+    function renderTagSelect() {
+        // Distinct tags across all concepts for this client (current load)
+        const tags = Array.from(new Set(concepts.map(c => c.test_tag).filter(Boolean))).sort();
+        const sel = document.getElementById('tag-select');
+        sel.innerHTML = '<option value="">All tags</option>' +
+            tags.map(t => `<option value="${escapeAttr(t)}" ${t === selectedTag ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('');
+        // Mirror into the datalist so the new-idea input autocompletes
+        const dl = document.getElementById('tag-list');
+        if (dl) dl.innerHTML = tags.map(t => `<option value="${escapeAttr(t)}">`).join('');
+    }
 
-        async function loadBatches() {
-            if (!selectedClientId) {
-                batches = [];
-                document.getElementById('batch-select').innerHTML = '<option value="">Select client first</option>';
-                return;
-            }
-            batches = await sbGet(`batches?client_id=eq.${selectedClientId}&order=year.desc,week_number.desc`);
-            const sel = document.getElementById('batch-select');
-            sel.innerHTML = '<option value="">All batches</option>' +
-                batches.map(b => `<option value="${b.id}" ${b.id === selectedBatchId ? 'selected' : ''}>${b.name || `W${b.week_number}`}</option>`).join('');
+    // Format datalist — defaults + per-client custom formats from existing concepts.
+    // Lets users type a new format that gets saved on the concept and reappears next time.
+    const DEFAULT_FORMATS = ['UGC','Static','Story','TalkingHead','Native','Carousel'];
+    function renderFormatDatalist() {
+        const customFormats = Array.from(new Set(concepts.map(c => c.format).filter(Boolean)));
+        const all = Array.from(new Set([...DEFAULT_FORMATS, ...customFormats])).sort();
+        const dl = document.getElementById('format-list');
+        if (dl) dl.innerHTML = all.map(f => `<option value="${escapeAttr(f)}">`).join('');
+    }
+    async function loadCreativesForVisibleStages() {
+        // Only fetch creatives for concepts in production+ stages.
+        const ids = concepts.filter(c => ['production','revisions','launched','won','lost'].includes(c.status)).map(c => c.id);
+        creativesByConcept = {};
+        if (ids.length === 0) return;
+        const cs = await sbGet(`creatives?concept_id=in.(${ids.join(',')})&archived=eq.false&order=created_at.asc`);
+        for (const c of cs) {
+            (creativesByConcept[c.concept_id] = creativesByConcept[c.concept_id] || []).push(c);
         }
+    }
+    async function loadAll() {
+        await loadClients();
+        await loadConcepts();
+        renderFilters();
+    }
 
-        async function loadCreatives() {
-            if (!selectedClientId) {
-                creatives = [];
-                renderBoard();
-                return;
-            }
-            let path = `creatives?client_id=eq.${selectedClientId}&archived=eq.false&order=created_at.desc`;
-            if (selectedBatchId) {
-                // Filter by batch via concept join — need to fetch concepts in batch first
-                const concepts = await sbGet(`concepts?batch_id=eq.${selectedBatchId}&select=id`);
-                const conceptIds = concepts.map(c => c.id);
-                if (conceptIds.length === 0) {
-                    creatives = [];
-                    renderBoard();
-                    return;
-                }
-                path = `creatives?concept_id=in.(${conceptIds.join(',')})&archived=eq.false&order=created_at.desc`;
-            }
-            creatives = await sbGet(path);
-            renderBoard();
+    // ============================================
+    // RENDER
+    // ============================================
+    function passesFilters(c) {
+        if (leadFilter.size  && (!c.lead_type  || !leadFilter.has(c.lead_type))) return false;
+        if (assetFilter.size && (!c.asset_type || !assetFilter.has(c.asset_type))) return false;
+        if (winnersOnly      && c.status !== 'won') return false;
+        return true;
+    }
+
+    function conceptDisplayName(c) {
+        const client = clients.find(cl => cl.id === c.client_id);
+        const segs = [];
+        if (client?.code) segs.push(client.code);
+        if (c.created_at) {
+            const d = new Date(c.created_at);
+            const yy = String(d.getUTCFullYear()).slice(-2);
+            const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const dd = String(d.getUTCDate()).padStart(2, '0');
+            segs.push(yy + mm + dd);
         }
+        if (c.angle)  segs.push(c.angle);
+        if (c.format) segs.push(c.format);
+        const aw = AWARE_CODE[c.awareness_level]; if (aw) segs.push(aw);
+        const lc = LEAD_CODE[c.lead_type];        if (lc) segs.push(lc);
+        if (c.asset_type) segs.push(c.asset_type);
+        return segs.join('-') || 'untitled';
+    }
 
-        async function loadAll() {
-            await loadClients();
-            await loadBatches();
-            await loadCreatives();
-        }
+    function renderBoard() {
+        const filtered = concepts.filter(passesFilters);
+        STAGE_ORDER.forEach(stage => {
+            const items = filtered.filter(c => STAGE_FOR_STATUS(c.status || 'idea') === stage);
+            document.getElementById('count-' + stage).textContent = items.length;
+            const col = document.getElementById('col-' + stage);
+            col.innerHTML = items.length === 0
+                ? '<div class="column-empty">—</div>'
+                : items.map(renderCard).join('');
+        });
+        document.getElementById('filter-count').textContent = `${filtered.length} of ${concepts.length}`;
+        attachCardListeners();
+    }
 
-        // ============================================
-        // RENDER
-        // ============================================
-        function renderBoard() {
-            const statuses = ['draft', 'rendered', 'reviewed', 'approved', 'launched'];
-            statuses.forEach(s => {
-                const col = document.getElementById('col-' + s);
-                const items = creatives.filter(c => (c.production_status || 'draft') === s);
-                document.getElementById('count-' + s).textContent = items.length;
-                if (items.length === 0) {
-                    col.innerHTML = '<div class="column-empty">No creatives</div>';
+    function renderCard(c) {
+        const aw = AWARE_CODE[c.awareness_level];
+        const ice = c.ice_score && +c.ice_score > 0 ? +c.ice_score : null;
+        const iceCls = ice == null ? '' : (ice >= 8 ? '' : ice >= 7 ? 'mid' : 'low');
+        const icePill = ice ? `<span class="pill pill-ice ${iceCls}">ICE ${ice.toFixed(1)}</span>` : '';
+        const leadPill = c.lead_type ? `<span class="pill pill-lead">${escapeHtml(c.lead_type.replace('-Solution','/Sol'))}</span>` : '';
+        const assetPill = c.asset_type ? `<span class="pill pill-asset">${escapeHtml(c.asset_type)}</span>` : '';
+        const awPill = aw ? `<span class="pill pill-${aw.toLowerCase()}">${aw}</span>` : '';
+        const creatives = creativesByConcept[c.id] || [];
+        const creativesPill = creatives.length ? `<span class="pill pill-creatives">${creatives.length} ad${creatives.length===1?'':'s'}</span>` : '';
+        const tagPill = c.test_tag ? `<span class="pill pill-tag">${escapeHtml(c.test_tag.slice(0,16))}</span>` : '';
+        const copyDocLink = c.copy_doc_url ? `<a class="pill pill-doc" href="${escapeAttr(c.copy_doc_url)}" target="_blank" rel="noopener" title="Open copy doc" onclick="event.stopPropagation()">📄 Doc</a>` : '';
+        // Gut-feel confidence: only show when ICE hasn't been scored yet (otherwise ICE is the signal)
+        const showInitialConf = c.initial_confidence != null && (!ice || ice <= 0);
+        const initConfPill = showInitialConf ? `<span class="pill pill-asset" title="Initial gut-feel confidence">Conf ${c.initial_confidence}</span>` : '';
+        const outcomeIcon = c.status === 'won' ? '<div class="perf-badge">🏆</div>' : c.status === 'lost' ? '<div class="perf-badge">❌</div>' : '';
+        const isSelected = selectedConceptIds.has(c.id);
+        const cardClass = isSelected ? 'card selected' : 'card';
+        const checkClass = isSelected ? 'card-checkbox checked' : 'card-checkbox';
+        const thumbs = creatives.slice(0, 4).map(cr => cr.image_url
+            ? `<div class="mini-thumb"><img src="${escapeAttr(cr.image_url)}" loading="lazy"></div>`
+            : '').join('');
+
+        return `
+            <div class="${cardClass}" draggable="true" data-id="${c.id}">
+                ${outcomeIcon}
+                <div class="${checkClass}" data-checkbox="${c.id}">${isSelected ? '✓' : ''}</div>
+                <div class="card-name" style="margin-top:18px">${escapeHtml(conceptDisplayName(c))}</div>
+                ${c.big_idea ? `<div class="card-big-idea">${escapeHtml(c.big_idea)}</div>` : ''}
+                <div class="card-pills">
+                    ${awPill}
+                    ${leadPill}
+                    ${assetPill}
+                    ${icePill}
+                    ${initConfPill}
+                    ${tagPill}
+                    ${creativesPill}
+                    ${copyDocLink}
+                </div>
+                ${thumbs ? `<div class="card-thumbs">${thumbs}</div>` : ''}
+            </div>
+        `;
+    }
+
+    function attachCardListeners() {
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('dragstart', onDragStart);
+            card.addEventListener('dragend',   onDragEnd);
+            card.addEventListener('click', e => {
+                if (e.target.dataset && e.target.dataset.checkbox) {
+                    toggleSelect(e.target.dataset.checkbox);
+                    e.stopPropagation();
                 } else {
-                    col.innerHTML = items.map(renderCard).join('');
+                    openDrawer(card.dataset.id);
                 }
             });
-            attachCardListeners();
-        }
+        });
+    }
 
-        function renderCard(c) {
-            const awarenessCode = (() => {
-                switch (c.awareness_level) {
-                    case 'Unaware': return 'ua';
-                    case 'Problem Aware': return 'pa';
-                    case 'Solution Aware': return 'sa';
-                    case 'Product Aware': return 'pra';
-                    case 'Most Aware': return 'ma';
-                    default: return '';
-                }
-            })();
-            const perfBadge = (() => {
-                switch (c.performance) {
-                    case 'heavy_winner': return '<div class="perf-badge perf-heavy_winner">🏆</div>';
-                    case 'winner': return '<div class="perf-badge perf-winner">⭐</div>';
-                    case 'loser': return '<div class="perf-badge perf-loser">❌</div>';
-                    case 'fatigued': return '<div class="perf-badge perf-fatigued">💤</div>';
-                    case 'average': return '<div class="perf-badge perf-average">🫤</div>';
-                    default: return '';
-                }
-            })();
-            const isSelected = selectedCreatives.has(c.id);
-            const checkClass = isSelected ? 'card-checkbox checked' : 'card-checkbox';
-            const cardClass = isSelected ? 'card selected' : 'card';
-            return `
-                <div class="${cardClass}" draggable="true" data-id="${c.id}">
-                    ${perfBadge}
-                    <div class="${checkClass}" data-checkbox="${c.id}">${isSelected ? '✓' : ''}</div>
-                    <div class="card-thumb">
-                        ${c.image_url ? `<img src="${c.image_url}" loading="lazy">` : '<div class="card-thumb-placeholder">No image yet</div>'}
-                    </div>
-                    <div class="card-name">${c.name || 'unnamed'}</div>
-                    <div class="card-pills">
-                        ${awarenessCode ? `<span class="pill pill-${awarenessCode}">${awarenessCode.toUpperCase()}</span>` : ''}
-                    </div>
-                    <div class="card-hook">${c.hook_text || ''}</div>
-                </div>
-            `;
-        }
+    // ============================================
+    // DRAG / DROP — moves CONCEPT between stages.
+    // Approval gate: anything dragged to 'approved' must have ICE ≥ category threshold.
+    // 'outcome' drop opens the won/lost modal.
+    // ============================================
+    let draggedId = null;
+    function onDragStart(e) {
+        draggedId = e.target.dataset.id;
+        e.target.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    }
+    function onDragEnd(e) {
+        e.target.classList.remove('dragging');
+        document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over','drag-blocked'));
+    }
+    window.onDragOver = function(e, stage) {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+    };
+    window.onDragLeave = function(e) {
+        e.currentTarget.classList.remove('drag-over');
+    };
+    window.onDrop = async function(e, stage) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if (!draggedId) return;
+        const c = concepts.find(x => x.id === draggedId);
+        if (!c) return;
 
-        function attachCardListeners() {
-            document.querySelectorAll('.card').forEach(card => {
-                card.addEventListener('dragstart', onDragStart);
-                card.addEventListener('dragend', onDragEnd);
-                card.addEventListener('click', e => {
-                    if (e.target.dataset.checkbox) {
-                        toggleSelect(e.target.dataset.checkbox);
-                        e.stopPropagation();
-                    } else {
-                        openPanel(card.dataset.id);
-                    }
-                });
-            });
-        }
-
-        // ============================================
-        // DRAG & DROP
-        // ============================================
-        let draggedId = null;
-        function onDragStart(e) {
-            draggedId = e.target.dataset.id;
-            e.target.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-        }
-        function onDragEnd(e) {
-            e.target.classList.remove('dragging');
-        }
-        window.onDragOver = function(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
-        }
-        window.onDragLeave = function(e) {
-            e.currentTarget.classList.remove('drag-over');
-        }
-        window.onDrop = async function(e, status) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            if (!draggedId) return;
-            try {
-                await sbPatch('creatives', draggedId, { production_status: status });
-                const c = creatives.find(x => x.id === draggedId);
-                if (c) c.production_status = status;
-                renderBoard();
-                toast(`Moved to ${status}`, 'success');
-            } catch (err) {
-                toast('Failed to update status', 'error');
+        // Approval gate: dragging to 'approved' needs ICE ≥ category threshold.
+        if (stage === 'approved') {
+            const cat = c.concept_category;
+            const ice = c.ice_score ? +c.ice_score : 0;
+            if (!cat) {
+                toast('Set Concept Category in the drawer first', 'error');
+                draggedId = null;
+                return;
             }
+            const thresh = CATEGORY_THRESH[cat];
+            if (ice < thresh) {
+                toast(`ICE ${ice.toFixed(1)} below ${cat} threshold (${thresh})`, 'error');
+                draggedId = null;
+                return;
+            }
+        }
+
+        // Won / Lost: prompt for outcome notes (optional) before transitioning.
+        if (stage === 'won' || stage === 'lost') {
+            pendingOutcomeConceptId = draggedId;
+            pendingOutcomeStatus = stage;
             draggedId = null;
+            document.getElementById('outcome-notes').value = '';
+            const title = document.getElementById('outcome-modal-title');
+            if (title) title.textContent = stage === 'won' ? '🏆 Mark Won' : '❌ Mark Lost';
+            document.getElementById('outcome-modal').classList.add('open');
+            return;
         }
 
-        // ============================================
-        // SELECTION
-        // ============================================
-        function toggleSelect(id) {
-            if (selectedCreatives.has(id)) selectedCreatives.delete(id);
-            else selectedCreatives.add(id);
-            updateBulkBar();
+        await transitionConcept(draggedId, stage);
+        draggedId = null;
+    };
+
+    async function transitionConcept(conceptId, newStage) {
+        const c = concepts.find(x => x.id === conceptId);
+        if (!c) return;
+        const body = { status: newStage };
+        if (newStage === 'approved' && !c.approved_at) {
+            body.approved_at = new Date().toISOString();
+            body.approved_by = (localStorage.getItem('username') || prompt('Approver name?')) || 'unknown';
+            localStorage.setItem('username', body.approved_by);
+        }
+        try {
+            await sbPatch('concepts', conceptId, body);
+            Object.assign(c, body);
             renderBoard();
-        }
-        window.clearSelection = function() {
-            selectedCreatives.clear();
-            updateBulkBar();
+            if (activeConcept && activeConcept.id === conceptId) {
+                Object.assign(activeConcept, body);
+                renderDrawer();
+            }
+            toast(`→ ${newStage}`, 'success');
+            if (newStage === 'approved' && SLACK_WEBHOOK) {
+                fetch(SLACK_WEBHOOK, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event: 'approved', concept_id: conceptId, name: conceptDisplayName(c) })
+                }).catch(() => {});
+            }
+        } catch (e) { toast('Move failed: ' + e.message, 'error'); }
+    }
+
+    // ============================================
+    // OUTCOME MODAL
+    // ============================================
+    window.closeOutcomeModal = function() {
+        document.getElementById('outcome-modal').classList.remove('open');
+        pendingOutcomeConceptId = null;
+        pendingOutcomeStatus = null;
+    };
+    window.confirmOutcome = async function() {
+        const outcome = pendingOutcomeStatus;
+        if (!pendingOutcomeConceptId || !outcome) return;
+        const notes = document.getElementById('outcome-notes').value;
+        const c = concepts.find(x => x.id === pendingOutcomeConceptId);
+        try {
+            const body = { status: outcome };
+            if (notes) {
+                const existing = c.brief_json || {};
+                body.brief_json = { ...existing, outcome_notes: notes };
+            }
+            await sbPatch('concepts', pendingOutcomeConceptId, body);
+            Object.assign(c, body);
+            closeOutcomeModal();
             renderBoard();
-        }
-        function updateBulkBar() {
-            const bar = document.getElementById('bulk-bar');
-            const count = selectedCreatives.size;
-            document.getElementById('bulk-count').textContent = `${count} selected`;
-            if (count > 0) bar.classList.add('visible');
-            else bar.classList.remove('visible');
-        }
-
-        // ============================================
-        // BULK ACTIONS
-        // ============================================
-        window.downloadSelected = async function() {
-            if (!window.JSZip) {
-                toast('JSZip not loaded yet, try again', 'error');
-                return;
+            if (activeConcept && activeConcept.id === c.id) { Object.assign(activeConcept, body); renderDrawer(); }
+            toast(outcome === 'won' ? '🏆 Marked won' : '❌ Marked lost', 'success');
+            if (SLACK_WEBHOOK) {
+                fetch(SLACK_WEBHOOK, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event: outcome, concept_id: c.id, name: conceptDisplayName(c), notes })
+                }).catch(() => {});
             }
-            const selected = creatives.filter(c => selectedCreatives.has(c.id));
-            if (selected.length === 0) return;
-            toast(`Zipping ${selected.length} creatives...`);
-            const zip = new window.JSZip();
-            let success = 0, fail = 0;
-            for (const c of selected) {
-                if (!c.image_url) { fail++; continue; }
-                try {
-                    const r = await fetch(c.image_url);
-                    const blob = await r.blob();
-                    zip.file((c.name || c.id) + '.png', blob);
-                    success++;
-                } catch (e) { fail++; }
-            }
-            const blob = await zip.generateAsync({ type: 'blob' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const clientCode = clients.find(c => c.id === selectedClientId)?.code || 'export';
-            a.href = url;
-            a.download = `propaganda-os-${clientCode}-${Date.now()}.zip`;
-            a.click();
-            URL.revokeObjectURL(url);
-            toast(`Downloaded ${success} files${fail > 0 ? ` (${fail} failed)` : ''}`, 'success');
-        }
+        } catch (e) { toast('Save failed: ' + e.message, 'error'); }
+    };
+    // Back-compat shim for any older callers.
+    window.setOutcome = function(outcome) { pendingOutcomeStatus = outcome; return confirmOutcome(); };
 
-        window.bulkSetStatus = async function(status) {
-            const ids = Array.from(selectedCreatives);
-            for (const id of ids) {
-                try { await sbPatch('creatives', id, { production_status: status }); }
-                catch (e) {}
-            }
-            await loadCreatives();
-            clearSelection();
-            toast(`Marked ${ids.length} as ${status}`, 'success');
+    // ============================================
+    // DRAWER (stage-aware)
+    // ============================================
+    let swipeCache = {};
+    async function loadInspoSwipe(swipeId) {
+        if (!swipeId) return null;
+        if (swipeCache[swipeId]) return swipeCache[swipeId];
+        const rows = await sbGet(`image_ad_swipes?id=eq.${swipeId}&select=id,image_url,headline_text,copy_angle`);
+        if (rows[0]) swipeCache[swipeId] = rows[0];
+        return rows[0] || null;
+    }
+    function openDrawer(conceptId) {
+        const c = concepts.find(x => x.id === conceptId);
+        if (!c) return;
+        activeConcept = c;
+        renderDrawer();
+        document.getElementById('drawer').classList.add('open');
+        // Lazy-fetch inspo swipe and re-render that section if present
+        if (c.swipe_id && !swipeCache[c.swipe_id]) {
+            loadInspoSwipe(c.swipe_id).then(() => {
+                if (activeConcept && activeConcept.id === conceptId) renderDrawer();
+            });
         }
+    }
+    window.openLightbox = function(swipeId) {
+        const s = swipeCache[swipeId];
+        if (!s || !s.image_url) return;
+        document.getElementById('lightbox-img').src = s.image_url;
+        document.getElementById('lightbox-meta').textContent = s.headline_text || s.copy_angle || '';
+        document.getElementById('lightbox-overlay').classList.add('open');
+    };
+    window.closeLightbox = function() {
+        document.getElementById('lightbox-overlay').classList.remove('open');
+        document.getElementById('lightbox-img').src = '';
+    };
+    window.closeDrawer = function() {
+        document.getElementById('drawer').classList.remove('open');
+        activeConcept = null;
+    };
 
-        window.bulkArchive = async function() {
-            const ids = Array.from(selectedCreatives);
-            for (const id of ids) {
-                try { await sbPatch('creatives', id, { archived: true }); } catch (e) {}
-            }
-            await loadCreatives();
-            clearSelection();
-            toast(`Archived ${ids.length}`, 'success');
-        }
+    function renderDrawer() {
+        const c = activeConcept;
+        if (!c) return;
+        const stage = STAGE_FOR_STATUS(c.status || 'idea');
+        const ord = STAGE_ORDER.indexOf(stage);
+        const has = (s) => STAGE_ORDER.indexOf(s) <= ord;
+        document.getElementById('drawer-title').textContent = conceptDisplayName(c);
+        const badgeStatus = c.status || 'idea';
+        const badge = document.getElementById('drawer-stage');
+        badge.className = 'stage-badge ' + badgeStatus;
+        badge.textContent = badgeStatus.toUpperCase();
 
-        // ============================================
-        // DETAIL PANEL
-        // ============================================
-        function openPanel(id) {
-            const c = creatives.find(x => x.id === id);
-            if (!c) return;
-            activeCreative = c;
-            document.getElementById('panel-title').textContent = c.name || 'Untitled';
-            document.getElementById('panel-body').innerHTML = `
-                ${c.image_url ? `<img src="${c.image_url}" class="panel-image">` : '<div class="card-thumb-placeholder" style="padding:80px">No image yet</div>'}
-                <div class="panel-section">
-                    <div class="panel-label">Hook</div>
-                    <textarea class="panel-textarea" id="edit-hook">${c.hook_text || ''}</textarea>
+        const creatives = creativesByConcept[c.id] || [];
+        const bj = c.brief_json || {};
+
+        // Sections — always show identity + ICE; copywriting/production/launched only as relevant
+        const html = `
+            <div class="drawer-section">
+                <h4>Identity</h4>
+                <div class="row-2">
+                    <div class="drawer-row">
+                        <label>Lead Type</label>
+                        <select id="d-lead">
+                            <option value="">—</option>
+                            ${LEAD_TYPES.map(l => `<option ${c.lead_type === l ? 'selected':''}>${l}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="drawer-row">
+                        <label>Awareness</label>
+                        <select id="d-aware">
+                            <option value="">—</option>
+                            ${Object.keys(AWARE_CODE).map(a => `<option ${c.awareness_level === a ? 'selected':''}>${a}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
-                <div class="panel-section">
-                    <div class="panel-label">Body</div>
-                    <textarea class="panel-textarea" id="edit-body">${c.body_text || ''}</textarea>
+                <div class="row-3">
+                    <div class="drawer-row">
+                        <label>Angle</label>
+                        <input type="text" id="d-angle" value="${escapeAttr(c.angle || '')}">
+                    </div>
+                    <div class="drawer-row">
+                        <label>Format</label>
+                        <input type="text" id="d-format" value="${escapeAttr(c.format || '')}">
+                    </div>
+                    <div class="drawer-row">
+                        <label>Asset</label>
+                        <select id="d-asset">${ASSET_TYPES.map(a => `<option ${c.asset_type === a ? 'selected':''}>${a}</option>`).join('')}</select>
+                    </div>
                 </div>
-                <div class="panel-section">
-                    <div class="panel-label">CTA</div>
-                    <input type="text" class="panel-input" id="edit-cta" value="${c.cta_text || ''}">
+                <div class="drawer-row">
+                    <label>Big Idea</label>
+                    <textarea id="d-big" rows="3">${escapeHtml(c.big_idea || '')}</textarea>
                 </div>
-                <div class="panel-section">
-                    <div class="panel-label">Awareness Level</div>
-                    <select class="panel-select" id="edit-awareness">
-                        <option ${c.awareness_level === 'Unaware' ? 'selected' : ''}>Unaware</option>
-                        <option ${c.awareness_level === 'Problem Aware' ? 'selected' : ''}>Problem Aware</option>
-                        <option ${c.awareness_level === 'Solution Aware' ? 'selected' : ''}>Solution Aware</option>
-                        <option ${c.awareness_level === 'Product Aware' ? 'selected' : ''}>Product Aware</option>
-                        <option ${c.awareness_level === 'Most Aware' ? 'selected' : ''}>Most Aware</option>
+                <div class="drawer-row">
+                    <label>Test Tag <span style="color:var(--text-muted);font-weight:400">— optional, group ideas under one test</span></label>
+                    <input type="text" id="d-tag" list="tag-list" value="${escapeAttr(c.test_tag || '')}" placeholder="e.g. Apr Sleep Funnel">
+                </div>
+                <button class="btn btn-sm" onclick="saveIdentity()">Save Identity</button>
+            </div>
+
+            ${c.swipe_id ? `
+                <div class="drawer-section">
+                    <h4>Inspiration <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted)">click to view full size</span></h4>
+                    ${swipeCache[c.swipe_id] ? `
+                        <div class="inspo-thumb" onclick="openLightbox('${c.swipe_id}')">
+                            <img src="${escapeAttr(swipeCache[c.swipe_id].image_url || '')}" alt="">
+                            <div class="zoom-hint">⤢ Zoom</div>
+                            ${swipeCache[c.swipe_id].copy_angle || swipeCache[c.swipe_id].headline_text
+                                ? `<div class="label">${escapeHtml(swipeCache[c.swipe_id].copy_angle || swipeCache[c.swipe_id].headline_text)}</div>`
+                                : ''}
+                        </div>
+                    ` : '<div class="creative-thumb-empty">Loading inspo swipe…</div>'}
+                </div>
+            ` : ''}
+
+            <div class="drawer-section">
+                <h4>Copy Doc</h4>
+                <div class="copy-doc-row">
+                    <input type="url" id="d-copy-doc" value="${escapeAttr(c.copy_doc_url || '')}" placeholder="Paste Google Doc / Drive URL…">
+                    ${c.copy_doc_url ? `<a class="btn btn-sm" href="${escapeAttr(c.copy_doc_url)}" target="_blank" rel="noopener">↗ Open</a>` : ''}
+                    <button class="btn btn-sm" onclick="saveCopyDoc()">Save</button>
+                </div>
+            </div>
+
+            <details class="drawer-collapse" ${c.concept_category && (c.impact||c.confidence||c.ease) ? '' : 'open'}>
+            <summary class="drawer-collapse-summary"><span>Score (ICE) &amp; Category</span><span class="caret">▾</span></summary>
+            <div class="drawer-section drawer-section-nested">
+                <h4 style="display:flex;align-items:center;justify-content:space-between">
+                    <span style="visibility:hidden">.</span>
+                    <span class="info-tip">
+                        <span class="info-tip-icon">?</span>
+                        <span class="info-tip-pop">
+                            <strong>How to score</strong>
+                            <div class="axis">
+                                <b>Impact</b> — How big the effect could be if it works.<br>
+                                <span class="anchors">10 breakthrough · 7-9 solid · 4-6 average · 1-3 limited</span>
+                            </div>
+                            <div class="axis">
+                                <b>Confidence</b> — Certainty we can execute well.<br>
+                                <span class="anchors">10 done before · 7-9 clear path · 4-6 unknowns · 1-3 many unknowns</span>
+                            </div>
+                            <div class="axis">
+                                <b>Ease</b> — Production simplicity.<br>
+                                <span class="anchors">10 single take · 7-9 simple setup · 4-6 multi-shot · 1-3 complex</span>
+                            </div>
+                            <div class="formula">ICE = (I + C + E) ÷ 3</div>
+                            <div class="thresh">
+                                Threshold to approve, by Concept Category:<br>
+                                <b>Control ≥ 8.5</b> · <b>Data-Driven ≥ 7.5</b> · <b>Innovation ≥ 7.0</b>
+                            </div>
+                        </span>
+                    </span>
+                </h4>
+                <div class="drawer-row">
+                    <label>Concept Category</label>
+                    <select id="d-cat">
+                        <option value="">— pick —</option>
+                        <option value="Control"     ${c.concept_category==='Control'?'selected':''}>Control (≥ 8.5)</option>
+                        <option value="DataDriven"  ${c.concept_category==='DataDriven'?'selected':''}>Data-Driven (≥ 7.5)</option>
+                        <option value="Innovation"  ${c.concept_category==='Innovation'?'selected':''}>Innovation (≥ 7.0)</option>
                     </select>
                 </div>
-                <div class="panel-section">
-                    <div class="panel-label">Performance</div>
-                    <select class="panel-select" id="edit-performance" onchange="updatePerformance()">
-                        <option value="">— None —</option>
-                        <option value="heavy_winner" ${c.performance === 'heavy_winner' ? 'selected' : ''}>🏆 Heavy Winner</option>
-                        <option value="winner" ${c.performance === 'winner' ? 'selected' : ''}>⭐ Winner</option>
-                        <option value="average" ${c.performance === 'average' ? 'selected' : ''}>🫤 Average</option>
-                        <option value="loser" ${c.performance === 'loser' ? 'selected' : ''}>❌ Loser</option>
-                        <option value="fatigued" ${c.performance === 'fatigued' ? 'selected' : ''}>💤 Fatigued</option>
-                    </select>
+                <div class="ice-grid">
+                    <div class="ice-cell">
+                        <div class="nm">Impact</div>
+                        <div class="vl" id="d-impact-v">${c.impact||0}</div>
+                        <input type="range" min="0" max="10" value="${c.impact||0}" id="d-impact" oninput="onIceChange()">
+                    </div>
+                    <div class="ice-cell">
+                        <div class="nm">Confidence</div>
+                        <div class="vl" id="d-conf-v">${c.confidence||0}</div>
+                        <input type="range" min="0" max="10" value="${c.confidence||0}" id="d-conf" oninput="onIceChange()">
+                    </div>
+                    <div class="ice-cell">
+                        <div class="nm">Ease</div>
+                        <div class="vl" id="d-ease-v">${c.ease||0}</div>
+                        <input type="range" min="0" max="10" value="${c.ease||0}" id="d-ease" oninput="onIceChange()">
+                    </div>
                 </div>
-                <div class="panel-section">
-                    <div class="panel-label">Internal Notes</div>
-                    <textarea class="panel-textarea" id="edit-notes">${c.internal_notes || ''}</textarea>
+                <div class="ice-summary" id="d-ice-summary">
+                    <div class="ice-num" id="d-ice-num">0.0</div>
+                    <div class="ice-thresh" id="d-ice-thresh">Pick a category</div>
                 </div>
-                <button class="btn btn-primary" onclick="saveEdits()" style="width:100%">Save Changes</button>
-            `;
-            document.getElementById('detail-panel').classList.add('open');
+                <button class="btn btn-sm" onclick="saveIce()" style="margin-top:8px">Save Score</button>
+            </div>
+            </details>
+
+            <div class="drawer-section">
+                <h4>Hypothesis &amp; Outcome</h4>
+                <div class="drawer-row">
+                    <label>Hypothesis <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted)">— a falsifiable prediction</span></label>
+                    <textarea id="d-hyp" rows="4" placeholder="If we [change X], then [predicted result] because [why we believe this].&#10;&#10;Example: If we lead with HUD revenue proof in the hook (vs. our story-led control), then PA-level prospects will book at 20%+ lower CPL because credibility upfront cuts through their cynicism faster than narrative does.">${escapeHtml(c.hypothesis || '')}</textarea>
+                </div>
+                <div class="drawer-row">
+                    <label>Expected Outcome <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted)">— concrete success criteria</span></label>
+                    <textarea id="d-exp" rows="4" placeholder="What does winning look like? Be specific — metrics, thresholds, timeframe.&#10;&#10;Example: ≥20% lower CPL than control over 7 days, hook rate ≥25%, ≥30 booked calls at <$80 CPL, 1+ winner per 3 launched.">${escapeHtml(c.expected_outcome || '')}</textarea>
+                </div>
+                <button class="btn btn-sm" onclick="saveHypothesis()">Save Plan</button>
+            </div>
+
+            ${has('copywriting') ? (() => {
+                const hookCount = (bj.hook_ideas || []).length;
+                const briefIsEmpty = !hookCount && !bj.body_framework && !bj.cta;
+                const editorUrl = `25-creative-brief.html?concept_id=${c.id}`;
+                return `
+                <div class="drawer-section">
+                    <h4>Copy <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">${hookCount} hooks</span></h4>
+                    ${stage === 'copywriting' && briefIsEmpty ? `
+                        <div class="brief-cta">
+                            <div class="brief-cta-title">📝 Write the copy</div>
+                            <div class="brief-cta-body">This concept is ready for copy — hooks, body framework, proof points, CTA, visual direction. Write it in the full editor, then come back here and click <b>Send to Production →</b>.</div>
+                            <a class="btn btn-primary" href="${editorUrl}" target="_blank">✏️ Open Full Editor →</a>
+                        </div>
+                    ` : ''}
+                    ${stage === 'copywriting' && !briefIsEmpty ? `
+                        <div class="brief-cta-mini">
+                            Copy in progress. <a href="${editorUrl}" target="_blank">Continue editing →</a> or click <b>Send to Production →</b> when ready.
+                        </div>
+                    ` : ''}
+                    ${hookCount ? `
+                        <div class="hooks-preview"><ol>${bj.hook_ideas.slice(0,5).map(h => `<li>${escapeHtml(h)}</li>`).join('')}</ol></div>
+                    ` : (stage !== 'copywriting' ? '<div class="empty-rich">No hooks yet — open full editor to write the copy.</div>' : '')}
+                    ${bj.body_framework ? `<div class="drawer-row" style="margin-top:8px"><label>Body Framework</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.body_framework)}</div></div>` : ''}
+                    ${bj.cta ? `<div class="drawer-row"><label>CTA</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.cta)}</div></div>` : ''}
+                </div>
+            `;})() : ''}
+
+            ${has('production') ? `
+                <div class="drawer-section">
+                    <h4>Creatives <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">${creatives.length}</span></h4>
+                    ${creatives.length === 0
+                        ? '<div class="creative-thumb-empty">No creatives yet — drop an image or paste a video URL below.</div>'
+                        : `<div class="creatives-list">${creatives.map(cr => renderCreativeCard(cr)).join('')}</div>`
+                    }
+
+                    <div class="creative-drop" id="cr-drop"
+                         onclick="document.getElementById('cr-file').click()"
+                         ondragover="event.preventDefault(); this.classList.add('dragover')"
+                         ondragleave="this.classList.remove('dragover')"
+                         ondrop="handleCreativeDrop(event)">
+                        <strong>📥 Drop image to upload</strong>
+                        or click to choose a file. Stored at <code style="color:var(--text-secondary)">ad-images/{client}/{concept}/</code>.
+                        <input type="file" id="cr-file" accept="image/*" multiple onchange="handleCreativeFiles(this.files)">
+                    </div>
+
+                    <div class="creative-attach-row">
+                        <input type="url" id="cr-video-url" placeholder="Paste Frame.io / video preview URL…">
+                        <button class="btn btn-sm" onclick="attachVideoUrl()">+ Attach Video</button>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${has('launched') ? `
+                <div class="drawer-section">
+                    <h4>Outcome Notes</h4>
+                    <div class="drawer-row">
+                        <label>Notes / Learnings</label>
+                        <textarea id="d-outcome-notes" rows="3">${escapeHtml(bj.outcome_notes || '')}</textarea>
+                    </div>
+                    <button class="btn btn-sm" onclick="saveOutcomeNotes()">Save Notes</button>
+                </div>
+            ` : ''}
+        `;
+        document.getElementById('drawer-body').innerHTML = html;
+        renderDrawerFooter();
+        onIceChange();
+    }
+
+    function renderDrawerFooter() {
+        const c = activeConcept;
+        if (!c) return;
+        const stage = STAGE_FOR_STATUS(c.status || 'idea');
+        const editorLink = `25-creative-brief.html?concept_id=${c.id}`;
+        // "Log as Test" only makes sense once we have results to log (reporting+ stages).
+        const showLogTest = ['launched','won','lost'].includes(stage);
+        const testParams = new URLSearchParams({
+            from_concept: c.id,
+            client_id: c.client_id || '',
+            name: conceptDisplayName(c) + ' — test'
+        });
+        const advance = ({
+            idea:        { next: 'approved',    label: 'Submit & Approve →' },
+            approved:    { next: 'copywriting', label: 'Promote to Copywriting →' },
+            copywriting: { next: 'production',  label: 'Send to Production →' },
+            production:  { next: 'revisions',   label: 'Send to Revisions →' },
+            revisions:   { next: 'launched',    label: 'Mark Launched →' },
+            launched:    null,   // Launched offers two terminal buttons: Won and Lost.
+            won:         null,
+            lost:        null
+        })[stage];
+        // At copywriting stage, the editor is the primary action — bold it.
+        const editorBtnClass = stage === 'copywriting' ? 'btn btn-primary' : 'btn';
+        const editorLabel    = stage === 'copywriting' ? '✏️ Open Full Editor' : '↗ Open Full Editor';
+        // Launched stage: replace the single advance button with Won/Lost buttons.
+        const terminalActions = stage === 'launched' ? `
+            <button class="btn btn-success" onclick="advanceStage('won')">🏆 Mark Won</button>
+            <button class="btn btn-danger"  onclick="advanceStage('lost')">❌ Mark Lost</button>
+        ` : '';
+        const html = `
+            <a class="${editorBtnClass}" href="${editorLink}" target="_blank">${editorLabel}</a>
+            ${showLogTest ? `<a class="btn" href="27-tests.html?${testParams}" target="_blank">📊 Log as Test</a>` : ''}
+            <div style="flex:1"></div>
+            ${!TERMINAL_STAGES.has(stage) && c.status !== 'rejected' ? `<button class="btn btn-danger" onclick="rejectConcept()">Reject</button>` : ''}
+            ${terminalActions}
+            ${advance ? `<button class="btn ${stage === 'copywriting' ? '' : 'btn-primary'}" onclick="advanceStage('${advance.next}')">${advance.label}</button>` : ''}
+        `;
+        document.getElementById('drawer-footer').innerHTML = html;
+    }
+
+    window.advanceStage = async function(target) {
+        if (!activeConcept) return;
+        if (target === 'won' || target === 'lost') {
+            pendingOutcomeConceptId = activeConcept.id;
+            pendingOutcomeStatus = target;
+            document.getElementById('outcome-notes').value = '';
+            const title = document.getElementById('outcome-modal-title');
+            if (title) title.textContent = target === 'won' ? '🏆 Mark Won' : '❌ Mark Lost';
+            document.getElementById('outcome-modal').classList.add('open');
+            return;
         }
-        window.closePanel = function() {
-            document.getElementById('detail-panel').classList.remove('open');
-            activeCreative = null;
+        if (target === 'approved') {
+            // gate by ICE/category
+            const c = activeConcept;
+            const cat = document.getElementById('d-cat').value || c.concept_category;
+            const ice = ((+document.getElementById('d-impact').value) + (+document.getElementById('d-conf').value) + (+document.getElementById('d-ease').value)) / 3;
+            if (!cat) { toast('Pick a Concept Category first', 'error'); return; }
+            if (ice < CATEGORY_THRESH[cat]) { toast(`ICE ${ice.toFixed(1)} below ${cat} threshold`, 'error'); return; }
+            // Save the ICE/cat first if changed
+            if (cat !== c.concept_category) await saveIce();
         }
-        window.saveEdits = async function() {
-            if (!activeCreative) return;
+        await transitionConcept(activeConcept.id, target);
+    };
+
+    window.rejectConcept = async function() {
+        if (!activeConcept) return;
+        const reason = prompt('Rejection reason:');
+        if (!reason) return;
+        try {
+            await sbPatch('concepts', activeConcept.id, {
+                status: 'rejected', rejected_at: new Date().toISOString(), rejection_reason: reason
+            });
+            // Filter out rejected from current view (loadConcepts excludes them)
+            concepts = concepts.filter(x => x.id !== activeConcept.id);
+            closeDrawer();
+            renderBoard();
+            toast('Rejected', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    window.onIceChange = function() {
+        if (!activeConcept) return;
+        const i = +document.getElementById('d-impact').value;
+        const c = +document.getElementById('d-conf').value;
+        const e = +document.getElementById('d-ease').value;
+        document.getElementById('d-impact-v').textContent = i;
+        document.getElementById('d-conf-v').textContent   = c;
+        document.getElementById('d-ease-v').textContent   = e;
+        const ice = (i+c+e) === 0 ? 0 : ((i+c+e)/3);
+        document.getElementById('d-ice-num').textContent = ice.toFixed(2);
+        const cat = document.getElementById('d-cat').value;
+        const sum = document.getElementById('d-ice-summary');
+        const th  = document.getElementById('d-ice-thresh');
+        if (!cat) { sum.className = 'ice-summary'; th.textContent = 'Pick a category'; return; }
+        const thresh = CATEGORY_THRESH[cat];
+        const passes = ice >= thresh;
+        sum.className = 'ice-summary ' + (passes ? 'pass' : 'fail');
+        th.textContent = passes ? `✓ Passes ${cat} (≥ ${thresh})` : `Below ${cat} (≥ ${thresh})`;
+    };
+
+    window.saveIdentity = async function() {
+        const c = activeConcept; if (!c) return;
+        const body = {
+            lead_type:       document.getElementById('d-lead').value || null,
+            awareness_level: document.getElementById('d-aware').value || null,
+            angle:           document.getElementById('d-angle').value || null,
+            format:          document.getElementById('d-format').value || null,
+            asset_type:      document.getElementById('d-asset').value || null,
+            big_idea:        document.getElementById('d-big').value || null,
+            test_tag:        (document.getElementById('d-tag').value || '').trim() || null
+        };
+        try {
+            await sbPatch('concepts', c.id, body);
+            Object.assign(c, body);
+            renderTagSelect();
+            renderBoard();
+            renderDrawer();
+            toast('Saved', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.saveCopyDoc = async function() {
+        const c = activeConcept; if (!c) return;
+        const url = (document.getElementById('d-copy-doc').value || '').trim() || null;
+        try {
+            await sbPatch('concepts', c.id, { copy_doc_url: url });
+            c.copy_doc_url = url;
+            renderBoard();
+            renderDrawer();
+            toast(url ? 'Copy doc saved' : 'Copy doc cleared', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.saveIce = async function() {
+        const c = activeConcept; if (!c) return;
+        const body = {
+            concept_category: document.getElementById('d-cat').value || null,
+            impact:           (+document.getElementById('d-impact').value) || null,
+            confidence:       (+document.getElementById('d-conf').value)   || null,
+            ease:             (+document.getElementById('d-ease').value)   || null
+        };
+        try {
+            await sbPatch('concepts', c.id, body);
+            Object.assign(c, body);
+            // Re-fetch ice_score (computed by DB)
+            const fresh = await sbGet(`concepts?id=eq.${c.id}&select=ice_score`);
+            if (fresh[0]) c.ice_score = fresh[0].ice_score;
+            renderBoard();
+            renderDrawer();
+            toast('Score saved', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.saveHypothesis = async function() {
+        const c = activeConcept; if (!c) return;
+        try {
             const body = {
-                hook_text: document.getElementById('edit-hook').value,
-                body_text: document.getElementById('edit-body').value,
-                cta_text: document.getElementById('edit-cta').value,
-                awareness_level: document.getElementById('edit-awareness').value,
-                performance: document.getElementById('edit-performance').value || null,
-                internal_notes: document.getElementById('edit-notes').value
+                hypothesis:       document.getElementById('d-hyp').value || null,
+                expected_outcome: document.getElementById('d-exp').value || null
             };
-            try {
-                await sbPatch('creatives', activeCreative.id, body);
-                Object.assign(activeCreative, body);
-                renderBoard();
-                toast('Saved', 'success');
-            } catch (e) { toast('Save failed', 'error'); }
-        }
-        window.updatePerformance = async function() {
-            if (!activeCreative) return;
-            const perf = document.getElementById('edit-performance').value || null;
-            try {
-                await sbPatch('creatives', activeCreative.id, { performance: perf });
-                activeCreative.performance = perf;
-                renderBoard();
-            } catch (e) {}
-        }
-        window.rerenderCreative = function() {
-            if (!activeCreative) return;
-            toast('Re-render not yet wired up — coming soon');
-        }
-        window.duplicateCreative = async function() {
-            if (!activeCreative) return;
-            const copy = { ...activeCreative };
-            delete copy.id;
-            delete copy.name;
-            delete copy.created_at;
-            delete copy.updated_at;
-            copy.hook_number = (activeCreative.hook_number || 0) + 1;
-            try {
-                await sbPost('creatives', copy);
-                await loadCreatives();
-                toast('Duplicated', 'success');
-            } catch (e) { toast('Duplicate failed', 'error'); }
-        }
-        window.downloadCreative = function() {
-            if (!activeCreative || !activeCreative.image_url) return;
-            const a = document.createElement('a');
-            a.href = activeCreative.image_url;
-            a.download = (activeCreative.name || 'creative') + '.png';
-            a.target = '_blank';
-            a.click();
-        }
-        window.archiveCreative = async function() {
-            if (!activeCreative) return;
-            try {
-                await sbPatch('creatives', activeCreative.id, { archived: true });
-                closePanel();
-                await loadCreatives();
-                toast('Archived', 'success');
-            } catch (e) { toast('Archive failed', 'error'); }
-        }
+            await sbPatch('concepts', c.id, body);
+            Object.assign(c, body);
+            toast('Saved', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+    window.saveOutcomeNotes = async function() {
+        const c = activeConcept; if (!c) return;
+        try {
+            const merged = { ...(c.brief_json || {}), outcome_notes: document.getElementById('d-outcome-notes').value };
+            await sbPatch('concepts', c.id, { brief_json: merged });
+            c.brief_json = merged;
+            toast('Saved', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
 
-        // ============================================
-        // BATCH MODAL
-        // ============================================
-        window.openBatchModal = function() {
-            if (!selectedClientId) {
-                toast('Select a client first', 'error');
-                return;
+    function perfIcon(p) {
+        return ({ heavy_winner: '🏆', winner: '⭐', average: '🫤', loser: '❌', fatigued: '💤' }[p] || '');
+    }
+
+    function renderCreativeCard(cr) {
+        const winnerCls = cr.performance ? `winner-${cr.performance}` : '';
+        const isVideo = (cr.creative_type || '').toLowerCase() === 'video' || cr.asset_type === 'VID';
+        const previewClick = cr.image_url ? `onclick="openCreativeLightbox('${cr.id}')"` : '';
+        const thumbInner = cr.image_url
+            ? `<img src="${escapeAttr(cr.image_url)}" loading="lazy">`
+            : (isVideo ? `<div class="video-badge">▶</div>` : `<div class="empty-thumb">—</div>`);
+        const links = [];
+        if (cr.preview_url) links.push(`<a href="${escapeAttr(cr.preview_url)}" target="_blank" rel="noopener">▶ Preview</a>`);
+        if (cr.final_url)   links.push(`<a href="${escapeAttr(cr.final_url)}"   target="_blank" rel="noopener">↗ Final</a>`);
+        const meta = [];
+        if (cr.creative_type) meta.push(`<span class="pill">${escapeHtml(cr.creative_type)}</span>`);
+        if (cr.asset_type && cr.asset_type !== cr.creative_type) meta.push(`<span class="pill">${escapeHtml(cr.asset_type)}</span>`);
+        if (cr.format) meta.push(`<span class="pill">${escapeHtml(cr.format)}</span>`);
+        if (cr.production_status && cr.production_status !== 'draft') meta.push(`<span class="pill">${escapeHtml(cr.production_status)}</span>`);
+        return `
+            <div class="creative-card ${winnerCls}" data-id="${cr.id}">
+                <div class="creative-card-thumb" ${previewClick}>${thumbInner}</div>
+                <div class="creative-card-body">
+                    <div class="creative-card-name" title="${escapeAttr(cr.name || '')}">${escapeHtml(cr.name || '(unnamed)')}</div>
+                    ${meta.length ? `<div class="creative-card-meta">${meta.join('')}</div>` : ''}
+                    ${links.length ? `<div class="creative-card-links">${links.join('')}</div>` : ''}
+                    <div class="creative-card-perf">
+                        <select onchange="updateCreativePerf('${cr.id}', this.value)">
+                            <option value="">— Performance —</option>
+                            <option value="heavy_winner" ${cr.performance==='heavy_winner'?'selected':''}>🏆 Heavy Winner</option>
+                            <option value="winner"       ${cr.performance==='winner'?'selected':''}>⭐ Winner</option>
+                            <option value="average"      ${cr.performance==='average'?'selected':''}>🫤 Average</option>
+                            <option value="loser"        ${cr.performance==='loser'?'selected':''}>❌ Loser</option>
+                            <option value="fatigued"     ${cr.performance==='fatigued'?'selected':''}>💤 Fatigued</option>
+                        </select>
+                        <button class="del" onclick="deleteCreative('${cr.id}')" title="Delete">✕</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.openCreativeLightbox = function(creativeId) {
+        const c = activeConcept;
+        if (!c) return;
+        const cr = (creativesByConcept[c.id] || []).find(x => x.id === creativeId);
+        if (!cr || !cr.image_url) return;
+        document.getElementById('lightbox-img').src = cr.image_url;
+        document.getElementById('lightbox-meta').textContent = cr.name || '';
+        document.getElementById('lightbox-overlay').classList.add('open');
+    };
+
+    window.updateCreativePerf = async function(creativeId, perf) {
+        try {
+            await sbPatch('creatives', creativeId, { performance: perf || null });
+            const c = activeConcept;
+            if (c) {
+                const cr = (creativesByConcept[c.id] || []).find(x => x.id === creativeId);
+                if (cr) cr.performance = perf || null;
+                renderDrawer();
             }
-            const now = new Date();
-            const startOfYear = new Date(now.getFullYear(), 0, 1);
-            const week = Math.ceil((((now - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
-            document.getElementById('batch-week').value = week;
-            document.getElementById('batch-year').value = now.getFullYear();
-            document.getElementById('batch-modal').classList.add('open');
+            toast('Performance saved', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    window.deleteCreative = async function(creativeId) {
+        if (!confirm('Delete this creative? The image file in storage stays — only the DB row is removed.')) return;
+        try {
+            const url = `${SUPABASE_URL}/rest/v1/creatives?id=eq.${creativeId}`;
+            const res = await fetch(url, { method: 'DELETE', headers: HEADERS });
+            if (!res.ok) throw new Error('Delete failed');
+            const c = activeConcept;
+            if (c) {
+                creativesByConcept[c.id] = (creativesByConcept[c.id] || []).filter(x => x.id !== creativeId);
+                renderDrawer();
+            }
+            toast('Creative removed', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    window.handleCreativeDrop = function(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('dragover');
+        const files = Array.from(ev.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+        if (!files.length) { toast('Drop an image file', 'error'); return; }
+        handleCreativeFiles(files);
+    };
+
+    window.handleCreativeFiles = async function(fileList) {
+        const c = activeConcept;
+        if (!c) return;
+        if (!c.client_id) { toast('Concept missing client', 'error'); return; }
+        // Resolve client_code for path scoping
+        const client = (clients || []).find(x => x.id === c.client_id);
+        const clientCode = client?.code || c.client_id.slice(0,8);
+        const files = Array.from(fileList || []);
+        for (const file of files) {
+            try {
+                const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const path = `ad-images/${clientCode}/${c.id}/${Date.now()}-${safeName}`;
+                const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${path}`;
+                const up = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': window.PROPAGANDA.SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${window.PROPAGANDA.SUPABASE_ANON_KEY}`,
+                        'Content-Type': file.type
+                    },
+                    body: file
+                });
+                if (!up.ok) throw new Error(`Upload failed (${up.status})`);
+                const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${path}`;
+                // Compute next body/hook numbers within this concept
+                const existing = creativesByConcept[c.id] || [];
+                const nextBody = (Math.max(0, ...existing.map(x => x.body_number || 0))) + 1;
+                const body = {
+                    concept_id: c.id,
+                    client_id:  c.client_id,
+                    icp_id:     c.icp_id || null,
+                    body_number: nextBody,
+                    hook_number: 1,
+                    image_url:   publicUrl,
+                    creative_type: 'Image',
+                    asset_type:  'IMG',
+                    format:      c.format || null,
+                    awareness_level: c.awareness_level || null,
+                    lead_type:   c.lead_type || null,
+                    production_status: 'launched'
+                };
+                const rows = await sbPost('creatives', body);
+                if (rows[0]) {
+                    (creativesByConcept[c.id] = creativesByConcept[c.id] || []).push(rows[0]);
+                }
+            } catch (e) {
+                toast(`${file.name}: ${e.message}`, 'error');
+            }
         }
-        window.closeBatchModal = function() {
-            document.getElementById('batch-modal').classList.remove('open');
-        }
-        window.createBatch = async function() {
+        renderDrawer();
+        toast(`Uploaded ${files.length} image${files.length === 1 ? '' : 's'}`, 'success');
+    };
+
+    window.attachVideoUrl = async function() {
+        const c = activeConcept;
+        if (!c) return;
+        const inp = document.getElementById('cr-video-url');
+        const url = (inp.value || '').trim();
+        if (!url) { toast('Paste a URL first', 'error'); return; }
+        try {
+            const existing = creativesByConcept[c.id] || [];
+            const nextBody = (Math.max(0, ...existing.map(x => x.body_number || 0))) + 1;
+            const body = {
+                concept_id: c.id,
+                client_id:  c.client_id,
+                icp_id:     c.icp_id || null,
+                body_number: nextBody,
+                hook_number: 1,
+                preview_url: url,
+                creative_type: 'Video',
+                asset_type:  'VID',
+                format:      c.format || null,
+                awareness_level: c.awareness_level || null,
+                lead_type:   c.lead_type || null,
+                production_status: 'launched'
+            };
+            const rows = await sbPost('creatives', body);
+            if (rows[0]) {
+                (creativesByConcept[c.id] = creativesByConcept[c.id] || []).push(rows[0]);
+            }
+            inp.value = '';
+            renderDrawer();
+            toast('Video link attached', 'success');
+        } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // ============================================
+    // FILTERS
+    // ============================================
+    function renderFilters() {
+        const lf = document.getElementById('lead-filter');
+        const af = document.getElementById('asset-filter');
+        lf.innerHTML = LEAD_TYPES.map(l =>
+            `<span class="filter-pill ${leadFilter.has(l) ? 'active' : ''}" data-lead="${l}">${l.replace('-Solution','/Sol')}</span>`
+        ).join('');
+        af.innerHTML = ASSET_TYPES.map(a =>
+            `<span class="filter-pill ${assetFilter.has(a) ? 'active' : ''}" data-asset="${a}">${a}</span>`
+        ).join('');
+        const w = document.getElementById('winners-filter');
+        w.classList.toggle('active', winnersOnly);
+        lf.querySelectorAll('[data-lead]').forEach(el => {
+            el.onclick = () => {
+                const v = el.dataset.lead;
+                if (leadFilter.has(v)) leadFilter.delete(v); else leadFilter.add(v);
+                localStorage.setItem('boardLeadFilter', JSON.stringify(Array.from(leadFilter)));
+                renderFilters(); renderBoard();
+            };
+        });
+        af.querySelectorAll('[data-asset]').forEach(el => {
+            el.onclick = () => {
+                const v = el.dataset.asset;
+                if (assetFilter.has(v)) assetFilter.delete(v); else assetFilter.add(v);
+                localStorage.setItem('boardAssetFilter', JSON.stringify(Array.from(assetFilter)));
+                renderFilters(); renderBoard();
+            };
+        });
+        w.onclick = () => {
+            winnersOnly = !winnersOnly;
+            localStorage.setItem('boardWinnersOnly', winnersOnly ? '1' : '0');
+            renderFilters(); renderBoard();
+        };
+    }
+
+    // ============================================
+    // + NEW IDEA
+    // ============================================
+    window.openIdeaModal = function() {
+        if (!selectedClientId) { toast('Pick a client first', 'error'); return; }
+        document.getElementById('idea-submitter').value = localStorage.getItem('username') || '';
+        // Pre-fill the tag with the currently filtered tag, so a "+ New Idea" while
+        // viewing "Apr Sleep Funnel" inherits that tag by default.
+        document.getElementById('idea-tag').value = selectedTag || '';
+        // Reset confidence to mid
+        document.getElementById('idea-confidence').value = 5;
+        document.getElementById('idea-confidence-v').textContent = '5';
+        document.getElementById('idea-modal').classList.add('open');
+    };
+    window.closeIdeaModal = function() { document.getElementById('idea-modal').classList.remove('open'); };
+    window.createIdea = async function() {
+        try {
+            const submitter = document.getElementById('idea-submitter').value.trim();
+            const angle     = document.getElementById('idea-angle').value.trim();
+            const format    = document.getElementById('idea-format').value.trim();
+            const asset     = document.getElementById('idea-asset').value || 'IMG';
+            const cat       = document.getElementById('idea-category').value || null;
+            const big       = document.getElementById('idea-big').value.trim() || null;
+            const tag       = document.getElementById('idea-tag').value.trim() || null;
+            const conf      = parseInt(document.getElementById('idea-confidence').value, 10);
+            if (!angle)  throw new Error('Angle is required');
+            if (!format) throw new Error('Format is required');
+            if (submitter) localStorage.setItem('username', submitter);
             const body = {
                 client_id: selectedClientId,
-                week_number: parseInt(document.getElementById('batch-week').value),
-                year: parseInt(document.getElementById('batch-year').value),
-                due_date: document.getElementById('batch-due').value || null,
-                strategy_notes: document.getElementById('batch-notes').value || null,
-                status: 'planning'
+                angle, format,
+                asset_type: asset,
+                concept_category: cat,
+                big_idea: big,
+                submitted_by: submitter || null,
+                test_tag: tag,
+                initial_confidence: isNaN(conf) ? null : Math.max(1, Math.min(10, conf)),
+                status: 'idea'
+                // Lead Type and Awareness Level are intentionally NOT set here —
+                // they're filled at the approval stage in the drawer.
             };
-            try {
-                await sbPost('batches', body);
-                closeBatchModal();
-                await loadBatches();
-                toast('Batch created', 'success');
-            } catch (e) { toast('Create failed', 'error'); }
-        }
+            const rows = await sbPost('concepts', body);
+            closeIdeaModal();
+            await loadConcepts();
+            toast('Idea added', 'success');
+            ['idea-angle','idea-big'].forEach(id => document.getElementById(id).value = '');
+            if (rows[0]) openDrawer(rows[0].id);
+        } catch (e) { toast(e.message, 'error'); }
+    };
 
-        // ============================================
-        // CHANGE HANDLERS
-        // ============================================
-        window.onClientChange = function() {
-            selectedClientId = document.getElementById('client-select').value;
-            localStorage.setItem('selectedClientId', selectedClientId);
-            selectedBatchId = '';
-            localStorage.removeItem('selectedBatchId');
-            clearSelection();
-            updateClientBadge();
-            loadBatches().then(loadCreatives);
-        }
-        window.onBatchChange = function() {
-            selectedBatchId = document.getElementById('batch-select').value;
-            localStorage.setItem('selectedBatchId', selectedBatchId);
-            clearSelection();
-            loadCreatives();
-        }
-        function updateClientBadge() {
-            const c = clients.find(x => x.id === selectedClientId);
-            const badge = document.getElementById('client-badge');
-            if (c) {
-                badge.textContent = `Active: ${c.name} (${c.code})`;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
+    // ============================================
+    // SELECTION + BULK
+    // ============================================
+    function toggleSelect(id) {
+        if (selectedConceptIds.has(id)) selectedConceptIds.delete(id); else selectedConceptIds.add(id);
+        updateBulkBar(); renderBoard();
+    }
+    window.clearSelection = function() {
+        selectedConceptIds.clear(); updateBulkBar(); renderBoard();
+    };
+    function updateBulkBar() {
+        const bar = document.getElementById('bulk-bar');
+        const n = selectedConceptIds.size;
+        document.getElementById('bulk-count').textContent = `${n} selected`;
+        if (n > 0) bar.classList.add('visible'); else bar.classList.remove('visible');
+    }
+    window.bulkArchiveDownload = async function() {
+        if (!window.JSZip) { toast('JSZip not loaded yet', 'error'); return; }
+        // Gather all creatives under the selected concepts
+        const ids = Array.from(selectedConceptIds);
+        const list = [];
+        for (const cid of ids) {
+            for (const cr of (creativesByConcept[cid] || [])) {
+                if (cr.image_url) list.push(cr);
             }
         }
-
-        // ============================================
-        // TOAST
-        // ============================================
-        function toast(msg, type) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.className = 'toast show ' + (type || '');
-            setTimeout(() => t.classList.remove('show'), 3000);
+        if (list.length === 0) { toast('No images on selected concepts', 'error'); return; }
+        toast(`Zipping ${list.length} images…`);
+        const zip = new window.JSZip();
+        let ok = 0, fail = 0;
+        for (const cr of list) {
+            try {
+                const r = await fetch(cr.image_url);
+                const blob = await r.blob();
+                zip.file((cr.name || cr.id) + '.png', blob);
+                ok++;
+            } catch (e) { fail++; }
         }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const code = clients.find(c => c.id === selectedClientId)?.code || 'export';
+        a.href = url;
+        a.download = `propaganda-os-${code}-${Date.now()}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast(`Downloaded ${ok}${fail ? ` (${fail} failed)` : ''}`, 'success');
+    };
+    window.bulkReject = async function() {
+        const reason = prompt('Rejection reason:');
+        if (!reason) return;
+        const ids = Array.from(selectedConceptIds);
+        for (const id of ids) {
+            try { await sbPatch('concepts', id, { status: 'rejected', rejected_at: new Date().toISOString(), rejection_reason: reason }); } catch (e) {}
+        }
+        clearSelection();
+        await loadConcepts();
+        toast(`Rejected ${ids.length}`, 'success');
+    };
 
-        // ============================================
-        // INIT
-        // ============================================
-        loadAll();
+    // ============================================
+    // CHANGE HANDLERS
+    // ============================================
+    window.onClientChange = async function() {
+        selectedClientId = document.getElementById('client-select').value;
+        localStorage.setItem('selectedClientId', selectedClientId);
+        selectedTag = '';
+        localStorage.removeItem('selectedTag');
+        clearSelection();
+        updateClientBadge();
+        await loadConcepts();
+    };
+    window.onTagChange = async function() {
+        selectedTag = document.getElementById('tag-select').value;
+        if (selectedTag) localStorage.setItem('selectedTag', selectedTag);
+        else localStorage.removeItem('selectedTag');
+        clearSelection();
+        await loadConcepts();
+    };
+    function updateClientBadge() {
+        const c = clients.find(x => x.id === selectedClientId);
+        const b = document.getElementById('client-badge');
+        if (c) { b.textContent = `Active: ${c.name} (${c.code})`; b.style.display = 'inline-block'; }
+        else   { b.style.display = 'none'; }
+    }
 
-        // Poll every 15s for updates (no realtime for V1)
-        setInterval(loadCreatives, 15000);
+    // ============================================
+    // UTILS + INIT
+    // ============================================
+    function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch])); }
+    function escapeAttr(s) { return String(s ?? '').replace(/"/g, '&quot;'); }
+    function toast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + (type || '');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    loadAll();
+    setInterval(loadConcepts, 20000);
     </script>
 </body>
 </html>
