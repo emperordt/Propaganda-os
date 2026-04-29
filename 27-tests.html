@@ -636,11 +636,18 @@
         </div>
         <div class="drawer-body" id="drawer-body"></div>
         <div class="drawer-footer">
-            <button class="btn btn-danger" onclick="archiveTest()">Archive</button>
+            <button class="btn btn-danger" onclick="archiveActiveTest()">Archive</button>
+            <button class="btn" onclick="exportTestPDF()">📄 Export PDF</button>
             <div style="flex:1"></div>
             <button class="btn btn-primary" onclick="saveDrawer()">💾 Save</button>
         </div>
     </aside>
+
+    <!-- Off-screen report container — html2pdf reads this when exporting. -->
+    <div id="pdf-report-host" style="position:fixed;left:-10000px;top:0;width:794px;background:#fff;color:#111"></div>
+
+    <!-- html2pdf.js — bundles html2canvas + jsPDF, ~150KB via CDN. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- + NEW TEST MODAL -->
     <div class="modal-overlay" id="new-test-modal">
@@ -1476,15 +1483,130 @@
             toast('Saved ✓', 'success');
         } catch (e) { toast(e.message, 'error'); }
     };
-    window.archiveTest = async function() {
+    // Drawer footer: archive whatever test is open. Distinct from window.archiveTest(id) which the kebab menu uses.
+    window.archiveActiveTest = async function() {
         if (!activeTest) return;
         try {
             await sbPatch('marketing_tests', activeTest.id, { status: 'archived' });
             activeTest.status = 'archived';
             renderTable();
+            renderDash();
             closeDrawer();
             toast('Archived', 'success');
         } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // ============================================
+    // PDF EXPORT — one-click, client-shareable report
+    // ============================================
+    function safeFile(s) {
+        return String(s || 'test').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 60);
+    }
+    function fmtDateLong(d) {
+        if (!d) return '—';
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    function buildPDFReportHTML(t) {
+        const o = outcomeOf(t);
+        const outcomeColor = ({won:'#16a34a', lost:'#dc2626', inconclusive:'#d97706', running:'#ea580c', archived:'#525252', complete:'#525252'})[o.key] || '#525252';
+        const dir = t.metric_direction || 'lower_better';
+        const dirLabel = dir === 'higher_better' ? '↑ Higher is better' : '↓ Lower is better';
+        const pct = t.pct_change == null ? null : +t.pct_change;
+        const imp = pct == null ? null : pctIsImprovement(pct, dir);
+        const pctClr = pct == null ? '#525252' : (imp ? '#16a34a' : '#dc2626');
+        const pctText = pct == null ? '—' : (pct > 0 ? '+' : '') + pct.toFixed(1) + '%';
+        const sigText = t.significant ? (imp ? '✓ Significant improvement' : '✓ Significant regression') : '✗ Below 20% threshold';
+        const client = clients.find(c => c.id === t.client_id);
+        const clientName = client?.name || '—';
+        const clientCode = client?.code || '';
+        const dateRange = `${fmtDateLong(t.start_date)} → ${t.end_date ? fmtDateLong(t.end_date) : 'Live'}`;
+        const section = (title, body) => body ? `
+            <div style="margin-top:24px">
+                <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#737373;margin-bottom:6px;border-bottom:1px solid #e5e5e5;padding-bottom:4px">${title}</div>
+                <div style="font-size:13px;line-height:1.6;color:#171717;white-space:pre-wrap">${escapeHtml(body)}</div>
+            </div>
+        ` : '';
+        const numCell = (label, value, color) => `
+            <div style="flex:1;background:#fafafa;border:1px solid #e5e5e5;border-radius:6px;padding:14px">
+                <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#737373;margin-bottom:6px">${label}</div>
+                <div style="font-family:'Geist Mono',monospace;font-size:22px;font-weight:600;color:${color || '#171717'}">${value}</div>
+            </div>
+        `;
+        return `
+            <div style="font-family:Geist,Arial,sans-serif;color:#171717;background:#fff;padding:48px 40px;line-height:1.5">
+                <!-- Header -->
+                <div style="border-bottom:2px solid #171717;padding-bottom:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end">
+                    <div>
+                        <div style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.1em;color:#737373;text-transform:uppercase;margin-bottom:4px">${escapeHtml(clientCode)} · ${escapeHtml(clientName)}</div>
+                        <div style="font-size:24px;font-weight:700;line-height:1.2">${escapeHtml(t.name || 'Untitled Test')}</div>
+                        <div style="font-family:'Geist Mono',monospace;font-size:11px;color:#737373;margin-top:4px">${escapeHtml(dateRange)}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="display:inline-block;padding:6px 14px;background:${outcomeColor};color:#fff;border-radius:4px;font-family:'Geist Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.06em">${o.label}</div>
+                        <div style="font-family:'Geist Mono',monospace;font-size:10px;color:#737373;margin-top:6px">${t.confidence_level || 95}% confidence target</div>
+                    </div>
+                </div>
+
+                <!-- Tags row -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+                    ${t.test_type ? `<span style="background:#fafafa;border:1px solid #e5e5e5;padding:4px 10px;border-radius:3px;font-family:'Geist Mono',monospace;font-size:11px">${escapeHtml(t.test_type)}</span>` : ''}
+                    ${t.platform ? `<span style="background:#fafafa;border:1px solid #e5e5e5;padding:4px 10px;border-radius:3px;font-family:'Geist Mono',monospace;font-size:11px">${escapeHtml(t.platform)}</span>` : ''}
+                    ${t.primary_metric ? `<span style="background:#fafafa;border:1px solid #e5e5e5;padding:4px 10px;border-radius:3px;font-family:'Geist Mono',monospace;font-size:11px">${escapeHtml(t.primary_metric)}</span>` : ''}
+                    <span style="background:#fafafa;border:1px solid #e5e5e5;padding:4px 10px;border-radius:3px;font-family:'Geist Mono',monospace;font-size:11px;color:#737373">${dirLabel}</span>
+                </div>
+
+                <!-- Numbers strip -->
+                <div style="display:flex;gap:10px;margin-bottom:8px">
+                    ${numCell(escapeHtml(t.original_label || 'Original'), formatNum(t.original_performance) || '—')}
+                    ${numCell(escapeHtml(t.variant_label || 'Variant'), formatNum(t.variant_performance) || '—')}
+                    ${numCell('% Change', pctText, pctClr)}
+                </div>
+                <div style="font-family:'Geist Mono',monospace;font-size:11px;color:${pctClr};margin-bottom:8px;font-weight:600">${sigText}</div>
+
+                ${section('Hypothesis', t.hypothesis)}
+                ${section('Test Parameters', t.test_parameters)}
+                ${section('Results', t.results)}
+                ${section('Learnings', t.learnings)}
+                ${section('Follow-up Actions', t.followup)}
+
+                <!-- Footer -->
+                <div style="margin-top:36px;padding-top:14px;border-top:1px solid #e5e5e5;display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:10px;color:#a3a3a3">
+                    <div>Propaganda OS · Test Report</div>
+                    <div>Generated ${new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.exportTestPDF = async function() {
+        if (!activeTest) return;
+        if (typeof html2pdf === 'undefined') {
+            toast('PDF library not loaded — refresh and try again', 'error');
+            return;
+        }
+        const host = document.getElementById('pdf-report-host');
+        host.innerHTML = buildPDFReportHTML(activeTest);
+        const client = clients.find(c => c.id === activeTest.client_id);
+        const filename = `${safeFile(client?.code || 'TEST')}-${safeFile(activeTest.name)}-${new Date().toISOString().slice(0,10)}.pdf`;
+        toast('Generating PDF…');
+        try {
+            await html2pdf()
+                .set({
+                    margin:      [0, 0, 0, 0],
+                    filename,
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                    jsPDF:       { unit: 'pt', format: 'a4', orientation: 'portrait' },
+                    pagebreak:   { mode: ['avoid-all', 'css', 'legacy'] }
+                })
+                .from(host.firstElementChild)
+                .save();
+            toast('PDF downloaded', 'success');
+        } catch (e) {
+            toast('PDF export failed: ' + e.message, 'error');
+        } finally {
+            host.innerHTML = '';
+        }
     };
 
     // ============================================
