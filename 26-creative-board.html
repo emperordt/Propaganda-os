@@ -1155,7 +1155,9 @@
         import JSZip from 'https://cdn.skypack.dev/jszip';
         window.JSZip = JSZip;
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script src="auth.js"></script>
     <script>
     // ============================================
     // CONSTANTS
@@ -1164,6 +1166,12 @@
     const HEADERS = window.PROPAGANDA.HEADERS;
     const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
     const SLACK_WEBHOOK = window.PROPAGANDA.N8N.CREATIVE_SLACK_NOTIFY;
+
+    // ?t=token mode — collaborator view via unguessable share URL
+    const VIEW_TOKEN = new URLSearchParams(location.search).get('t');
+    let collaboratorClientIds = null; // array of allowed client_ids, or null if master
+    let collaboratorRole = null;      // 'editor' | 'viewer' | 'client' | null (master)
+    let collaboratorEmail = null;
 
     const STAGE_ORDER = ['idea','approved','copywriting','production','revisions','launched','won','lost'];
     // status values map directly to stage columns (won and lost are separate columns).
@@ -1199,9 +1207,15 @@
     async function sbGet(path) {
         try {
             const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
-            if (!r.ok) return [];
+            if (!r.ok) {
+                console.error('[sbGet]', r.status, path, '→', await r.text().catch(()=>'(unreadable)'));
+                return [];
+            }
             return await r.json();
-        } catch (e) { return []; }
+        } catch (e) {
+            console.error('[sbGet] fetch failed', path, e);
+            return [];
+        }
     }
     async function sbPost(table, body) {
         const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
@@ -1223,6 +1237,16 @@
     // ============================================
     async function loadClients() {
         clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
+        // Token collaborator filter — limit to their assigned client_ids
+        if (VIEW_TOKEN && collaboratorClientIds) {
+            const allowed = new Set(collaboratorClientIds);
+            clients = clients.filter(c => allowed.has(c.id));
+            // Auto-pick first if not yet selected and they have one
+            if (!selectedClientId && clients.length) {
+                selectedClientId = clients[0].id;
+                localStorage.setItem('selectedClientId', selectedClientId);
+            }
+        }
         const sel = document.getElementById('client-select');
         sel.innerHTML = '<option value="">Select client…</option>' +
             clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
@@ -1268,7 +1292,93 @@
             (creativesByConcept[c.concept_id] = creativesByConcept[c.concept_id] || []).push(c);
         }
     }
+    let collaboratorPages = ['pipeline','tests'];
+
+    async function loadCollaborator() {
+        if (!VIEW_TOKEN) return;
+        const rows = await sbGet(`client_users?access_token=eq.${encodeURIComponent(VIEW_TOKEN)}`);
+        if (!rows || !rows.length) {
+            renderNoAccess();
+            throw new Error('Invalid or revoked access token');
+        }
+        // Master access (internal role with null client_id) — show everything
+        const internalRow = rows.find(r => r.role === 'internal' && r.client_id === null);
+        if (internalRow) {
+            collaboratorEmail = internalRow.email;
+            collaboratorRole = 'internal';
+            collaboratorClientIds = null;
+            collaboratorPages = ['pipeline','tests'];
+            renderCollaboratorBanner(internalRow);
+            return;
+        }
+        collaboratorEmail = rows[0].email;
+        collaboratorRole = rows[0].role;
+        collaboratorClientIds = rows.map(r => r.client_id).filter(Boolean);
+        collaboratorPages = rows[0].pages || ['pipeline'];
+
+        // If collaborator doesn't have pipeline access, kick them out
+        if (!collaboratorPages.includes('pipeline')) {
+            renderNoAccess('You don\'t have access to the Creative Pipeline.');
+            throw new Error('No pipeline access');
+        }
+
+        renderCollaboratorBanner(rows[0]);
+        replaceCollaboratorSidebar();
+    }
+
+    function replaceCollaboratorSidebar() {
+        window.__COLLABORATOR_SIDEBAR = true;
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+        const links = [];
+        if (collaboratorPages.includes('pipeline')) {
+            links.push({ href: `26-creative-board.html?t=${VIEW_TOKEN}`, label: 'Creative Pipeline', active: true });
+        }
+        if (collaboratorPages.includes('tests')) {
+            links.push({ href: `27-tests.html?t=${VIEW_TOKEN}`, label: 'Tests Vault', active: false });
+        }
+        const linkHtml = links.map(l => `
+            <a href="${l.href}" class="sidebar-link${l.active ? ' active' : ''}">${l.label}</a>
+        `).join('');
+        sidebar.innerHTML = `
+            <div class="sidebar-brand">PROPAGANDA//OS</div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Workspace</div>
+                ${linkHtml}
+            </div>
+            <div style="margin-top:auto;padding:14px 12px;border-top:1px solid #2a2a2a;font-size:11px">
+                <div style="color:#fff;font-family:'Geist Mono',monospace;word-break:break-all">${escapeHtml(collaboratorEmail)}</div>
+                <div style="color:#9a9a9a;text-transform:uppercase;letter-spacing:.08em;margin-top:4px">${escapeHtml(collaboratorRole)}</div>
+            </div>`;
+    }
+
+    function renderNoAccess(msg) {
+        document.body.innerHTML = `
+          <div style="font-family:'Geist',-apple-system,sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px">
+            <div style="max-width:480px">
+              <div style="font-size:24px;font-weight:700;margin-bottom:12px">${msg ? 'No access' : 'Link expired or invalid'}</div>
+              <div style="color:#999;font-size:14px;line-height:1.6">
+                ${msg || 'This share link is no longer active. Ask the person who sent it for a new one.'}
+              </div>
+            </div>
+          </div>`;
+    }
+
+    function renderCollaboratorBanner(row) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#1a1410;border-bottom:1px solid #ff5500;color:#fff;padding:8px 18px;font-size:12px;font-family:Geist Mono, monospace;display:flex;justify-content:space-between;align-items:center';
+        const clientCount = collaboratorClientIds === null ? 'all' : collaboratorClientIds.length;
+        banner.innerHTML = `
+          <div>👁 Viewing as <strong>${escapeHtml(row.display_name || collaboratorEmail)}</strong>
+             <span style="color:#9a9a9a"> · ${escapeHtml(collaboratorRole)}</span>
+             <span style="color:#9a9a9a"> · ${clientCount} client${clientCount===1?'':'s'}</span>
+          </div>
+          <a href="26-creative-board.html" style="color:#ff5500;text-decoration:none">← exit view</a>`;
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+
     async function loadAll() {
+        await loadCollaborator();
         await loadClients();
         await loadConcepts();
         renderFilters();
@@ -1383,6 +1493,12 @@
     // ============================================
     let draggedId = null;
     function onDragStart(e) {
+        // Block drag for read-only collaborators
+        if (collaboratorRole && collaboratorRole !== 'editor') {
+            e.preventDefault();
+            toast('Read-only view — drag disabled', 'error');
+            return;
+        }
         draggedId = e.target.dataset.id;
         e.target.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -1405,6 +1521,12 @@
         const c = concepts.find(x => x.id === draggedId);
         if (!c) return;
 
+        // Approval gate: only master + editors can approve.
+        if (stage === 'approved' && collaboratorRole && collaboratorRole !== 'editor') {
+            toast('Read-only view — only editors can approve', 'error');
+            draggedId = null;
+            return;
+        }
         // Approval gate: dragging to 'approved' needs ICE ≥ category threshold.
         if (stage === 'approved') {
             const cat = c.concept_category;

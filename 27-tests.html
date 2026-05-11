@@ -727,6 +727,19 @@
                     </select>
                 </div>
             </div>
+            <div class="row-2">
+                <div class="field" style="grid-column: span 1">
+                    <label>Secondary Metric <span class="hint">— optional, tracked alongside primary</span></label>
+                    <input type="text" id="nt-metric2" list="metric-options" placeholder='e.g. "Cost per MQL", "Cost per Lead"'>
+                </div>
+                <div class="field">
+                    <label>Secondary Direction</label>
+                    <select id="nt-direction2">
+                        <option value="lower_better">↓ Lower is better</option>
+                        <option value="higher_better">↑ Higher is better</option>
+                    </select>
+                </div>
+            </div>
             <div class="field" style="display:none">
                 <datalist id="metric-options">
                     <option value="Cost per Application">
@@ -818,7 +831,9 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script src="auth.js"></script>
     <script>
     // ============================================
     // CONFIG
@@ -826,6 +841,12 @@
     const SUPABASE_URL = window.PROPAGANDA.SUPABASE_URL;
     const HEADERS = window.PROPAGANDA.HEADERS;
     const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+
+    // ?t=token — collaborator view via unguessable share URL
+    const VIEW_TOKEN = new URLSearchParams(location.search).get('t');
+    let collaboratorClientIds = null;
+    let collaboratorRole = null;
+    let collaboratorEmail = null;
 
     const TEST_TYPES = [
         'Ad Creative (Image)','Ad Creative (Video)','Ad Creative (Carousel)',
@@ -899,6 +920,14 @@
     // ============================================
     async function loadClients() {
         clients = await sbGet('clients?status=neq.offboarded&order=name.asc');
+        if (VIEW_TOKEN && collaboratorClientIds) {
+            const allowed = new Set(collaboratorClientIds);
+            clients = clients.filter(c => allowed.has(c.id));
+            if (!selectedClientId && clients.length) {
+                selectedClientId = clients[0].id;
+                localStorage.setItem('selectedClientId', selectedClientId);
+            }
+        }
         const sel = document.getElementById('client-select');
         sel.innerHTML = '<option value="">All clients</option>' +
             clients.map(c => `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
@@ -985,7 +1014,71 @@
         const c = clients.find(x => x.id === client_id);
         return c ? c.name : '—';
     }
+    let collaboratorPages = ['pipeline','tests'];
+
+    function renderNoAccess(msg) {
+        document.body.innerHTML = `<div style="font-family:Geist,-apple-system,sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px"><div style="max-width:480px"><div style="font-size:24px;font-weight:700;margin-bottom:12px">${msg ? 'No access' : 'Link expired or invalid'}</div><div style="color:#999;font-size:14px;line-height:1.6">${msg || 'Ask the person who sent it for a new link.'}</div></div></div>`;
+    }
+
+    async function loadCollaborator() {
+        if (!VIEW_TOKEN) return;
+        const rows = await sbGet(`client_users?access_token=eq.${encodeURIComponent(VIEW_TOKEN)}`);
+        if (!rows || !rows.length) {
+            renderNoAccess();
+            throw new Error('Invalid token');
+        }
+        const internalRow = rows.find(r => r.role === 'internal' && r.client_id === null);
+        if (internalRow) {
+            collaboratorEmail = internalRow.email;
+            collaboratorRole = 'internal';
+            collaboratorClientIds = null;
+            collaboratorPages = ['pipeline','tests'];
+            renderCollaboratorBanner(internalRow);
+            return;
+        }
+        collaboratorEmail = rows[0].email;
+        collaboratorRole = rows[0].role;
+        collaboratorClientIds = rows.map(r => r.client_id).filter(Boolean);
+        collaboratorPages = rows[0].pages || ['pipeline'];
+
+        if (!collaboratorPages.includes('tests')) {
+            renderNoAccess('You don\'t have access to the Tests Vault.');
+            throw new Error('No tests access');
+        }
+
+        renderCollaboratorBanner(rows[0]);
+        replaceCollaboratorSidebar();
+    }
+
+    function replaceCollaboratorSidebar() {
+        window.__COLLABORATOR_SIDEBAR = true;
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+        const links = [];
+        if (collaboratorPages.includes('pipeline')) links.push({ href: `26-creative-board.html?t=${VIEW_TOKEN}`, label: 'Creative Pipeline', active: false });
+        if (collaboratorPages.includes('tests')) links.push({ href: `27-tests.html?t=${VIEW_TOKEN}`, label: 'Tests Vault', active: true });
+        sidebar.innerHTML = `
+            <div class="sidebar-brand">PROPAGANDA//OS</div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Workspace</div>
+                ${links.map(l => `<a href="${l.href}" class="sidebar-link${l.active ? ' active' : ''}">${l.label}</a>`).join('')}
+            </div>
+            <div style="margin-top:auto;padding:14px 12px;border-top:1px solid #2a2a2a;font-size:11px">
+                <div style="color:#fff;font-family:'Geist Mono',monospace;word-break:break-all">${escapeHtml(collaboratorEmail)}</div>
+                <div style="color:#9a9a9a;text-transform:uppercase;letter-spacing:.08em;margin-top:4px">${escapeHtml(collaboratorRole)}</div>
+            </div>`;
+    }
+
+    function renderCollaboratorBanner(row) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#1a1410;border-bottom:1px solid #ff5500;color:#fff;padding:8px 18px;font-size:12px;font-family:Geist Mono, monospace;display:flex;justify-content:space-between;align-items:center';
+        const clientCount = collaboratorClientIds === null ? 'all' : collaboratorClientIds.length;
+        banner.innerHTML = `<div>👁 Viewing as <strong>${escapeHtml(row.display_name || collaboratorEmail)}</strong><span style="color:#9a9a9a"> · ${escapeHtml(collaboratorRole)} · ${clientCount} client${clientCount===1?'':'s'}</span></div><a href="27-tests.html" style="color:#ff5500;text-decoration:none">← exit view</a>`;
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+
     async function loadAll() {
+        await loadCollaborator();
         await loadClients();
         await loadTests();
         // If we arrived with a from_concept link, auto-open the New Test modal pre-filled
@@ -1195,6 +1288,8 @@
         document.getElementById('nt-start').value        = today;
         document.getElementById('nt-end').value          = '';
         document.getElementById('nt-metric').value       = '';
+        if (document.getElementById('nt-metric2'))    document.getElementById('nt-metric2').value    = '';
+        if (document.getElementById('nt-direction2')) document.getElementById('nt-direction2').value = 'lower_better';
         document.getElementById('nt-orig-label').value   = 'Original';
         document.getElementById('nt-orig').value         = '';
         document.getElementById('nt-var-label').value    = 'Variant';
@@ -1278,6 +1373,8 @@
                 start_date:document.getElementById('nt-start').value || null,
                 end_date:  document.getElementById('nt-end').value || null,
                 primary_metric:       document.getElementById('nt-metric').value || null,
+                secondary_metric:           document.getElementById('nt-metric2')?.value || null,
+                secondary_metric_direction: document.getElementById('nt-direction2')?.value || 'lower_better',
                 original_label:       document.getElementById('nt-orig-label').value || null,
                 original_performance: num('nt-orig'),
                 variant_label:        document.getElementById('nt-var-label').value || null,
@@ -1347,6 +1444,27 @@
                 </div>
             </div>
             <div class="row-4">
+                <div class="field">
+                    <label>Secondary Metric <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                    <input id="d-metric2" type="text" placeholder="e.g. Cost per Lead, Cost per MQL" value="${escapeAttr(t.secondary_metric||'')}">
+                </div>
+                <div class="field">
+                    <label>Secondary Direction</label>
+                    <select id="d-direction2" onchange="recomputeDrawer()">
+                        <option value="lower_better"  ${(t.secondary_metric_direction||'lower_better')==='lower_better'?'selected':''}>↓ Lower better</option>
+                        <option value="higher_better" ${t.secondary_metric_direction==='higher_better'?'selected':''}>↑ Higher better</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Secondary Original Value</label>
+                    <input id="d-orig2" type="number" step="any" value="${t.secondary_original_performance ?? ''}" oninput="recomputeDrawer()">
+                </div>
+                <div class="field">
+                    <label>Secondary Variant Value</label>
+                    <input id="d-var2" type="number" step="any" value="${t.secondary_variant_performance ?? ''}" oninput="recomputeDrawer()">
+                </div>
+            </div>
+            <div class="row-4">
                 <div class="field"><label>Start</label><input id="d-start" type="date" value="${t.start_date||''}"></div>
                 <div class="field"><label>End</label><input id="d-end" type="date" value="${t.end_date||''}"></div>
                 <div class="field">
@@ -1385,8 +1503,12 @@
             </div>
             <div class="compute-strip">
                 <div class="compute-cell">
-                    <div class="nm">% Change</div>
+                    <div class="nm">Primary % Change</div>
                     <div class="vl" id="d-pct" style="color:${pctClr}">${pct}</div>
+                </div>
+                <div class="compute-cell">
+                    <div class="nm">Secondary % Change</div>
+                    <div class="vl" id="d-pct2" style="color:var(--text-muted)">—</div>
                 </div>
                 <div class="compute-cell">
                     <div class="nm">≥ 20%?</div>
@@ -1412,6 +1534,7 @@
             ${t.concept_id ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px">Linked concept: <a href="25-creative-brief.html?concept_id=${t.concept_id}" style="color:var(--orange);text-decoration:none" target="_blank">↗ open brief</a></div>` : ''}
         `;
         document.getElementById('drawer').classList.add('open');
+        recomputeDrawer();
     }
     window.closeDrawer = function() {
         document.getElementById('drawer').classList.remove('open');
@@ -1426,21 +1549,36 @@
         }
     };
     window.recomputeDrawer = function() {
+        // Primary
         const o = parseFloat(document.getElementById('d-orig').value);
         const v = parseFloat(document.getElementById('d-var').value);
         if (isNaN(o) || isNaN(v) || o === 0) {
             document.getElementById('d-pct').textContent = '—';
             document.getElementById('d-sig').textContent = '—';
-            return;
+        } else {
+            const pct = (v - o) / Math.abs(o) * 100;
+            const dir = document.getElementById('d-direction')?.value || 'lower_better';
+            const imp = pctIsImprovement(pct, dir);
+            document.getElementById('d-pct').textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+            document.getElementById('d-pct').style.color = pctColor(pct, dir);
+            const sig = Math.abs(pct) >= 20;
+            document.getElementById('d-sig').textContent = sig ? (imp ? '✓ Yes (improvement)' : '✓ Yes (regression)') : '✗ No';
+            document.getElementById('d-sig').style.color = sig ? (imp ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
         }
-        const pct = (v - o) / Math.abs(o) * 100;
-        const dir = document.getElementById('d-direction')?.value || 'lower_better';
-        const imp = pctIsImprovement(pct, dir);
-        document.getElementById('d-pct').textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-        document.getElementById('d-pct').style.color = pctColor(pct, dir);
-        const sig = Math.abs(pct) >= 20;
-        document.getElementById('d-sig').textContent = sig ? (imp ? '✓ Yes (improvement)' : '✓ Yes (regression)') : '✗ No';
-        document.getElementById('d-sig').style.color = sig ? (imp ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)';
+        // Secondary
+        const o2 = parseFloat(document.getElementById('d-orig2')?.value);
+        const v2 = parseFloat(document.getElementById('d-var2')?.value);
+        const cell2 = document.getElementById('d-pct2');
+        if (!cell2) return;
+        if (isNaN(o2) || isNaN(v2) || o2 === 0) {
+            cell2.textContent = '—';
+            cell2.style.color = 'var(--text-muted)';
+        } else {
+            const pct2 = (v2 - o2) / Math.abs(o2) * 100;
+            const dir2 = document.getElementById('d-direction2')?.value || 'lower_better';
+            cell2.textContent = (pct2 > 0 ? '+' : '') + pct2.toFixed(2) + '%';
+            cell2.style.color = pctColor(pct2, dir2);
+        }
     };
     window.saveDrawer = async function() {
         if (!activeTest) return;
@@ -1457,6 +1595,10 @@
                 confidence_level: parseInt(document.getElementById('d-confidence').value, 10) || 95,
                 metric_direction: document.getElementById('d-direction')?.value || 'lower_better',
                 primary_metric: document.getElementById('d-metric').value || null,
+                secondary_metric: document.getElementById('d-metric2')?.value || null,
+                secondary_metric_direction: document.getElementById('d-direction2')?.value || 'lower_better',
+                secondary_original_performance: num('d-orig2'),
+                secondary_variant_performance:  num('d-var2'),
                 start_date: document.getElementById('d-start').value || null,
                 end_date:   document.getElementById('d-end').value || null,
                 original_label:       document.getElementById('d-orig-label').value || null,
@@ -1638,7 +1780,7 @@
     }
 
     fillOptions();
-    setDashPreset(30); // default to last 30d (sets inputs + active class; renderDash will run after loadTests fills `tests`)
+    setDashPreset(30);
     loadAll();
     </script>
 </body>

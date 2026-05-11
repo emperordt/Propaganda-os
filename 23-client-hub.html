@@ -533,7 +533,7 @@
                     <option value="paused">Paused</option>
                     <option value="offboarded">Offboarded</option>
                 </select>
-                <button class="btn-new" onclick="startOnboarding()">+ Add Client</button>
+                <button class="btn-new" id="btn-add-client" onclick="startOnboarding()" style="display:none">+ Add Client</button>
             </div>
         </div>
 
@@ -594,7 +594,9 @@
     </script>
 
     <!-- Shared config — single source of truth for Supabase URL/key + n8n webhooks -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script src="auth.js"></script>
     <script>
         // ─── Config (read from window.PROPAGANDA via config.js) ──
         const CONFIG = {
@@ -847,6 +849,7 @@
         });
 
         // Init
+        document.getElementById('btn-add-client').style.display = '';
         loadClients();
     </script>
 </body>

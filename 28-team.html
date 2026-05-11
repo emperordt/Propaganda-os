@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Team · Propaganda OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+    :root {
+        --bg: #0a0a0a;
+        --bg-2: #141414;
+        --panel: #161616;
+        --border: #2a2a2a;
+        --text: #fff;
+        --muted: #9a9a9a;
+        --orange: #ff5500;
+        --green: #22c55e;
+        --red: #ef4444;
+        --blue: #3b82f6;
+        --purple: #a855f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font-family: 'Geist', -apple-system, sans-serif;
+        display: flex; min-height: 100vh;
+    }
+    .sidebar {
+        width: 220px; min-width: 220px; background: #0d0d0d;
+        border-right: 1px solid var(--border); padding: 18px 14px;
+        position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
+    }
+    .sidebar-brand { font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: var(--orange); margin-bottom: 22px; }
+    .sidebar-section { margin-bottom: 16px; }
+    .sidebar-section-label { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .sidebar-link { display: block; padding: 6px 10px; color: #d4d4d4; text-decoration: none; font-size: 13px; border-radius: 6px; }
+    .sidebar-link:hover { background: #1c1c1c; color: #fff; }
+    .sidebar-link.active { background: rgba(255,85,0,0.12); color: var(--orange); }
+
+    main { flex: 1; padding: 28px 36px; max-width: 1280px; }
+    h1 { margin: 0 0 4px 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; line-height: 1.5; }
+
+    .panels { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+    .panel-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .panel-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+
+    label { display: block; font-size: 11px; color: var(--muted); margin: 14px 0 6px 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    label:first-of-type { margin-top: 0; }
+    input, select { width: 100%; background: #0d0d0d; border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+    input:focus, select:focus { outline: none; border-color: var(--orange); }
+
+    .client-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-height: 220px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: #0d0d0d; }
+    .client-checks label { display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 8px; text-transform: none; font-size: 12px; color: var(--text); cursor: pointer; border-radius: 4px; }
+    .client-checks label:hover { background: #1a1a1a; }
+    .client-checks input[type=checkbox] { width: auto; }
+    .client-checks .code { font-family: 'Geist Mono', monospace; color: var(--muted); font-size: 11px; margin-left: auto; }
+
+    button { background: var(--orange); border: 0; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    button:hover { background: #ff6a1a; }
+    button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); font-weight: 500; }
+    button.ghost:hover { color: #fff; border-color: var(--muted); }
+    button.tiny { padding: 4px 10px; font-size: 11px; }
+    button.red { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
+    button.red:hover { background: rgba(239,68,68,0.1); }
+
+    .msg { margin-top: 14px; font-size: 12px; padding: 10px 12px; border-radius: 6px; display: none; line-height: 1.5; }
+    .msg.show { display: block; }
+    .msg.success { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .msg.error   { background: rgba(239,68,68,0.1); color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
+    .share-box { background: #0d0d0d; border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-top: 12px; font-family: 'Geist Mono', monospace; font-size: 11px; word-break: break-all; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+    th { font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; }
+    .role-pill {
+        display: inline-block; padding: 2px 8px; border-radius: 4px;
+        font-family: 'Geist Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .role-pill.internal     { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .role-pill.editor       { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .role-pill.viewer       { background: rgba(154,154,154,0.15); color: var(--muted); }
+    .role-pill.client       { background: rgba(34,197,94,0.12);   color: var(--green); }
+    .client-chip { display: inline-block; font-family: 'Geist Mono', monospace; font-size: 10px; background: #1a1a1a; border: 1px solid var(--border); padding: 2px 7px; border-radius: 3px; margin-right: 4px; margin-bottom: 2px; }
+    .empty { color: var(--muted); font-size: 13px; padding: 40px 20px; text-align: center; }
+    .copy-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 3px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-family: 'Geist Mono', monospace; margin-left: 6px; }
+    .copy-btn:hover { color: #fff; border-color: var(--orange); }
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main>
+    <h1>Team & Collaborators</h1>
+    <div class="sub">Invite contractors, video editors, or clients to specific creative pipelines. Send them their shareable URL — no login required, just bookmark and go.</div>
+
+    <div class="panels">
+        <div class="panel">
+            <div class="panel-title">Invite a collaborator</div>
+            <div class="panel-sub">Pick the clients they can see + their role. We generate a unique URL to share with them.</div>
+
+            <label>Email</label>
+            <input id="i-email" type="email" placeholder="editor@example.com">
+
+            <label>Display name <span style="text-transform:none;color:var(--muted)">(optional)</span></label>
+            <input id="i-name" type="text" placeholder="Jane Editor">
+
+            <label>Role</label>
+            <select id="i-role">
+                <option value="editor">Editor — can drag cards, edit briefs</option>
+                <option value="viewer">Viewer — read-only</option>
+                <option value="client">Client — read-only (Production+ stages only)</option>
+            </select>
+
+            <label>Pages they can access</label>
+            <div style="display:flex;gap:14px;align-items:center;font-size:12px;padding:8px 0">
+                <label style="display:flex;align-items:center;gap:6px;text-transform:none;color:var(--text);margin:0">
+                    <input type="checkbox" id="p-pipeline" checked style="width:auto"> Creative Pipeline
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;text-transform:none;color:var(--text);margin:0">
+                    <input type="checkbox" id="p-tests" style="width:auto"> Tests Vault
+                </label>
+            </div>
+
+            <label>Grant access to clients</label>
+            <div class="client-checks" id="client-list"></div>
+
+            <button id="i-submit" onclick="invite()" style="margin-top:18px">Create access →</button>
+            <div id="i-msg" class="msg"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Active collaborators</div>
+            <div class="panel-sub" id="members-sub">Loading…</div>
+            <table id="members-table" style="display:none">
+                <thead><tr><th>Email</th><th>Role</th><th>Pages</th><th>Clients</th><th>Share URL</th><th></th></tr></thead>
+                <tbody id="members-body"></tbody>
+            </table>
+            <div id="members-empty" class="empty" style="display:none">No collaborators yet. Add your first above.</div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const SUPABASE_URL = window.PROPAGANDA.SUPABASE_URL;
+    const HEADERS = window.PROPAGANDA.HEADERS;
+    const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+
+    let clients = [];
+    let members = [];
+
+    async function sbGet(path) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: HEADERS_READ });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+    async function sbPost(table, body) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+            method: 'POST', headers: HEADERS, body: JSON.stringify(body)
+        });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+    async function sbDelete(table, query) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+            method: 'DELETE', headers: HEADERS
+        });
+        if (!r.ok) throw new Error(await r.text());
+    }
+
+    async function loadAll() {
+        try {
+            [clients, members] = await Promise.all([
+                sbGet('clients?status=neq.offboarded&order=name.asc'),
+                sbGet('client_users?order=created_at.desc')
+            ]);
+        } catch (e) {
+            console.error(e);
+            members = []; clients = [];
+        }
+        renderClients();
+        renderMembers();
+    }
+
+    function renderClients() {
+        document.getElementById('client-list').innerHTML = clients.map(c => `
+            <label>
+                <input type="checkbox" value="${c.id}">
+                ${escapeHtml(c.name)}
+                <span class="code">${escapeHtml(c.code)}</span>
+            </label>`).join('');
+    }
+
+    async function invite() {
+        const btn = document.getElementById('i-submit');
+        const msg = document.getElementById('i-msg');
+        msg.className = 'msg';
+        try {
+            const email = document.getElementById('i-email').value.trim().toLowerCase();
+            const display = document.getElementById('i-name').value.trim();
+            const role = document.getElementById('i-role').value;
+            if (!email) throw new Error('Email required');
+
+            const clientIds = [...document.querySelectorAll('#client-list input:checked')].map(x => x.value);
+            if (clientIds.length === 0) throw new Error('Pick at least one client');
+
+            const pages = [];
+            if (document.getElementById('p-pipeline').checked) pages.push('pipeline');
+            if (document.getElementById('p-tests').checked) pages.push('tests');
+            if (!pages.length) throw new Error('Pick at least one page');
+
+            btn.disabled = true; btn.textContent = 'Creating…';
+
+            // Look up existing token for this email (so re-invites share the same token / URL)
+            let existingToken = null;
+            try {
+                const existing = await sbGet(`client_users?email=eq.${encodeURIComponent(email)}&select=access_token&limit=1`);
+                existingToken = existing?.[0]?.access_token || null;
+            } catch (e) { /* first invite for this email */ }
+
+            const token = existingToken || crypto.randomUUID();
+
+            const rows = clientIds.map(cid => ({
+                email, client_id: cid, role, display_name: display || null, access_token: token, pages
+            }));
+
+            // Upsert: ignore duplicates so re-invites just add new clients without erroring
+            const resp = await fetch(`${SUPABASE_URL}/rest/v1/client_users`, {
+                method: 'POST',
+                headers: { ...HEADERS, 'Prefer': 'resolution=ignore-duplicates,return=representation' },
+                body: JSON.stringify(rows)
+            });
+            if (!resp.ok) {
+                const errText = await resp.text();
+                console.error('[invite] insert failed', resp.status, errText);
+                throw new Error('Insert failed (' + resp.status + '): ' + errText.slice(0, 200));
+            }
+            const inserted = await resp.json();
+            console.log('[invite] inserted rows:', inserted);
+            if (!inserted || !inserted.length) {
+                // All rows were duplicates and ignored — fetch existing token so we can still show URL
+                const existing = await sbGet(`client_users?email=eq.${encodeURIComponent(email)}&select=access_token&limit=1`);
+                if (!existing || !existing.length) {
+                    throw new Error('Insert returned 0 rows and no existing token found. Check DB.');
+                }
+            }
+
+            const shareUrl = `${location.origin}${location.pathname.replace(/[^/]+$/, '')}26-creative-board.html?t=${token}`;
+            msg.className = 'msg show success';
+            msg.innerHTML = `
+                Access granted for <strong>${escapeHtml(email)}</strong>.<br>
+                Send them this URL — anyone with the link can see those clients:
+                <div class="share-box" id="share-url">${escapeHtml(shareUrl)}</div>
+                <button class="copy-btn" onclick="copyText('${escapeAttr(shareUrl)}', this)">Copy URL</button>
+            `;
+            document.getElementById('i-email').value = '';
+            document.getElementById('i-name').value = '';
+            document.querySelectorAll('#client-list input').forEach(x => x.checked = false);
+            await loadAll();
+        } catch (e) {
+            msg.className = 'msg show error';
+            msg.textContent = e.message || 'Could not create access';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Create access →';
+        }
+    }
+
+    function renderMembers() {
+        const tbl = document.getElementById('members-table');
+        const sub = document.getElementById('members-sub');
+        const empty = document.getElementById('members-empty');
+        const body = document.getElementById('members-body');
+
+        if (!members.length) {
+            tbl.style.display = 'none';
+            empty.style.display = 'block';
+            sub.textContent = 'No collaborators yet.';
+            return;
+        }
+
+        // Group by email
+        const byEmail = {};
+        members.forEach(m => {
+            if (!byEmail[m.email]) byEmail[m.email] = { email: m.email, display_name: m.display_name, role: m.role, clientIds: [], access_token: m.access_token };
+            if (m.client_id) byEmail[m.email].clientIds.push(m.client_id);
+            // If any row has null client_id and role=internal, mark as internal
+            if (m.client_id === null && m.role === 'internal') byEmail[m.email].role = 'internal';
+            if (!byEmail[m.email].access_token && m.access_token) byEmail[m.email].access_token = m.access_token;
+        });
+
+        const groups = Object.values(byEmail);
+        sub.textContent = `${groups.length} collaborator${groups.length === 1 ? '' : 's'}.`;
+        tbl.style.display = '';
+        empty.style.display = 'none';
+
+        // Attach pages to grouped row
+        members.forEach(m => {
+            if (byEmail[m.email] && !byEmail[m.email].pages && m.pages) {
+                byEmail[m.email].pages = m.pages;
+            }
+        });
+
+        body.innerHTML = groups.map(g => {
+            const pagesLabel = g.role === 'internal'
+                ? '<span class="client-chip" style="background:rgba(168,85,247,0.15);color:var(--purple);border-color:transparent">all</span>'
+                : (g.pages || ['pipeline']).map(p => `<span class="client-chip">${escapeHtml(p)}</span>`).join('');
+            const clientLabel = g.role === 'internal'
+                ? '<span style="color:var(--muted)">(all clients)</span>'
+                : g.clientIds.map(id => {
+                    const c = clients.find(x => x.id === id);
+                    return c ? `<span class="client-chip">${escapeHtml(c.code)}</span>` : '';
+                }).join('') || '<span style="color:var(--muted)">none</span>';
+
+            const fullShareUrl = `${location.origin}${location.pathname.replace(/[^/]+$/, '')}26-creative-board.html?t=${g.access_token || ''}`;
+            const shareCell = g.role === 'internal'
+                ? '<span style="color:var(--muted)">master access</span>'
+                : `<span style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--muted)">…?t=${escapeHtml((g.access_token || '').slice(0,8))}…</span><button class="copy-btn" onclick="copyText('${escapeAttr(fullShareUrl)}', this)">Copy URL</button>`;
+
+            return `
+                <tr>
+                    <td>
+                        <div>${escapeHtml(g.display_name || g.email)}</div>
+                        <div style="font-size:10px;color:var(--muted);font-family:'Geist Mono',monospace">${escapeHtml(g.email)}</div>
+                    </td>
+                    <td><span class="role-pill ${g.role}">${g.role}</span></td>
+                    <td>${pagesLabel}</td>
+                    <td>${clientLabel}</td>
+                    <td>${shareCell}</td>
+                    <td style="text-align:right">
+                        ${g.role !== 'internal' ? `<button class="ghost tiny" onclick="revoke('${escapeAttr(g.email)}')">Revoke</button>` : ''}
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    window.copyText = async function(text, btn) {
+        try {
+            await navigator.clipboard.writeText(text);
+            const orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.style.color = 'var(--green)';
+            setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1500);
+        } catch (e) { alert('Copy failed: ' + e.message); }
+    };
+
+    window.revoke = async function(email) {
+        if (!confirm(`Revoke ALL access for ${email}?`)) return;
+        try {
+            await sbDelete('client_users', `email=eq.${encodeURIComponent(email)}`);
+            await loadAll();
+        } catch (e) { alert(e.message); }
+    };
+
+    function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeAttr(s) { return String(s||'').replace(/'/g, '&#39;').replace(/"/g, '&quot;'); }
+
+    loadAll();
+</script>
+</body>
+</html>
