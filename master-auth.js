@@ -79,4 +79,22 @@
         isAuthenticated: () => !!getSession(),
         session: getSession
     };
+
+    // ============================================
+    // Auto-gate: any page that includes master-auth.js (besides login + index)
+    // is redirected to login unless either a master session OR a ?t= token is present.
+    // 26/27 do their own token handling AFTER this fires (they set window.__SKIP_AUTOGATE
+    // before including master-auth.js to bypass).
+    // ============================================
+    if (!window.__SKIP_AUTOGATE) {
+        const page = (location.pathname.split('/').pop() || '').toLowerCase();
+        const skip = ['login.html', 'index.html', ''];
+        if (!skip.includes(page)) {
+            const hasToken = new URLSearchParams(location.search).get('t');
+            if (!hasToken && !getSession()) {
+                const next = encodeURIComponent(location.pathname + location.search);
+                location.replace(`${LOGIN_PAGE}?next=${next}`);
+            }
+        }
+    }
 })();

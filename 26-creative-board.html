@@ -1157,6 +1157,10 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script>
+        // If a ?t= token is present, suppress master-auth's auto-redirect — token flow handles it
+        if (new URLSearchParams(location.search).get('t')) window.__SKIP_AUTOGATE = true;
+    </script>
     <script src="master-auth.js"></script>
     <script src="auth.js"></script>
     <script>
