@@ -131,17 +131,14 @@ window.PROPAGANDA.renderSidebar = function(targetSelector) {
         }).join('');
         return `<div class="sidebar-section"><div class="sidebar-section-label">${escapeHtml(sec.label)}</div>${links}</div>`;
     }).filter(Boolean).join('');
-    // Optional user pill at the bottom (only if auth.js loaded)
+    // Master session pill at the bottom (only if master-auth is loaded + authenticated)
     let footer = '';
-    if (window.PROPAGANDA.auth && window.PROPAGANDA.auth.user && window.PROPAGANDA.auth.user()) {
-        const u = window.PROPAGANDA.auth.user();
-        const email = escapeHtml(u.email || '');
-        const roleLabel = escapeHtml(role || 'pending');
+    if (window.PROPAGANDA.masterAuth && window.PROPAGANDA.masterAuth.isAuthenticated && window.PROPAGANDA.masterAuth.isAuthenticated()) {
         footer = `
             <div class="sidebar-user" style="margin-top:auto;padding:14px 12px;border-top:1px solid #2a2a2a;font-size:11px">
-                <div style="color:#fff;font-family:'Geist Mono',monospace;word-break:break-all">${email}</div>
-                <div style="color:#9a9a9a;text-transform:uppercase;letter-spacing:.08em;margin-top:4px">${roleLabel}</div>
-                <button onclick="PROPAGANDA.auth.signOut().then(()=>location.href='login.html')"
+                <div style="color:#fff;font-family:'Geist Mono',monospace">MASTER</div>
+                <div style="color:#9a9a9a;font-size:10px;margin-top:2px">Full access</div>
+                <button onclick="PROPAGANDA.masterAuth.signOut()"
                     style="margin-top:10px;width:100%;background:transparent;border:1px solid #2a2a2a;color:#9a9a9a;padding:6px 8px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit">
                     Sign out
                 </button>
@@ -150,15 +147,9 @@ window.PROPAGANDA.renderSidebar = function(targetSelector) {
     target.innerHTML = `<div class="sidebar-brand">PROPAGANDA//OS</div>${sections}${footer}`;
 };
 
-// Auto-render. Always render immediately (assumes internal / no role) so the sidebar
-// is NEVER blank, then re-render once auth has hydrated.
+// Auto-render the sidebar on every page that loads config.js
 function _propagandaInitSidebar() {
     window.PROPAGANDA.renderSidebar();
-    if (window.PROPAGANDA.auth && window.PROPAGANDA.auth.refresh) {
-        window.PROPAGANDA.auth.refresh()
-            .then(() => window.PROPAGANDA.renderSidebar())
-            .catch(err => { console.warn('[propaganda] auth refresh failed; sidebar stays as initial', err); });
-    }
 }
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', _propagandaInitSidebar);

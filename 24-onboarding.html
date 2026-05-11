@@ -1381,6 +1381,7 @@
     <!-- Shared config — single source of truth for Supabase URL/key + n8n webhooks -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script src="master-auth.js"></script>
     <script src="auth.js"></script>
     <script>
         // ============================================
@@ -2434,12 +2435,15 @@
         });
 
         // ============================================
-        // INIT
+        // INIT — gate on master session
         // ============================================
-        setupDropzone();
-        renderICPPills();
-        loadDraft();
-        showSlide(currentIndex);
+        (async () => {
+            if (!(await PROPAGANDA.masterAuth.requireMaster())) return;
+            setupDropzone();
+            renderICPPills();
+            loadDraft();
+            showSlide(currentIndex);
+        })();
     </script>
 </body>
 </html>

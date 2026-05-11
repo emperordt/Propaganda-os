@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign in · Propaganda OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="master-auth.js"></script>
+<style>
+    :root {
+        --bg:    #0a0a0a;
+        --panel: #141414;
+        --border:#2a2a2a;
+        --text:  #ffffff;
+        --muted: #9a9a9a;
+        --orange:#ff5500;
+        --red:   #ef4444;
+        --green: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; min-height: 100vh;
+        background: var(--bg); color: var(--text);
+        font-family: 'Geist', -apple-system, sans-serif;
+        display: flex; align-items: center; justify-content: center;
+        padding: 20px;
+    }
+    .card {
+        width: 100%; max-width: 420px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px 36px;
+    }
+    .brand {
+        font-family: 'Geist Mono', monospace;
+        font-size: 12px; letter-spacing: 0.15em;
+        color: var(--muted); margin-bottom: 32px;
+    }
+    .brand span { color: var(--orange); }
+    h1 { margin: 0 0 8px 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 28px; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+    input[type=password] {
+        width: 100%;
+        background: #0d0d0d;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+    }
+    input[type=password]:focus { border-color: var(--orange); }
+    button {
+        width: 100%;
+        background: var(--orange); color: #fff; border: 0;
+        padding: 12px; margin-top: 16px;
+        border-radius: 8px; font-size: 14px; font-weight: 600;
+        font-family: inherit; cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: #ff6a1a; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .msg {
+        margin-top: 18px; font-size: 13px; padding: 12px 14px;
+        border-radius: 8px; line-height: 1.5; display: none;
+    }
+    .msg.show { display: block; }
+    .msg.error   { background: rgba(239,68,68,0.10); color: var(--red);   border: 1px solid rgba(239,68,68,0.30); }
+    .msg.success { background: rgba(34,197,94,0.10); color: var(--green); border: 1px solid rgba(34,197,94,0.30); }
+    .foot {
+        margin-top: 32px; text-align: center;
+        font-size: 11px; color: var(--muted);
+        font-family: 'Geist Mono', monospace;
+    }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="brand">PROPAGANDA<span>//</span>OS</div>
+    <h1>Sign in</h1>
+    <div class="sub">Enter the master password to access the admin tools.</div>
+    <form id="form" autocomplete="off">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" required autofocus>
+        <button id="submit" type="submit">Sign in →</button>
+    </form>
+    <div id="msg" class="msg"></div>
+    <div class="foot">Collaborator? Use your shared link instead.</div>
+</div>
+
+<script>
+    // If already authenticated, bounce to next page
+    if (PROPAGANDA.masterAuth.isAuthenticated()) {
+        const next = new URLSearchParams(location.search).get('next') || '23-client-hub.html';
+        location.replace(next);
+    }
+
+    const form = document.getElementById('form');
+    const pwEl = document.getElementById('pw');
+    const btn  = document.getElementById('submit');
+    const msg  = document.getElementById('msg');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pw = pwEl.value;
+        if (!pw) return;
+        btn.disabled = true; btn.textContent = 'Checking...';
+        msg.className = 'msg';
+        try {
+            const ok = await PROPAGANDA.masterAuth.login(pw);
+            if (!ok) throw new Error('Wrong password');
+            msg.className = 'msg show success';
+            msg.textContent = 'Signed in. Redirecting...';
+            const next = new URLSearchParams(location.search).get('next') || '23-client-hub.html';
+            setTimeout(() => location.replace(next), 400);
+        } catch (err) {
+            msg.className = 'msg show error';
+            msg.textContent = err.message || 'Could not sign in';
+            btn.disabled = false; btn.textContent = 'Sign in →';
+            pwEl.value = ''; pwEl.focus();
+        }
+    });
+</script>
+</body>
+</html>

@@ -596,6 +596,7 @@
     <!-- Shared config — single source of truth for Supabase URL/key + n8n webhooks -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    <script src="master-auth.js"></script>
     <script src="auth.js"></script>
     <script>
         // ─── Config (read from window.PROPAGANDA via config.js) ──
@@ -848,9 +849,12 @@
             if (e.target === this) closeClientModal();
         });
 
-        // Init
-        document.getElementById('btn-add-client').style.display = '';
-        loadClients();
+        // Init — gate on master session
+        (async () => {
+            if (!(await PROPAGANDA.masterAuth.requireMaster())) return;
+            document.getElementById('btn-add-client').style.display = '';
+            loadClients();
+        })();
     </script>
 </body>
 </html>
