@@ -1726,6 +1726,14 @@
         _copyToClipboard(body, event && event.target);
     };
 
+    window.copyField = function(conceptId, field) {
+        const c = concepts.find(x => x.id === conceptId) || activeConcept;
+        if (!c) return;
+        const val = c.brief_json?.[field] || '';
+        if (!val) { toast('Nothing to copy', 'error'); return; }
+        _copyToClipboard(val, event && event.target);
+    };
+
     function renderDrawer() {
         const c = activeConcept;
         if (!c) return;
@@ -1927,7 +1935,65 @@
                             </div>
                         </div>
                     ` : ''}
-                    ${bj.cta ? `<div class="drawer-row"><label>CTA</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.cta)}</div></div>` : ''}
+                    ${(bj.primary_emotion || bj.cta) ? `
+                        <div class="drawer-row" style="display:flex;gap:24px;flex-wrap:wrap">
+                            ${bj.primary_emotion ? `<div><label style="display:block">Primary Emotion</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.primary_emotion)}</div></div>` : ''}
+                            ${bj.cta ? `<div><label style="display:block">CTA</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.cta)}</div></div>` : ''}
+                        </div>
+                    ` : ''}
+                    ${bj.voice_notes ? `<div class="drawer-row"><label>Voice Notes</label><div style="font-size:12px;color:var(--text-secondary);white-space:pre-wrap">${escapeHtml(bj.voice_notes)}</div></div>` : ''}
+                    ${bj.visual_direction ? `
+                        <div class="drawer-row">
+                            <label>Visual Direction</label>
+                            <div class="body-preview" style="max-height:160px">
+                                <button class="copy-btn-mini" onclick="copyField('${c.id}', 'visual_direction')">Copy</button>
+                                ${escapeHtml(bj.visual_direction)}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${(c.asset_type === 'VID' && bj.production_notes) ? `
+                        <div class="drawer-row">
+                            <label>Production Notes</label>
+                            <div class="body-preview" style="max-height:160px">
+                                <button class="copy-btn-mini" onclick="copyField('${c.id}', 'production_notes')">Copy</button>
+                                ${escapeHtml(bj.production_notes)}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${bj.awareness_copy_notes ? `
+                        <div class="drawer-row">
+                            <label>Awareness Copy Notes</label>
+                            <div class="body-preview" style="max-height:160px">
+                                <button class="copy-btn-mini" onclick="copyField('${c.id}', 'awareness_copy_notes')">Copy</button>
+                                ${escapeHtml(bj.awareness_copy_notes)}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${(bj.proof_points && bj.proof_points.length) ? `
+                        <div class="drawer-row">
+                            <label>Proof Points <span style="color:var(--text-muted);font-weight:400">— ${bj.proof_points.length}</span></label>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+                                ${bj.proof_points.map(p => `<span class="client-chip" style="font-size:11px;background:var(--bg-tertiary);border:1px solid var(--border);padding:2px 8px;border-radius:10px;color:var(--text-secondary);font-family:inherit">${escapeHtml(p)}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${(bj.pain_focus && bj.pain_focus.length) ? `
+                        <div class="drawer-row">
+                            <label>Pain Focus <span style="color:var(--text-muted);font-weight:400">— ${bj.pain_focus.length}</span></label>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+                                ${bj.pain_focus.map(p => `<span class="client-chip" style="font-size:11px;background:var(--bg-tertiary);border:1px solid var(--border);padding:2px 8px;border-radius:10px;color:var(--text-secondary);font-family:inherit">${escapeHtml(p)}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${bj.custom_image_prompt ? `
+                        <div class="drawer-row">
+                            <label>Custom Image Prompt</label>
+                            <div class="body-preview" style="max-height:160px;font-family:'Geist Mono',monospace;font-size:11px">
+                                <button class="copy-btn-mini" onclick="copyField('${c.id}', 'custom_image_prompt')">Copy</button>
+                                ${escapeHtml(bj.custom_image_prompt)}
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             `;})() : ''}
 
