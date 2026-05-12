@@ -527,6 +527,25 @@
             min-width: 24px;
         }
         .hook-item .textarea { min-height: 38px; }
+        .hook-aware-chip {
+            display: inline-block;
+            padding: 2px 8px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 10px;
+            font-family: 'Geist Mono', monospace;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.12s ease;
+        }
+        .hook-aware-chip:hover { color: var(--text-primary); border-color: var(--text-muted); }
+        .hook-aware-chip.active {
+            background: rgba(255, 85, 0, 0.15);
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+        .hook-aware-chip.hook-aware-clear { color: #ef4444; border-color: rgba(239,68,68,0.3); }
 
         /* BUTTONS */
         .btn {
@@ -883,7 +902,7 @@
             </div>
 
             <div class="field">
-                <div class="field-label">Awareness Level <span class="hint">Schwartz — auto-mapped from lead type</span></div>
+                <div class="field-label">Awareness Levels <span class="hint">Schwartz — multi-select, tap to toggle</span></div>
                 <div class="radio-grid cols-3" id="awareness-grid"></div>
             </div>
 
@@ -893,15 +912,9 @@
                     <input id="angle" class="input input-mono" placeholder="Simplicity">
                 </div>
                 <div class="field">
-                    <div class="field-label">Format</div>
-                    <select id="format" class="select">
-                        <option value="UGC">UGC</option>
-                        <option value="Static">Static</option>
-                        <option value="Story">Story</option>
-                        <option value="TalkingHead">TalkingHead</option>
-                        <option value="Native">Native</option>
-                        <option value="Carousel">Carousel</option>
-                    </select>
+                    <div class="field-label">Format <span class="hint">type to add a new one</span></div>
+                    <input id="format" class="input" list="format-options" placeholder="UGC, Static, Carousel…" autocomplete="off">
+                    <datalist id="format-options"></datalist>
                 </div>
             </div>
 
@@ -1142,6 +1155,31 @@
         'Offer':            'Most Aware'
     };
     const CATEGORY_THRESHOLDS = { 'Control': 8.5, 'DataDriven': 7.5, 'Innovation': 7.0 };
+    const DEFAULT_FORMATS = ['UGC', 'Static', 'Story', 'TalkingHead', 'Native', 'Carousel'];
+
+    // Custom formats saved per client_id in localStorage. Persists across sessions on this browser.
+    function getCustomFormats(clientId) {
+        if (!clientId) return [];
+        try {
+            const raw = localStorage.getItem('propaganda_custom_formats_' + clientId);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) { return []; }
+    }
+    function saveCustomFormat(clientId, fmt) {
+        if (!clientId || !fmt) return;
+        const list = getCustomFormats(clientId);
+        if (DEFAULT_FORMATS.includes(fmt)) return;       // built-in, no need to save
+        if (list.includes(fmt)) return;                  // already saved
+        list.push(fmt);
+        localStorage.setItem('propaganda_custom_formats_' + clientId, JSON.stringify(list));
+    }
+    function renderFormatDatalist() {
+        const dl = document.getElementById('format-options');
+        if (!dl) return;
+        const custom = getCustomFormats(selectedClientId);
+        const all = [...DEFAULT_FORMATS, ...custom.filter(f => !DEFAULT_FORMATS.includes(f))];
+        dl.innerHTML = all.map(f => `<option value="${escapeAttr(f)}">`).join('');
+    }
 
     // ============================================
     // STATE
@@ -1152,10 +1190,11 @@
     let selectedOfferId   = '';
     let selectedSwipeIds  = new Set();   // multi-select supported in UI; we save first one to concepts.swipe_id
     let leadType          = '';
-    let awarenessLevel    = '';
+    let awarenessLevel    = '';      // legacy single (kept for back-compat when loading old rows)
+    let awarenessLevels   = [];      // new multi-select: array of awareness level strings
     let assetType         = 'IMG';
     let conceptCategory   = '';
-    let hooks             = ['', '', ''];
+    let hooks             = [];      // shape: array of { text, awareness, image_url } objects. Strings allowed for back-compat on read.
     let proofPoints       = new Set();
     let painPoints        = new Set();
     let allProofs         = [];
@@ -1293,6 +1332,12 @@
         if (c.swipe_id) selectedSwipeIds.add(c.swipe_id);
         leadType         = c.lead_type || '';
         awarenessLevel   = c.awareness_level || '';
+        // New: multi-select awareness lives in brief_json.awareness_levels (array).
+        // Back-compat: if missing, seed from singular awareness_level.
+        const bjEarly = c.brief_json || {};
+        awarenessLevels  = Array.isArray(bjEarly.awareness_levels) && bjEarly.awareness_levels.length
+            ? bjEarly.awareness_levels.slice()
+            : (awarenessLevel ? [awarenessLevel] : []);
         assetType        = c.asset_type || 'IMG';
         conceptCategory  = c.concept_category || '';
         editingStatus    = c.status || 'draft';
@@ -1305,7 +1350,14 @@
         document.getElementById('confidence-slider').value = c.confidence || 0;
         document.getElementById('ease-slider').value = c.ease || 0;
         const bj = c.brief_json || {};
-        hooks = (bj.hook_ideas && bj.hook_ideas.length ? bj.hook_ideas : ['','','']);
+        // Hooks are now objects { text, awareness, image_url }. Existing rows have plain strings —
+        // upcast them on read so the new UI works, but don't modify the DB until the user saves.
+        const rawHooks = bj.hook_ideas && bj.hook_ideas.length ? bj.hook_ideas : ['', '', ''];
+        hooks = rawHooks.map(h =>
+            typeof h === 'string'
+                ? { text: h, awareness: '', image_url: '' }
+                : { text: h.text || '', awareness: h.awareness || '', image_url: h.image_url || '' }
+        );
         proofPoints = new Set(bj.proof_points || []);
         painPoints  = new Set(bj.pain_focus  || []);
         document.getElementById('body-framework').value = bj.body_framework || '';
@@ -1331,6 +1383,7 @@
         renderAssetType();
         renderCategory();
         renderHooks();
+        renderFormatDatalist();
         renderProofChips();
         renderPainChips();
         renderIcpSummary();
@@ -1352,18 +1405,32 @@
         grid.querySelectorAll('[data-lead]').forEach(el => {
             el.onclick = () => {
                 leadType = el.dataset.lead;
-                if (!awarenessLevel) awarenessLevel = LEAD_TO_AWARE[leadType] || '';
+                // Auto-suggest the awareness mapped to this lead type if none picked yet
+                if (!awarenessLevels.length) {
+                    const suggested = LEAD_TO_AWARE[leadType];
+                    if (suggested) { awarenessLevels = [suggested]; awarenessLevel = suggested; }
+                }
                 renderAll();
             };
         });
     }
     function renderAwareness() {
         const grid = document.getElementById('awareness-grid');
-        grid.innerHTML = AWARENESS_LEVELS.map(a =>
-            `<div class="radio-tile ${awarenessLevel === a ? 'active' : ''}" data-aware="${a}">${a.replace(' Aware', '')}</div>`
-        ).join('');
+        // Multi-select: click toggles inclusion in awarenessLevels[].
+        // Singular awarenessLevel is kept in sync to the FIRST selected so legacy code paths still work.
+        grid.innerHTML = AWARENESS_LEVELS.map(a => {
+            const active = awarenessLevels.includes(a);
+            return `<div class="radio-tile ${active ? 'active' : ''}" data-aware="${a}">${a.replace(' Aware', '')}</div>`;
+        }).join('');
         grid.querySelectorAll('[data-aware]').forEach(el => {
-            el.onclick = () => { awarenessLevel = el.dataset.aware; renderAll(); };
+            el.onclick = () => {
+                const a = el.dataset.aware;
+                const i = awarenessLevels.indexOf(a);
+                if (i >= 0) awarenessLevels.splice(i, 1);
+                else awarenessLevels.push(a);
+                awarenessLevel = awarenessLevels[0] || '';
+                renderAll();
+            };
         });
     }
     function renderAssetType() {
@@ -1383,20 +1450,58 @@
     }
     function renderHooks() {
         const list = document.getElementById('hooks-list');
-        if (hooks.length < 1) hooks = [''];
-        list.innerHTML = hooks.map((h, i) => `
-            <div class="hook-item">
-                <div class="hook-num">H${i+1}</div>
-                <textarea class="textarea hook-ta" data-i="${i}" placeholder="Hook variant ${i+1}…">${escapeHtml(h || '')}</textarea>
-            </div>
-        `).join('');
+        if (hooks.length < 1) hooks = [{ text: '', awareness: '', image_url: '' }];
+        // Per-hook awareness is independent of the concept's awareness levels.
+        // Always show all 5 Schwartz levels — picking one drives the filename code for that hook.
+        const availableAware = AWARENESS_LEVELS;
+        list.innerHTML = hooks.map((h, i) => {
+            const text  = h && typeof h === 'object' ? (h.text || '') : (h || '');
+            const aware = h && typeof h === 'object' ? (h.awareness || '') : '';
+            const img   = h && typeof h === 'object' ? (h.image_url || '') : '';
+            const awareChips = availableAware.map(a => {
+                const active = aware === a;
+                return `<span class="hook-aware-chip ${active ? 'active' : ''}" data-i="${i}" data-aware="${escapeAttr(a)}">${a.replace(' Aware','')}</span>`;
+            }).join('') + (aware ? `<span class="hook-aware-chip hook-aware-clear" data-i="${i}" data-aware="">clear</span>` : '');
+            return `
+            <div class="hook-item" style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed #2a2a2a">
+                <div class="hook-num" style="min-width:24px;font-family:'Geist Mono',monospace;color:#9a9a9a;padding-top:8px">H${i+1}</div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                    <textarea class="textarea hook-ta" data-i="${i}" placeholder="Hook variant ${i+1}…">${escapeHtml(text)}</textarea>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;font-size:10px;align-items:center">
+                        <span style="color:#9a9a9a;text-transform:uppercase;letter-spacing:.08em;margin-right:4px">Aware:</span>
+                        ${awareChips}
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;font-size:11px">
+                        <span style="color:#9a9a9a;text-transform:uppercase;letter-spacing:.08em;min-width:70px">Image URL:</span>
+                        <input class="input hook-img" data-i="${i}" type="text" placeholder="paste image URL or upload elsewhere" value="${escapeAttr(img)}" style="flex:1;font-family:'Geist Mono',monospace;font-size:11px">
+                        ${img ? `<a href="${escapeAttr(img)}" target="_blank" style="color:#ff5500;text-decoration:none;font-size:11px">↗ open</a>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
         list.querySelectorAll('.hook-ta').forEach(ta => {
-            ta.oninput = (e) => { hooks[+e.target.dataset.i] = e.target.value; };
+            ta.oninput = (e) => {
+                const i = +e.target.dataset.i;
+                hooks[i] = { ...(typeof hooks[i] === 'object' ? hooks[i] : { text: hooks[i] }), text: e.target.value };
+            };
+        });
+        list.querySelectorAll('.hook-img').forEach(inp => {
+            inp.oninput = (e) => {
+                const i = +e.target.dataset.i;
+                hooks[i] = { ...(typeof hooks[i] === 'object' ? hooks[i] : { text: hooks[i] }), image_url: e.target.value };
+            };
+        });
+        list.querySelectorAll('.hook-aware-chip').forEach(el => {
+            el.onclick = () => {
+                const i = +el.dataset.i;
+                hooks[i] = { ...(typeof hooks[i] === 'object' ? hooks[i] : { text: hooks[i] }), awareness: el.dataset.aware };
+                renderHooks();
+            };
         });
     }
     window.addHook = function() {
         if (hooks.length >= 8) return;
-        hooks.push('');
+        hooks.push({ text: '', awareness: '', image_url: '' });
         renderHooks();
     };
     function renderProofChips() {
@@ -1672,14 +1777,12 @@
             document.getElementById('name-preview').innerHTML = '<span class="placeholder">Auto-name will appear once Client + Angle are set…</span>';
             return;
         }
-        const ts = window._editingConceptCreatedAt ? new Date(window._editingConceptCreatedAt) : new Date();
-        const yy = String(ts.getUTCFullYear()).slice(-2);
-        const mm = String(ts.getUTCMonth() + 1).padStart(2, '0');
-        const dd = String(ts.getUTCDate()).padStart(2, '0');
-        const date = yy + mm + dd;
-        const aware = ({ 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' })[awarenessLevel] || null;
+        // Awareness code uses the FIRST selected awareness level (multi-select supported).
+        const primaryAware = (Array.isArray(awarenessLevels) && awarenessLevels.length ? awarenessLevels[0] : awarenessLevel);
+        const aware = ({ 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' })[primaryAware] || null;
         const leadCode = ({ 'Story':'Story','Problem-Solution':'ProbSol','Big Secret':'BigSec','Promise':'Promise','Proclamation':'Proclam','Offer':'Offer' })[leadType] || null;
-        const segments = [client.code, date, angle, format];
+        // New naming convention: no date segment — date lives in bulk uploader instead.
+        const segments = [client.code, angle, format];
         if (aware)    segments.push(aware);
         if (leadCode) segments.push(leadCode);
         if (assetType) segments.push(assetType);
@@ -1715,7 +1818,15 @@
         renderAll();
     };
     document.getElementById('angle').addEventListener('input', updateNamePreview);
-    document.getElementById('format').addEventListener('change', updateNamePreview);
+    document.getElementById('format').addEventListener('input', updateNamePreview);
+    // On blur, persist whatever's in the format input so it shows up in the dropdown next time
+    document.getElementById('format').addEventListener('blur', () => {
+        const v = (document.getElementById('format').value || '').trim();
+        if (v) {
+            saveCustomFormat(selectedClientId, v);
+            renderFormatDatalist();
+        }
+    });
     document.getElementById('big-idea').addEventListener('input', onScoreChange);
 
     // ============================================
@@ -1762,8 +1873,15 @@
     // SAVE / APPROVE / REJECT
     // ============================================
     function gatherBrief() {
+        // Hooks are now objects { text, awareness, image_url }. Drop blank entries (no text + no image).
+        const cleanedHooks = hooks
+            .map(h => typeof h === 'string'
+                ? { text: h, awareness: '', image_url: '' }
+                : { text: (h.text || '').trim(), awareness: (h.awareness || '').trim(), image_url: (h.image_url || '').trim() })
+            .filter(h => h.text || h.image_url);
         return {
-            hook_ideas:           hooks.filter(h => h && h.trim()),
+            hook_ideas:           cleanedHooks,
+            awareness_levels:     awarenessLevels.slice(),       // new multi-select field
             body_framework:       document.getElementById('body-framework').value,
             proof_points:         Array.from(proofPoints),
             pain_focus:           Array.from(painPoints),
@@ -1784,6 +1902,8 @@
         if (!selectedClientId) throw new Error('Pick a client');
         if (!angle)            throw new Error('Angle is required');
         if (!format)           throw new Error('Format is required');
+        // Persist any newly-typed format value so it appears in future dropdowns
+        saveCustomFormat(selectedClientId, format);
         const i = +document.getElementById('impact-slider').value     || null;
         const c = +document.getElementById('confidence-slider').value || null;
         const e = +document.getElementById('ease-slider').value       || null;
