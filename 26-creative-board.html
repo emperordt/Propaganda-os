@@ -1848,7 +1848,14 @@
                         </div>
                     ` : ''}
                     ${hookCount ? `
-                        <div class="hooks-preview"><ol>${bj.hook_ideas.slice(0,5).map(h => `<li>${escapeHtml(h)}</li>`).join('')}</ol></div>
+                        <div class="hooks-preview"><ol>${bj.hook_ideas.slice(0,5).map(h => {
+                            // Back-compat: old hooks were strings; new ones are { text, awareness, image_url }
+                            const txt = typeof h === 'string' ? h : (h && h.text ? h.text : '');
+                            const meta = (h && typeof h === 'object')
+                                ? [h.awareness && ({ 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' })[h.awareness], h.image_url && '📎'].filter(Boolean).join(' · ')
+                                : '';
+                            return `<li>${escapeHtml(txt)}${meta ? ` <span style="color:var(--text-muted);font-size:10px;font-family:Geist Mono, monospace">[${escapeHtml(meta)}]</span>` : ''}</li>`;
+                        }).join('')}</ol></div>
                     ` : (stage !== 'copywriting' ? '<div class="empty-rich">No hooks yet — open full editor to write the copy.</div>' : '')}
                     ${bj.body_framework ? `<div class="drawer-row" style="margin-top:8px"><label>Body Framework</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.body_framework)}</div></div>` : ''}
                     ${bj.cta ? `<div class="drawer-row"><label>CTA</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.cta)}</div></div>` : ''}
