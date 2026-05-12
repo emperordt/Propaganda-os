@@ -228,6 +228,7 @@
         }
         .column[data-stage="idea"]       .column-title { color: var(--text-muted); }
         .column[data-stage="approved"]    .column-title { color: var(--blue); }
+        .column[data-stage="briefing"]    .column-title { color: var(--cyan, #22d3ee); }
         .column[data-stage="copywriting"] .column-title { color: var(--purple); }
         .column[data-stage="production"]  .column-title { color: var(--amber); }
         .column[data-stage="revisions"]   .column-title { color: var(--pink); }
@@ -412,6 +413,7 @@
         }
         .stage-badge.idea        { background: var(--bg-tertiary);  color: var(--text-muted); border: 1px solid var(--border); }
         .stage-badge.approved    { background: var(--blue-dim);     color: var(--blue); }
+        .stage-badge.briefing    { background: rgba(34,211,238,0.12); color: #22d3ee; }
         .stage-badge.copywriting { background: var(--purple-dim);   color: var(--purple); }
         .stage-badge.production  { background: var(--amber-dim);    color: var(--amber); }
         .stage-badge.revisions   { background: var(--pink-dim);     color: var(--pink); }
@@ -1033,6 +1035,10 @@
                 <div class="column-header"><span class="column-title">Approved</span><span class="column-count" id="count-approved">0</span></div>
                 <div class="column-body" id="col-approved"></div>
             </div>
+            <div class="column" data-stage="briefing"   ondragover="onDragOver(event,'briefing')"   ondragleave="onDragLeave(event)" ondrop="onDrop(event,'briefing')">
+                <div class="column-header"><span class="column-title">Briefing</span><span class="column-count" id="count-briefing">0</span></div>
+                <div class="column-body" id="col-briefing"></div>
+            </div>
             <div class="column" data-stage="copywriting" ondragover="onDragOver(event,'copywriting')" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'copywriting')">
                 <div class="column-header"><span class="column-title">Copywriting</span><span class="column-count" id="count-copywriting">0</span></div>
                 <div class="column-body" id="col-copywriting"></div>
@@ -1207,7 +1213,7 @@
     let collaboratorRole = null;      // 'editor' | 'viewer' | 'client' | null (master)
     let collaboratorEmail = null;
 
-    const STAGE_ORDER = ['idea','approved','copywriting','production','revisions','launched','won','lost'];
+    const STAGE_ORDER = ['idea','approved','briefing','copywriting','production','revisions','launched','won','lost'];
     // status values map directly to stage columns (won and lost are separate columns).
     const STAGE_FOR_STATUS = (s) => s;
     // Stages where the concept lifecycle is complete (no further advance).
@@ -1894,23 +1900,29 @@
                 <button class="btn btn-sm" onclick="saveHypothesis()">Save Plan</button>
             </div>
 
-            ${has('copywriting') ? (() => {
+            ${has('briefing') ? (() => {
                 const hookCount = (bj.hook_ideas || []).length;
                 const briefIsEmpty = !hookCount && !bj.body_framework && !bj.cta;
                 const editorUrl = `25-creative-brief.html?concept_id=${c.id}`;
+                const titleLabel = stage === 'briefing' ? 'Brief' : 'Copy';
+                const writeCtaTitle = stage === 'briefing' ? '📋 Build the brief' : '📝 Write the copy';
+                const writeCtaBody  = stage === 'briefing'
+                    ? 'Lock the direction — proof points, pain focus, primary emotion, visual direction, voice notes. Then send to Copywriting for hooks + body.'
+                    : 'This concept is ready for copy — hooks, body framework, proof points, CTA, visual direction. Write it in the full editor, then come back here and click <b>Send to Production →</b>.';
+                const writeCtaNext  = stage === 'briefing' ? 'Send to Copywriting →' : 'Send to Production →';
                 return `
                 <div class="drawer-section">
-                    <h4>Copy <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">${hookCount} hooks</span></h4>
-                    ${stage === 'copywriting' && briefIsEmpty ? `
+                    <h4>${titleLabel} <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">${hookCount} hooks</span></h4>
+                    ${(stage === 'briefing' || stage === 'copywriting') && briefIsEmpty ? `
                         <div class="brief-cta">
-                            <div class="brief-cta-title">📝 Write the copy</div>
-                            <div class="brief-cta-body">This concept is ready for copy — hooks, body framework, proof points, CTA, visual direction. Write it in the full editor, then come back here and click <b>Send to Production →</b>.</div>
+                            <div class="brief-cta-title">${writeCtaTitle}</div>
+                            <div class="brief-cta-body">${writeCtaBody}</div>
                             <a class="btn btn-primary" href="${editorUrl}" target="_blank">✏️ Open Full Editor →</a>
                         </div>
                     ` : ''}
-                    ${stage === 'copywriting' && !briefIsEmpty ? `
+                    ${(stage === 'briefing' || stage === 'copywriting') && !briefIsEmpty ? `
                         <div class="brief-cta-mini">
-                            Copy in progress. <a href="${editorUrl}" target="_blank">Continue editing →</a> or click <b>Send to Production →</b> when ready.
+                            ${stage === 'briefing' ? 'Briefing in progress' : 'Copy in progress'}. <a href="${editorUrl}" target="_blank">Continue editing →</a> or click <b>${writeCtaNext}</b> when ready.
                         </div>
                     ` : ''}
                     ${hookCount ? `
@@ -2052,7 +2064,8 @@
         });
         const advance = ({
             idea:        { next: 'approved',    label: 'Submit & Approve →' },
-            approved:    { next: 'copywriting', label: 'Promote to Copywriting →' },
+            approved:    { next: 'briefing',    label: 'Send to Briefing →' },
+            briefing:    { next: 'copywriting', label: 'Send to Copywriting →' },
             copywriting: { next: 'production',  label: 'Send to Production →' },
             production:  { next: 'revisions',   label: 'Send to Revisions →' },
             revisions:   { next: 'launched',    label: 'Mark Launched →' },
