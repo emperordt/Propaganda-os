@@ -968,6 +968,12 @@
                 <div id="pain-chips" class="chip-row"></div>
             </div>
 
+            <div class="field">
+                <div class="field-label">Primary Emotion <span class="hint">type to add a new one — tracks what moves this market</span></div>
+                <input id="primary-emotion" class="input" list="emotion-options" placeholder="Fear, Hope, FOMO, Aspiration…" autocomplete="off">
+                <datalist id="emotion-options"></datalist>
+            </div>
+
             <div class="row-2">
                 <div class="field">
                     <div class="field-label">CTA</div>
@@ -1156,30 +1162,40 @@
     };
     const CATEGORY_THRESHOLDS = { 'Control': 8.5, 'DataDriven': 7.5, 'Innovation': 7.0 };
     const DEFAULT_FORMATS = ['UGC', 'Static', 'Story', 'TalkingHead', 'Native', 'Carousel'];
+    const DEFAULT_EMOTIONS = ['Fear', 'Hope', 'FOMO', 'Anger', 'Curiosity', 'Aspiration', 'Pride', 'Belonging', 'Frustration', 'Greed', 'Desire'];
 
-    // Custom formats saved per client_id in localStorage. Persists across sessions on this browser.
-    function getCustomFormats(clientId) {
+    // Generic combobox helpers — same pattern, parameterised by storage key + defaults.
+    function getCustomList(storageKey, clientId) {
         if (!clientId) return [];
         try {
-            const raw = localStorage.getItem('propaganda_custom_formats_' + clientId);
+            const raw = localStorage.getItem(`${storageKey}_${clientId}`);
             return raw ? JSON.parse(raw) : [];
         } catch (e) { return []; }
     }
-    function saveCustomFormat(clientId, fmt) {
-        if (!clientId || !fmt) return;
-        const list = getCustomFormats(clientId);
-        if (DEFAULT_FORMATS.includes(fmt)) return;       // built-in, no need to save
-        if (list.includes(fmt)) return;                  // already saved
-        list.push(fmt);
-        localStorage.setItem('propaganda_custom_formats_' + clientId, JSON.stringify(list));
+    function saveCustomItem(storageKey, defaults, clientId, val) {
+        if (!clientId || !val) return;
+        const list = getCustomList(storageKey, clientId);
+        if (defaults.includes(val)) return;
+        if (list.includes(val)) return;
+        list.push(val);
+        localStorage.setItem(`${storageKey}_${clientId}`, JSON.stringify(list));
     }
-    function renderFormatDatalist() {
-        const dl = document.getElementById('format-options');
+    function renderDatalist(elId, defaults, customs) {
+        const dl = document.getElementById(elId);
         if (!dl) return;
-        const custom = getCustomFormats(selectedClientId);
-        const all = [...DEFAULT_FORMATS, ...custom.filter(f => !DEFAULT_FORMATS.includes(f))];
+        const all = [...defaults, ...customs.filter(f => !defaults.includes(f))];
         dl.innerHTML = all.map(f => `<option value="${escapeAttr(f)}">`).join('');
     }
+
+    // Format-specific wrappers (kept for callers that already reference them)
+    function getCustomFormats(clientId)         { return getCustomList('propaganda_custom_formats', clientId); }
+    function saveCustomFormat(clientId, fmt)    { saveCustomItem('propaganda_custom_formats', DEFAULT_FORMATS, clientId, fmt); }
+    function renderFormatDatalist()             { renderDatalist('format-options', DEFAULT_FORMATS, getCustomFormats(selectedClientId)); }
+
+    // Emotion-specific wrappers
+    function getCustomEmotions(clientId)        { return getCustomList('propaganda_custom_emotions', clientId); }
+    function saveCustomEmotion(clientId, emo)   { saveCustomItem('propaganda_custom_emotions', DEFAULT_EMOTIONS, clientId, emo); }
+    function renderEmotionDatalist()            { renderDatalist('emotion-options', DEFAULT_EMOTIONS, getCustomEmotions(selectedClientId)); }
 
     // ============================================
     // STATE
@@ -1361,6 +1377,7 @@
         proofPoints = new Set(bj.proof_points || []);
         painPoints  = new Set(bj.pain_focus  || []);
         document.getElementById('body-framework').value = bj.body_framework || '';
+        document.getElementById('primary-emotion').value = bj.primary_emotion || '';
         document.getElementById('cta').value = bj.cta || '';
         document.getElementById('voice-notes').value = bj.voice_notes || '';
         document.getElementById('visual-direction').value = bj.visual_direction || '';
@@ -1384,6 +1401,7 @@
         renderCategory();
         renderHooks();
         renderFormatDatalist();
+        renderEmotionDatalist();
         renderProofChips();
         renderPainChips();
         renderIcpSummary();
@@ -1827,6 +1845,13 @@
             renderFormatDatalist();
         }
     });
+    document.getElementById('primary-emotion').addEventListener('blur', () => {
+        const v = (document.getElementById('primary-emotion').value || '').trim();
+        if (v) {
+            saveCustomEmotion(selectedClientId, v);
+            renderEmotionDatalist();
+        }
+    });
     document.getElementById('big-idea').addEventListener('input', onScoreChange);
 
     // ============================================
@@ -1879,12 +1904,16 @@
                 ? { text: h, awareness: '', image_url: '' }
                 : { text: (h.text || '').trim(), awareness: (h.awareness || '').trim(), image_url: (h.image_url || '').trim() })
             .filter(h => h.text || h.image_url);
+        const emotion = (document.getElementById('primary-emotion').value || '').trim();
+        // Persist any newly-typed emotion so it appears in the dropdown next time
+        if (emotion) saveCustomEmotion(selectedClientId, emotion);
         return {
             hook_ideas:           cleanedHooks,
             awareness_levels:     awarenessLevels.slice(),       // new multi-select field
             body_framework:       document.getElementById('body-framework').value,
             proof_points:         Array.from(proofPoints),
             pain_focus:           Array.from(painPoints),
+            primary_emotion:      emotion || null,
             cta:                  document.getElementById('cta').value,
             visual_direction:     document.getElementById('visual-direction').value,
             production_notes:     document.getElementById('production-notes').value,
