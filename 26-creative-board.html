@@ -697,9 +697,38 @@
             font-size: 11px;
             color: var(--text-secondary);
             line-height: 1.5;
+            position: relative;
         }
         .hooks-preview ol { padding-left: 16px; margin: 0; }
         .hooks-preview li { margin-bottom: 3px; }
+        .body-preview {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            white-space: pre-wrap;        /* preserve newlines + multiple spaces from textarea */
+            word-wrap: break-word;
+            max-height: 220px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .body-preview::-webkit-scrollbar { width: 6px; }
+        .body-preview::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 3px; }
+        .body-preview::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .body-preview::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        .copy-btn-mini {
+            position: absolute; top: 6px; right: 6px;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            color: var(--text-muted); padding: 3px 8px;
+            font-size: 10px; font-family: 'Geist Mono', monospace;
+            border-radius: 4px; cursor: pointer;
+            transition: all 0.12s ease;
+        }
+        .copy-btn-mini:hover { color: var(--text-primary); border-color: var(--orange); }
+        .copy-btn-mini.copied { color: var(--green); border-color: var(--green); }
         .empty-rich {
             font-size: 11px;
             color: var(--text-muted);
@@ -1668,6 +1697,35 @@
         activeConcept = null;
     };
 
+    async function _copyToClipboard(text, btn) {
+        try {
+            await navigator.clipboard.writeText(text);
+            if (btn) {
+                const orig = btn.textContent;
+                btn.classList.add('copied');
+                btn.textContent = 'Copied ✓';
+                setTimeout(() => { btn.classList.remove('copied'); btn.textContent = orig; }, 1500);
+            }
+        } catch (e) { toast('Copy failed: ' + e.message, 'error'); }
+    }
+
+    window.copyHooks = function(conceptId) {
+        const c = concepts.find(x => x.id === conceptId) || activeConcept;
+        if (!c) return;
+        const bj = c.brief_json || {};
+        const hooks = (bj.hook_ideas || []).map(h => typeof h === 'string' ? h : (h && h.text ? h.text : '')).filter(Boolean);
+        if (!hooks.length) { toast('No hooks to copy', 'error'); return; }
+        _copyToClipboard(hooks.join('\n'), event && event.target);
+    };
+
+    window.copyBody = function(conceptId) {
+        const c = concepts.find(x => x.id === conceptId) || activeConcept;
+        if (!c) return;
+        const body = c.brief_json?.body_framework || '';
+        if (!body) { toast('No body to copy', 'error'); return; }
+        _copyToClipboard(body, event && event.target);
+    };
+
     function renderDrawer() {
         const c = activeConcept;
         if (!c) return;
@@ -1848,16 +1906,27 @@
                         </div>
                     ` : ''}
                     ${hookCount ? `
-                        <div class="hooks-preview"><ol>${bj.hook_ideas.slice(0,5).map(h => {
-                            // Back-compat: old hooks were strings; new ones are { text, awareness, image_url }
-                            const txt = typeof h === 'string' ? h : (h && h.text ? h.text : '');
-                            const meta = (h && typeof h === 'object')
-                                ? [h.awareness && ({ 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' })[h.awareness], h.image_url && '📎'].filter(Boolean).join(' · ')
-                                : '';
-                            return `<li>${escapeHtml(txt)}${meta ? ` <span style="color:var(--text-muted);font-size:10px;font-family:Geist Mono, monospace">[${escapeHtml(meta)}]</span>` : ''}</li>`;
-                        }).join('')}</ol></div>
+                        <div class="hooks-preview">
+                            <button class="copy-btn-mini" onclick="copyHooks('${c.id}')">Copy hooks</button>
+                            <ol>${bj.hook_ideas.slice(0,5).map(h => {
+                                // Back-compat: old hooks were strings; new ones are { text, awareness, image_url }
+                                const txt = typeof h === 'string' ? h : (h && h.text ? h.text : '');
+                                const meta = (h && typeof h === 'object')
+                                    ? [h.awareness && ({ 'Unaware':'UA','Problem Aware':'PA','Solution Aware':'SA','Product Aware':'PrA','Most Aware':'MA' })[h.awareness], h.image_url && '📎'].filter(Boolean).join(' · ')
+                                    : '';
+                                return `<li>${escapeHtml(txt)}${meta ? ` <span style="color:var(--text-muted);font-size:10px;font-family:Geist Mono, monospace">[${escapeHtml(meta)}]</span>` : ''}</li>`;
+                            }).join('')}</ol>
+                        </div>
                     ` : (stage !== 'copywriting' ? '<div class="empty-rich">No hooks yet — open full editor to write the copy.</div>' : '')}
-                    ${bj.body_framework ? `<div class="drawer-row" style="margin-top:8px"><label>Body Framework</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.body_framework)}</div></div>` : ''}
+                    ${bj.body_framework ? `
+                        <div class="drawer-row" style="margin-top:8px">
+                            <label>Body Framework</label>
+                            <div class="body-preview">
+                                <button class="copy-btn-mini" onclick="copyBody('${c.id}')">Copy</button>
+                                ${escapeHtml(bj.body_framework)}
+                            </div>
+                        </div>
+                    ` : ''}
                     ${bj.cta ? `<div class="drawer-row"><label>CTA</label><div style="font-size:12px;color:var(--text-secondary)">${escapeHtml(bj.cta)}</div></div>` : ''}
                 </div>
             `;})() : ''}
