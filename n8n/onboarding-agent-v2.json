@@ -1,0 +1,259 @@
+{
+  "name": "Propaganda OS — Onboarding Agent v2",
+  "_description": "Hybrid agentic onboarding flow. Webhook receives run_id + url + context + optional offer. Phases: research → synthesize → generate → deploy. Updates onboarding_runs.status + raw_artifacts as it goes. Frontend at 29-onboarding-agent.html polls for progress.",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "onboarding-agent-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: kick off",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "webhookId": "onboarding-agent-v2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true,\"run_id\":$json.run_id}"
+      },
+      "name": "Respond 200 immediately",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "_comment": "PHASE A — Research agent. Anthropic Opus 4.7 with web_search + scrape tools. Loops until research is done.",
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/onboarding_runs?id=eq.{{ $json.run_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"researching\",\"phase\":\"research\",\"phase_detail\":\"Scraping client URL + finding competitors\"}"
+      },
+      "name": "Set status: researching",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [600, 300]
+    },
+    {
+      "_comment": "Call Anthropic Messages API with system prompt from skills/market-research/system-prompt.md. Include the SKILL.md content as part of the system prompt or first user message. Use Anthropic native web_search + a custom scrape_url tool.",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key",          "value": "={{ $credentials.anthropic.apiKey }}" },
+            { "name": "anthropic-version",  "value": "2023-06-01" },
+            { "name": "anthropic-beta",     "value": "web-search-2025-03-05" },
+            { "name": "content-type",       "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-opus-4-5-20250828\",\n  \"max_tokens\": 16000,\n  \"system\": \"<<<PASTE skills/market-research/system-prompt.md HERE + skills/market-research/SKILL.md HERE>>>\",\n  \"tools\": [\n    {\"type\": \"web_search_20250305\", \"name\": \"web_search\"}\n  ],\n  \"messages\": [\n    {\"role\": \"user\", \"content\": \"Client URL: {{ $('Webhook: kick off').item.json.url }}\\n\\nContext dump:\\n{{ $('Webhook: kick off').item.json.context }}\\n\\nOffer brief (optional):\\n{{ $('Webhook: kick off').item.json.offer || '(not provided — infer from site)' }}\\n\\nReturn the research JSON.\"}\n  ]\n}"
+      },
+      "name": "Anthropic: research agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [800, 300]
+    },
+    {
+      "_comment": "Parse Anthropic response. The agent returns the research JSON in the last text block.",
+      "parameters": {
+        "jsCode": "// Pull text from Anthropic response\nconst body = $input.first().json;\nconst lastText = (body.content || []).filter(b => b.type === 'text').map(b => b.text).join('\\n');\n// Extract JSON block\nconst match = lastText.match(/\\{[\\s\\S]*\\}/);\nif (!match) throw new Error('No JSON in research response');\nconst research = JSON.parse(match[0]);\nreturn [{ json: { research } }];"
+      },
+      "name": "Parse research JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "_comment": "Persist research artifacts to Supabase: competitors, customer_voice, obstacles, headline_bank, icps, brand_profile, offer_contexts pain/desire arrays.",
+      "parameters": {
+        "jsCode": "// Build batch inserts. Each table gets its own POST.\nconst run = $('Webhook: kick off').item.json;\nconst r = $json.research;\nconst clientId = run.client_id;\nconst runId    = run.run_id;\nconst rows = {\n  competitors:    (r.competitors    || []).map(c => ({ ...c, client_id: clientId, run_id: runId })),\n  customer_voice: (r.customer_voice || []).map(v => ({ ...v, client_id: clientId, run_id: runId })),\n  obstacles:      (r.obstacles      || []).map(o => ({ ...o, client_id: clientId, run_id: runId })),\n  headline_bank:  (r.headlines      || []).map(h => ({ ...h, client_id: clientId, run_id: runId })),\n  icps:           (r.icp || r.icps  || []).map(i => ({ ...i, client_id: clientId, is_ai_draft: true, ai_drafted_at: new Date().toISOString() })),\n  brand_profile:  r.brand_profile ? [{ ...r.brand_profile, client_id: clientId, is_ai_draft: true, ai_drafted_at: new Date().toISOString() }] : []\n};\nreturn [{ json: { rows, research: r } }];"
+      },
+      "name": "Build artifact rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 300]
+    },
+    {
+      "_comment": "Bulk POST artifacts to Supabase. Implement as a Loop or sub-flow per table. Each POST uses service_role key.",
+      "parameters": {
+        "method": "POST",
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/rpc/persist_onboarding_artifacts",
+        "_note": "Alternatively call /rest/v1/{table} individually with the row arrays. Easier is a single RPC that takes the bundle. Optional optimization.",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.rows) }}"
+      },
+      "name": "Persist research rows (or split per table)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/onboarding_runs?id=eq.{{ $('Webhook: kick off').item.json.run_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"generating\",\"phase\":\"generate\",\"phase_detail\":\"Drafting 3 landing pages\",\"raw_artifacts\":{{ JSON.stringify({ research: $json.research }) }}}"
+      },
+      "name": "Set status: generating",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1600, 300]
+    },
+    {
+      "_comment": "PHASE C — LP generator. Pass the synthesis package into the DR-lander skill prompt.",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key",         "value": "={{ $credentials.anthropic.apiKey }}" },
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type",      "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-opus-4-5-20250828\",\n  \"max_tokens\": 32000,\n  \"system\": \"<<<PASTE skills/direct-response-lander/system-prompt.md + skills/direct-response-lander/SKILL.md HERE>>>\",\n  \"messages\": [\n    {\"role\": \"user\", \"content\": \"Build the 3 landing pages from this research package:\\n\\n{{ JSON.stringify($json.raw_artifacts.research) }}\"}\n  ]\n}"
+      },
+      "name": "Anthropic: LP designer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst lastText = (body.content || []).filter(b => b.type === 'text').map(b => b.text).join('\\n');\nconst match = lastText.match(/\\{[\\s\\S]*\\}/);\nif (!match) throw new Error('No JSON in LP response');\nconst lps = JSON.parse(match[0]);\nreturn [{ json: lps }];"
+      },
+      "name": "Parse LP HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "_comment": "PHASE D — Vercel deploy. Create project + deploy 3 files.",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vercel.com/v13/deployments",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.vercel.token }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"{{ ($('Webhook: kick off').item.json.client_code || 'client').toLowerCase() }}-onboarding\",\n  \"target\": \"production\",\n  \"projectSettings\": { \"framework\": null },\n  \"files\": [\n    { \"file\": \"index.html\",     \"data\": \"{{ Buffer.from($json.index_html).toString('base64') }}\",     \"encoding\": \"base64\" },\n    { \"file\": \"book.html\",      \"data\": \"{{ Buffer.from($json.book_html).toString('base64') }}\",      \"encoding\": \"base64\" },\n    { \"file\": \"confirmed.html\", \"data\": \"{{ Buffer.from($json.confirmed_html).toString('base64') }}\", \"encoding\": \"base64\" }\n  ]\n}"
+      },
+      "name": "Vercel: create deployment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2200, 300]
+    },
+    {
+      "_comment": "Persist URLs to client_pages + onboarding_runs.",
+      "parameters": {
+        "jsCode": "const dep = $json;\nconst url = dep.url ? `https://${dep.url}` : null;\nconst projectId = dep.projectId;\nconst projectName = dep.name;\nconst run = $('Webhook: kick off').item.json;\nconst lp_url   = url ? `${url}/`            : null;\nconst book_url = url ? `${url}/book`         : null;\nconst ty_url   = url ? `${url}/confirmed`    : null;\nreturn [{ json: { url, projectId, projectName, lp_url, book_url, ty_url, run } }];"
+      },
+      "name": "Extract URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2400, 300]
+    },
+    {
+      "_comment": "Insert 3 client_pages rows then PATCH onboarding_runs to done.",
+      "parameters": {
+        "method": "POST",
+        "url": "https://wqclspynbdghfsosqygg.supabase.co/rest/v1/client_pages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  { \"client_id\": \"{{ $json.run.client_id }}\", \"page_type\": \"landing\",  \"slug\": \"\",          \"title\": \"Landing\",    \"url\": \"{{ $json.lp_url }}\",   \"vercel_project_id\": \"{{ $json.projectId }}\", \"vercel_project_name\": \"{{ $json.projectName }}\", \"generated_by\": \"onboarding-agent\", \"run_id\": \"{{ $json.run.run_id }}\", \"status\": \"live\" },\n  { \"client_id\": \"{{ $json.run.client_id }}\", \"page_type\": \"booking\",  \"slug\": \"book\",      \"title\": \"Booking\",    \"url\": \"{{ $json.book_url }}\", \"vercel_project_id\": \"{{ $json.projectId }}\", \"vercel_project_name\": \"{{ $json.projectName }}\", \"generated_by\": \"onboarding-agent\", \"run_id\": \"{{ $json.run.run_id }}\", \"status\": \"live\" },\n  { \"client_id\": \"{{ $json.run.client_id }}\", \"page_type\": \"thankyou\", \"slug\": \"confirmed\", \"title\": \"Thank You\",  \"url\": \"{{ $json.ty_url }}\",   \"vercel_project_id\": \"{{ $json.projectId }}\", \"vercel_project_name\": \"{{ $json.projectName }}\", \"generated_by\": \"onboarding-agent\", \"run_id\": \"{{ $json.run.run_id }}\", \"status\": \"live\" }\n]"
+      },
+      "name": "Insert client_pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2600, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://wqclspynbdghfsosqygg.supabase.co/rest/v1/onboarding_runs?id=eq.{{ $('Webhook: kick off').item.json.run_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.supabase.serviceRoleKey }}" },
+            { "name": "Content-Type",  "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"done\",\n  \"finished_at\": \"{{ $now.toISO() }}\",\n  \"phase\": \"done\",\n  \"phase_detail\": \"Live\",\n  \"vercel_project_id\": \"{{ $('Extract URLs').item.json.projectId }}\",\n  \"vercel_project_name\": \"{{ $('Extract URLs').item.json.projectName }}\",\n  \"lp_url\": \"{{ $('Extract URLs').item.json.lp_url }}\",\n  \"booking_url\": \"{{ $('Extract URLs').item.json.book_url }}\",\n  \"ty_url\": \"{{ $('Extract URLs').item.json.ty_url }}\"\n}"
+      },
+      "name": "Set status: done",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2800, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: kick off":                { "main": [[{ "node": "Respond 200 immediately", "type": "main", "index": 0 }, { "node": "Set status: researching", "type": "main", "index": 0 }]] },
+    "Set status: researching":          { "main": [[{ "node": "Anthropic: research agent", "type": "main", "index": 0 }]] },
+    "Anthropic: research agent":        { "main": [[{ "node": "Parse research JSON", "type": "main", "index": 0 }]] },
+    "Parse research JSON":              { "main": [[{ "node": "Build artifact rows", "type": "main", "index": 0 }]] },
+    "Build artifact rows":              { "main": [[{ "node": "Persist research rows (or split per table)", "type": "main", "index": 0 }]] },
+    "Persist research rows (or split per table)": { "main": [[{ "node": "Set status: generating", "type": "main", "index": 0 }]] },
+    "Set status: generating":           { "main": [[{ "node": "Anthropic: LP designer", "type": "main", "index": 0 }]] },
+    "Anthropic: LP designer":           { "main": [[{ "node": "Parse LP HTML", "type": "main", "index": 0 }]] },
+    "Parse LP HTML":                    { "main": [[{ "node": "Vercel: create deployment", "type": "main", "index": 0 }]] },
+    "Vercel: create deployment":        { "main": [[{ "node": "Extract URLs", "type": "main", "index": 0 }]] },
+    "Extract URLs":                     { "main": [[{ "node": "Insert client_pages", "type": "main", "index": 0 }]] },
+    "Insert client_pages":              { "main": [[{ "node": "Set status: done", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}

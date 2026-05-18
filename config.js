@@ -29,6 +29,10 @@ window.PROPAGANDA = {
         // Returns: { brand_profile: {...}, icps: [{...}, ...] }
         // POST shape: { client_id, url, context_dump, offer_brief, potential_icps: [{name, tier, note}, ...] }
         CLIENT_ONBOARD_AGENT: 'https://n8n.dtthomas.cloud/webhook/client-onboard-agent',
+        // Onboarding agent v2 — full research → ICPs → competitors → VOC → headlines → 3 LPs → Vercel deploy.
+        // POST shape: { run_id, client_id, url, context, offer }
+        // Returns: 200 OK immediately. Agent runs async, updates onboarding_runs row in Supabase. Frontend polls.
+        ONBOARDING_AGENT_V2: 'https://n8n.dtthomas.cloud/webhook/onboarding-agent-v2',
         // Creative brief layer — flows not yet built; pages tolerate empty strings
         BRIEF_GENERATE: '',           // POST {client_id, brand_id, offer_id, icp_id, lead_type, awareness_level, angle, big_idea} → returns brief_json
         CREATIVE_SLACK_NOTIFY: ''     // POST {event:'approved'|'winner', creative_id, client_id, name, image_url}
@@ -69,9 +73,11 @@ window.PROPAGANDA.path = function(clientCode, batchName, fileName) {
 window.PROPAGANDA.SIDEBAR_NAV = [
     { label: 'Operations', items: [
         { href: '23-client-hub.html',         label: 'Client Hub' },
-        { href: '24-onboarding.html',         label: 'Onboarding',         internalOnly: true },
+        { href: '29-onboarding-agent.html',   label: 'Onboarding Agent',   internalOnly: true },
+        { href: '24-onboarding.html',         label: 'Onboarding (manual)',internalOnly: true },
         { href: '26-creative-board.html',     label: 'Creative Pipeline' },
         { href: '27-tests.html',              label: 'Tests',              internalOnly: true },
+        { href: '30-client-pages.html',       label: 'Client Pages',       internalOnly: true },
         { href: '28-team.html',               label: 'Team',               internalOnly: true },
         { href: '12-brand-profiles.html',     label: 'Brand Profiles',     internalOnly: true },
         { href: '13-image-ad-generator.html', label: 'Image Ad Generator', internalOnly: true }

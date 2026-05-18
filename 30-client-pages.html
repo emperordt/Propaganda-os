@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Client Pages · Propaganda OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="master-auth.js"></script>
+<style>
+    :root {
+        --bg: #0a0a0a; --bg-2: #141414; --panel: #161616;
+        --border: #2a2a2a; --text:#fff; --text-secondary:#c4c0b8; --muted:#8a8680;
+        --orange: #ff5500; --green: #22c55e; --red:#ef4444; --blue:#60a5fa; --cyan:#22d3ee; --purple:#a78bfa;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:'Geist',-apple-system,sans-serif; display:flex; min-height:100vh; }
+    .sidebar { width:220px; min-width:220px; background:#0d0d0d; border-right:1px solid var(--border); padding:18px 14px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column; }
+    main { flex:1; padding:32px 40px; max-width:1400px; }
+    h1 { margin:0 0 4px 0; font-size:24px; font-weight:700; letter-spacing:-0.02em; }
+    .sub { color:var(--muted); font-size:13px; margin-bottom:24px; }
+
+    .filters { display:flex; gap:14px; margin-bottom:20px; align-items:center; flex-wrap:wrap; }
+    select, input[type=text] { background:#0d0d0d; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:6px; font-size:13px; font-family:inherit; }
+    select:focus { outline:none; border-color:var(--orange); }
+    .search { flex:1; min-width:240px; }
+
+    .table-wrap { background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:left; padding:12px 14px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+    th { background:#0d0d0d; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-size:10px; }
+    tr:hover td { background:#1a1a1a; }
+    .client-cell { font-family:'Geist Mono',monospace; font-size:11px; background:#1a1a1a; border:1px solid var(--border); padding:2px 8px; border-radius:3px; color:var(--text-secondary); }
+    .url-cell { font-family:'Geist Mono',monospace; font-size:11px; color:var(--orange); text-decoration:none; word-break:break-all; }
+    .url-cell:hover { text-decoration:underline; }
+    .type-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-family:'Geist Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; }
+    .type-pill.landing  { background:rgba(96,165,250,0.15);  color:var(--blue); }
+    .type-pill.booking  { background:rgba(34,211,238,0.12);  color:var(--cyan); }
+    .type-pill.thankyou { background:rgba(34,197,94,0.12);   color:var(--green); }
+    .type-pill.sales    { background:rgba(167,139,250,0.15); color:var(--purple); }
+    .type-pill.other    { background:rgba(154,154,154,0.15); color:var(--muted); }
+    .status-pill.live     { color:var(--green); }
+    .status-pill.archived { color:var(--muted); }
+    .status-pill.draft    { color:#f8d47a; }
+
+    .empty { padding:60px 20px; text-align:center; color:var(--muted); }
+
+    .stat-row { display:flex; gap:14px; margin-bottom:20px; }
+    .stat { flex:1; background:var(--panel); border:1px solid var(--border); padding:14px 18px; border-radius:10px; }
+    .stat-v { font-family:'Geist Mono',monospace; font-size:22px; font-weight:700; }
+    .stat-l { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; }
+
+    .action-btn { background:transparent; border:1px solid var(--border); color:var(--muted); padding:4px 10px; border-radius:5px; font-size:11px; cursor:pointer; font-family:inherit; }
+    .action-btn:hover { color:var(--text); border-color:var(--muted); }
+    .action-btn.red { color:var(--red); border-color:rgba(239,68,68,0.3); }
+    .action-btn.red:hover { background:rgba(239,68,68,0.10); }
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main>
+    <h1>Client Pages</h1>
+    <div class="sub">Every landing page, booking page, and thank-you page deployed on Vercel — grouped by client. Click a URL to open it live.</div>
+
+    <div class="stat-row">
+        <div class="stat"><div class="stat-v" id="s-total">—</div><div class="stat-l">Total pages</div></div>
+        <div class="stat"><div class="stat-v" id="s-live">—</div><div class="stat-l">Live</div></div>
+        <div class="stat"><div class="stat-v" id="s-clients">—</div><div class="stat-l">Clients with pages</div></div>
+        <div class="stat"><div class="stat-v" id="s-projects">—</div><div class="stat-l">Vercel projects</div></div>
+    </div>
+
+    <div class="filters">
+        <select id="f-client"><option value="">All clients</option></select>
+        <select id="f-type">
+            <option value="">All types</option>
+            <option value="landing">Landing</option>
+            <option value="booking">Booking</option>
+            <option value="thankyou">Thank you</option>
+            <option value="sales">Sales</option>
+            <option value="other">Other</option>
+        </select>
+        <select id="f-status">
+            <option value="live">Live only</option>
+            <option value="">All</option>
+            <option value="archived">Archived</option>
+            <option value="draft">Draft</option>
+        </select>
+        <input type="text" class="search" id="f-search" placeholder="Search title / slug / URL…">
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Type</th>
+                    <th>Title / Slug</th>
+                    <th>URL</th>
+                    <th>Vercel Project</th>
+                    <th>Last deployed</th>
+                    <th>Status</th>
+                    <th style="width:120px">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+        <div id="empty" class="empty" style="display:none">No pages yet. Run the Onboarding Agent to generate your first set.</div>
+    </div>
+</main>
+
+<script>
+    const SB_URL = window.PROPAGANDA.SUPABASE_URL;
+    const HEADERS = window.PROPAGANDA.HEADERS;
+    const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+
+    let pages = [], clients = [];
+
+    async function sbGet(path) { const r = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: HEADERS_READ }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+    async function sbPatch(t, id, body) {
+        const r = await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`, { method:'PATCH', headers: HEADERS, body: JSON.stringify(body) });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+    async function sbDelete(t, id) {
+        const r = await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`, { method:'DELETE', headers: HEADERS });
+        if (!r.ok) throw new Error(await r.text());
+    }
+
+    async function loadAll() {
+        [pages, clients] = await Promise.all([
+            sbGet('client_pages?order=last_deployed_at.desc'),
+            sbGet('clients?order=name.asc')
+        ]);
+        renderClientFilter();
+        renderStats();
+        renderRows();
+    }
+
+    function renderClientFilter() {
+        const sel = document.getElementById('f-client');
+        sel.innerHTML = '<option value="">All clients</option>' +
+            clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+    }
+
+    function renderStats() {
+        document.getElementById('s-total').textContent = pages.length;
+        document.getElementById('s-live').textContent = pages.filter(p => p.status === 'live').length;
+        document.getElementById('s-clients').textContent = new Set(pages.map(p => p.client_id)).size;
+        document.getElementById('s-projects').textContent = new Set(pages.map(p => p.vercel_project_name).filter(Boolean)).size;
+    }
+
+    function applyFilters() {
+        const cid = document.getElementById('f-client').value;
+        const t   = document.getElementById('f-type').value;
+        const s   = document.getElementById('f-status').value;
+        const q   = (document.getElementById('f-search').value || '').toLowerCase();
+        return pages.filter(p => {
+            if (cid && p.client_id !== cid) return false;
+            if (t && p.page_type !== t) return false;
+            if (s && p.status !== s) return false;
+            if (q) {
+                const hay = `${p.title||''} ${p.slug||''} ${p.url||''} ${p.notes||''}`.toLowerCase();
+                if (!hay.includes(q)) return false;
+            }
+            return true;
+        });
+    }
+
+    function renderRows() {
+        const rows = applyFilters();
+        const body = document.getElementById('rows');
+        const empty = document.getElementById('empty');
+        if (!rows.length) { body.innerHTML = ''; empty.style.display = ''; return; }
+        empty.style.display = 'none';
+        body.innerHTML = rows.map(p => {
+            const client = clients.find(c => c.id === p.client_id);
+            const date = p.last_deployed_at ? new Date(p.last_deployed_at).toLocaleDateString(undefined, {month:'short',day:'numeric'}) : '—';
+            return `
+                <tr>
+                    <td><span class="client-cell">${escapeHtml(client?.code || '—')}</span></td>
+                    <td><span class="type-pill ${p.page_type||'other'}">${escapeHtml(p.page_type||'other')}</span></td>
+                    <td><div style="font-weight:500">${escapeHtml(p.title || p.slug || '—')}</div>${p.slug ? `<div style="font-size:10px;color:var(--muted);font-family:'Geist Mono',monospace">/${escapeHtml(p.slug)}</div>` : ''}</td>
+                    <td><a class="url-cell" href="${escapeAttr(p.url)}" target="_blank">${escapeHtml((p.url||'').replace(/^https?:\/\//,''))}</a></td>
+                    <td style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-secondary)">${escapeHtml(p.vercel_project_name||'—')}</td>
+                    <td style="color:var(--muted);font-size:11px">${date}</td>
+                    <td><span class="status-pill ${p.status}">${escapeHtml(p.status||'')}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="archiveToggle('${p.id}', '${p.status}')">${p.status === 'archived' ? 'Restore' : 'Archive'}</button>
+                        <button class="action-btn red" onclick="deletePage('${p.id}')">Delete</button>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    window.archiveToggle = async function(id, status) {
+        const next = status === 'archived' ? 'live' : 'archived';
+        await sbPatch('client_pages', id, { status: next });
+        await loadAll();
+    };
+
+    window.deletePage = async function(id) {
+        if (!confirm('Delete this page record? (the live Vercel deployment stays up — manually remove it in Vercel if needed)')) return;
+        await sbDelete('client_pages', id);
+        await loadAll();
+    };
+
+    document.getElementById('f-client').addEventListener('change', renderRows);
+    document.getElementById('f-type').addEventListener('change', renderRows);
+    document.getElementById('f-status').addEventListener('change', renderRows);
+    document.getElementById('f-search').addEventListener('input', renderRows);
+
+    function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeAttr(s) { return String(s||'').replace(/'/g, '&#39;').replace(/"/g, '&quot;'); }
+
+    (async () => {
+        if (!(await PROPAGANDA.masterAuth.requireMaster())) return;
+        await loadAll();
+    })();
+</script>
+</body>
+</html>

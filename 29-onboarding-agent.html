@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Onboarding Agent · Propaganda OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="master-auth.js"></script>
+<style>
+    :root {
+        --bg: #0a0a0a; --bg-2: #141414; --panel: #161616;
+        --border: #2a2a2a; --border-hover: #3a3a3a;
+        --text: #fff; --text-secondary: #c4c0b8; --muted: #8a8680;
+        --orange: #ff5500; --orange-dim: rgba(255,85,0,0.15);
+        --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+        --red: #ef4444; --blue: #60a5fa; --cyan: #22d3ee; --purple: #a78bfa;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:'Geist',-apple-system,sans-serif; display:flex; min-height:100vh; }
+    .sidebar { width:220px; min-width:220px; background:#0d0d0d; border-right:1px solid var(--border); padding:18px 14px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column; }
+    main { flex:1; padding:32px 40px; max-width:1100px; margin:0 auto; }
+    h1 { margin:0 0 4px 0; font-size:28px; font-weight:700; letter-spacing:-0.02em; }
+    .sub { color:var(--muted); font-size:13px; margin-bottom:32px; line-height:1.5; }
+
+    .stepper { display:flex; gap:12px; margin-bottom:28px; }
+    .step { flex:1; padding:12px 16px; background:var(--panel); border:1px solid var(--border); border-radius:8px; font-size:11px; font-family:'Geist Mono',monospace; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }
+    .step.active { border-color:var(--orange); color:var(--orange); }
+    .step.done { border-color:var(--green); color:var(--green); }
+
+    .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:28px; margin-bottom:24px; }
+    .panel h2 { margin:0 0 6px 0; font-size:16px; font-weight:600; }
+    .panel p { margin:0 0 18px 0; color:var(--muted); font-size:13px; line-height:1.5; }
+
+    label { display:block; font-size:11px; color:var(--muted); margin:16px 0 6px 0; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; }
+    label:first-of-type { margin-top:0; }
+    input, textarea, select { width:100%; background:#0d0d0d; border:1px solid var(--border); color:var(--text); padding:12px 14px; border-radius:8px; font-size:14px; font-family:inherit; }
+    input:focus, textarea:focus, select:focus { outline:none; border-color:var(--orange); }
+    textarea { min-height:120px; line-height:1.55; }
+
+    button { background:var(--orange); color:#fff; border:0; padding:14px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
+    button:hover:not(:disabled) { background:#ff6a1a; }
+    button:disabled { opacity:0.4; cursor:not-allowed; }
+    button.ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+    button.ghost:hover { color:#fff; border-color:var(--muted); }
+
+    .progress-list { display:flex; flex-direction:column; gap:8px; }
+    .progress-row { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#0d0d0d; border:1px solid var(--border); border-radius:8px; font-size:13px; }
+    .progress-row.pending { color:var(--muted); }
+    .progress-row.active  { color:var(--orange); border-color:var(--orange); }
+    .progress-row.done    { color:var(--green); border-color:rgba(34,197,94,0.3); }
+    .progress-row.error   { color:var(--red); border-color:rgba(239,68,68,0.4); }
+    .progress-icon { width:18px; min-width:18px; text-align:center; }
+    .progress-detail { color:var(--muted); font-size:11px; margin-top:2px; font-family:'Geist Mono',monospace; }
+
+    .artifact-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; }
+    .artifact-card { background:#0d0d0d; border:1px solid var(--border); border-radius:8px; padding:16px; }
+    .artifact-card h3 { margin:0 0 4px 0; font-size:14px; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+    .artifact-card .count { font-family:'Geist Mono',monospace; font-size:11px; color:var(--muted); }
+    .artifact-card .preview { color:var(--text-secondary); font-size:12px; line-height:1.5; max-height:80px; overflow:hidden; }
+
+    .url-card { background:#0d0d0d; border:1px solid var(--border); border-radius:8px; padding:14px; display:flex; align-items:center; gap:14px; }
+    .url-label { font-family:'Geist Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; min-width:80px; }
+    .url-value { flex:1; font-family:'Geist Mono',monospace; font-size:12px; color:var(--orange); word-break:break-all; }
+    .url-card a { color:var(--orange); text-decoration:none; }
+
+    .empty { color:var(--muted); font-size:13px; padding:40px 20px; text-align:center; }
+
+    .msg { margin-top:14px; font-size:12px; padding:12px 14px; border-radius:8px; line-height:1.5; display:none; }
+    .msg.show { display:block; }
+    .msg.error { background:rgba(239,68,68,0.10); color:var(--red); border:1px solid rgba(239,68,68,0.30); }
+    .msg.success { background:rgba(34,197,94,0.10); color:var(--green); border:1px solid rgba(34,197,94,0.30); }
+
+    .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-family:'Geist Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; }
+    .badge.queued       { background:rgba(154,154,154,0.15); color:var(--muted); }
+    .badge.researching  { background:rgba(96,165,250,0.15);  color:var(--blue); }
+    .badge.synthesizing { background:rgba(34,211,238,0.12);  color:var(--cyan); }
+    .badge.generating   { background:rgba(167,139,250,0.15); color:var(--purple); }
+    .badge.deploying    { background:rgba(248,212,122,0.15); color:#f8d47a; }
+    .badge.done         { background:rgba(34,197,94,0.15);   color:var(--green); }
+    .badge.error        { background:rgba(239,68,68,0.15);   color:var(--red); }
+
+    .config-warn { background:rgba(248,212,122,0.10); border:1px solid rgba(248,212,122,0.30); color:#f8d47a; padding:12px 14px; border-radius:8px; font-size:12px; margin-bottom:18px; line-height:1.5; }
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main>
+    <h1>Onboarding Agent</h1>
+    <div class="sub">URL + context → market research → brand profile → ICPs → competitors → 3 landing pages → live on Vercel. One shot.</div>
+
+    <div class="stepper" id="stepper">
+        <div class="step active" data-step="inputs">1 · Inputs</div>
+        <div class="step" data-step="run">2 · Agent Run</div>
+        <div class="step" data-step="review">3 · Review &amp; Launch</div>
+    </div>
+
+    <div id="config-warn" class="config-warn" style="display:none">
+        ⚠ Onboarding webhook not configured. Set <code>ONBOARDING_AGENT_V2</code> in <code>config.js</code> to point to your n8n flow.
+    </div>
+
+    <!-- STEP 1: INPUTS -->
+    <div id="step-inputs" class="panel">
+        <h2>Step 1 — Client inputs</h2>
+        <p>Paste anything you have. The agent will pull from the URL, search the market, mine customer voice, and build everything.</p>
+
+        <label>Client</label>
+        <select id="i-client"><option value="">— pick a client —</option></select>
+
+        <label>Or create a new client</label>
+        <div style="display:flex; gap:10px">
+            <input id="i-newname" placeholder="Acme Corp" style="flex:2">
+            <input id="i-newcode" placeholder="ACME (4 char code)" maxlength="6" style="flex:1; font-family:'Geist Mono',monospace; text-transform:uppercase">
+        </div>
+
+        <label>Client URL <span style="text-transform:none;color:var(--muted)">— their homepage / main offer page</span></label>
+        <input id="i-url" type="url" placeholder="https://acme.com">
+
+        <label>Context dump <span style="text-transform:none;color:var(--muted)">— anything: meeting notes, founder bio, existing copy, niche details</span></label>
+        <textarea id="i-context" placeholder="They sell SaaS to B2B sales teams. Founder did 7 figures at his last company. Their angle is 'no more cold calling' — calendar gets filled with qualified leads via AI prospecting. Pricing is $2k/mo + setup. Target: agency owners, founders, sales managers..."></textarea>
+
+        <label>Offer brief <span style="text-transform:none;color:var(--muted)">— optional, leave blank if the offer is still being built</span></label>
+        <textarea id="i-offer" rows="3" placeholder="Optional. If they have a clear offer (price, deliverable, guarantee), paste it here. Otherwise the agent infers from their site."></textarea>
+
+        <button id="btn-start" onclick="startRun()" style="margin-top:24px">🚀 Start onboarding</button>
+        <div id="msg" class="msg"></div>
+    </div>
+
+    <!-- STEP 2: RUN -->
+    <div id="step-run" class="panel" style="display:none">
+        <h2>Step 2 — Agent run <span id="run-status-badge" class="badge queued" style="margin-left:8px">queued</span></h2>
+        <p>Live progress from the n8n flow. Stays on this screen until done.</p>
+
+        <div class="progress-list" id="progress-list">
+            <div class="progress-row pending" data-phase="researching">
+                <div class="progress-icon">⚪</div>
+                <div style="flex:1">
+                    <div>Researching market — competitors, voice-of-customer, awareness analysis, pain &amp; desire mapping</div>
+                    <div class="progress-detail" id="detail-researching"></div>
+                </div>
+            </div>
+            <div class="progress-row pending" data-phase="synthesizing">
+                <div class="progress-icon">⚪</div>
+                <div style="flex:1">
+                    <div>Synthesizing — drafting ICPs, brand profile, headlines, obstacles</div>
+                    <div class="progress-detail" id="detail-synthesizing"></div>
+                </div>
+            </div>
+            <div class="progress-row pending" data-phase="generating">
+                <div class="progress-icon">⚪</div>
+                <div style="flex:1">
+                    <div>Generating 3 landing pages — LP, booking, thank you</div>
+                    <div class="progress-detail" id="detail-generating"></div>
+                </div>
+            </div>
+            <div class="progress-row pending" data-phase="deploying">
+                <div class="progress-icon">⚪</div>
+                <div style="flex:1">
+                    <div>Deploying to Vercel — creating project, pushing files, registering URLs</div>
+                    <div class="progress-detail" id="detail-deploying"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="run-error" class="msg error" style="margin-top:18px"></div>
+    </div>
+
+    <!-- STEP 3: REVIEW -->
+    <div id="step-review" class="panel" style="display:none">
+        <h2>Step 3 — Review &amp; launch</h2>
+        <p>Everything the agent produced. Edit anywhere it needs polish, then confirm.</p>
+
+        <div style="margin-bottom:24px">
+            <h3 style="font-size:13px; color:var(--muted); margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.05em">Live URLs</h3>
+            <div style="display:flex; flex-direction:column; gap:8px">
+                <div class="url-card"><div class="url-label">Landing</div><div class="url-value"><a id="url-lp" href="#" target="_blank">—</a></div></div>
+                <div class="url-card"><div class="url-label">Booking</div><div class="url-value"><a id="url-book" href="#" target="_blank">—</a></div></div>
+                <div class="url-card"><div class="url-label">Thank you</div><div class="url-value"><a id="url-ty" href="#" target="_blank">—</a></div></div>
+            </div>
+        </div>
+
+        <h3 style="font-size:13px; color:var(--muted); margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.05em">Artifacts</h3>
+        <div class="artifact-grid" id="artifact-grid"></div>
+
+        <div style="display:flex; gap:12px; margin-top:24px">
+            <button onclick="confirmRun()">✓ Confirm onboarding complete</button>
+            <button class="ghost" onclick="resetFlow()">← Start another</button>
+        </div>
+    </div>
+</main>
+
+<script>
+    const SB_URL  = window.PROPAGANDA.SUPABASE_URL;
+    const HEADERS = window.PROPAGANDA.HEADERS;
+    const HEADERS_READ = window.PROPAGANDA.HEADERS_READ;
+    const ONBOARD_WEBHOOK = (window.PROPAGANDA.N8N && window.PROPAGANDA.N8N.ONBOARDING_AGENT_V2) || '';
+
+    let activeRunId = null;
+    let pollTimer = null;
+    let clientsCache = [];
+
+    // ============ SUPABASE HELPERS ============
+    async function sbGet(path)  { const r = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: HEADERS_READ }); if (!r.ok) throw new Error(await r.text()); return r.json(); }
+    async function sbPost(t, body, prefer) {
+        const headers = { ...HEADERS };
+        if (prefer) headers['Prefer'] = prefer;
+        const r = await fetch(`${SB_URL}/rest/v1/${t}`, { method:'POST', headers, body: JSON.stringify(body) });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+    async function sbPatch(t, id, body) {
+        const r = await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`, { method:'PATCH', headers: HEADERS, body: JSON.stringify(body) });
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    }
+
+    async function loadClients() {
+        clientsCache = await sbGet('clients?status=neq.offboarded&order=name.asc');
+        const sel = document.getElementById('i-client');
+        sel.innerHTML = '<option value="">— pick existing —</option>' +
+            clientsCache.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
+    }
+
+    // ============ UI ============
+    function setStep(name) {
+        document.querySelectorAll('.step').forEach(el => {
+            el.classList.remove('active','done');
+            const order = ['inputs','run','review'];
+            const here  = order.indexOf(name);
+            const me    = order.indexOf(el.dataset.step);
+            if (me < here) el.classList.add('done');
+            if (me === here) el.classList.add('active');
+        });
+        document.getElementById('step-inputs').style.display = name === 'inputs' ? '' : 'none';
+        document.getElementById('step-run').style.display    = name === 'run'    ? '' : 'none';
+        document.getElementById('step-review').style.display = name === 'review' ? '' : 'none';
+    }
+
+    function setProgress(phase, state, detail) {
+        const row = document.querySelector(`.progress-row[data-phase="${phase}"]`);
+        if (!row) return;
+        row.classList.remove('pending','active','done','error');
+        row.classList.add(state);
+        const icon = row.querySelector('.progress-icon');
+        icon.textContent = state === 'active' ? '⟳' : state === 'done' ? '✓' : state === 'error' ? '✗' : '⚪';
+        if (detail) {
+            const detEl = document.getElementById(`detail-${phase}`);
+            if (detEl) detEl.textContent = detail;
+        }
+    }
+
+    // ============ START + POLL ============
+    async function startRun() {
+        const msg = document.getElementById('msg');
+        msg.className = 'msg';
+        try {
+            if (!ONBOARD_WEBHOOK) throw new Error('Onboarding webhook not configured');
+
+            let clientId = document.getElementById('i-client').value;
+            const newName = document.getElementById('i-newname').value.trim();
+            const newCode = document.getElementById('i-newcode').value.trim().toUpperCase();
+            const url = document.getElementById('i-url').value.trim();
+            const ctx = document.getElementById('i-context').value.trim();
+            const offer = document.getElementById('i-offer').value.trim();
+
+            if (!url) throw new Error('Client URL is required');
+            if (!ctx) throw new Error('Context dump is required');
+            if (!clientId && !newName) throw new Error('Pick an existing client or create a new one');
+
+            // Create new client if needed
+            if (!clientId) {
+                if (!newCode) throw new Error('Client code is required for new clients (e.g. ACME)');
+                const created = await sbPost('clients', { name: newName, code: newCode, status: 'onboarding', website_url: url }, 'return=representation');
+                clientId = created[0].id;
+            }
+
+            // Create run row
+            const runs = await sbPost('onboarding_runs', {
+                client_id: clientId, status: 'queued',
+                input_url: url, input_context: ctx, input_offer: offer || null
+            }, 'return=representation');
+            activeRunId = runs[0].id;
+
+            // Fire-and-forget to n8n
+            fetch(ONBOARD_WEBHOOK, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    run_id: activeRunId, client_id: clientId, url, context: ctx, offer: offer || null
+                })
+            }).catch(e => console.warn('Webhook post failed (will still poll):', e));
+
+            setStep('run');
+            startPolling(activeRunId);
+        } catch (e) {
+            msg.className = 'msg error show';
+            msg.textContent = e.message;
+        }
+    }
+
+    function startPolling(runId) {
+        clearInterval(pollTimer);
+        pollTimer = setInterval(() => pollOnce(runId).catch(console.error), 2500);
+        pollOnce(runId).catch(console.error);
+    }
+
+    async function pollOnce(runId) {
+        const rows = await sbGet(`onboarding_runs?id=eq.${runId}`);
+        if (!rows.length) return;
+        const r = rows[0];
+
+        const badge = document.getElementById('run-status-badge');
+        badge.className = 'badge ' + r.status;
+        badge.textContent = r.status;
+
+        // Map status → progress row states
+        const order = ['researching','synthesizing','generating','deploying'];
+        const idx = order.indexOf(r.status);
+        order.forEach((p, i) => {
+            if (r.status === 'done') setProgress(p, 'done');
+            else if (r.status === 'error' && i === Math.max(idx, 0)) setProgress(p, 'error');
+            else if (idx > i) setProgress(p, 'done');
+            else if (idx === i) setProgress(p, 'active', r.phase_detail || '');
+            else setProgress(p, 'pending');
+        });
+
+        if (r.status === 'error') {
+            const errEl = document.getElementById('run-error');
+            errEl.className = 'msg error show';
+            errEl.textContent = r.error || 'Agent run failed';
+            clearInterval(pollTimer);
+            return;
+        }
+
+        if (r.status === 'done') {
+            clearInterval(pollTimer);
+            document.getElementById('url-lp').textContent   = r.lp_url || '—';
+            document.getElementById('url-lp').href          = r.lp_url || '#';
+            document.getElementById('url-book').textContent = r.booking_url || '—';
+            document.getElementById('url-book').href        = r.booking_url || '#';
+            document.getElementById('url-ty').textContent   = r.ty_url || '—';
+            document.getElementById('url-ty').href          = r.ty_url || '#';
+            await renderArtifacts(r);
+            setStep('review');
+        }
+    }
+
+    async function renderArtifacts(run) {
+        const cid = run.client_id;
+        const [comps, voc, obs, hd, icps, brand] = await Promise.all([
+            sbGet(`competitors?client_id=eq.${cid}&run_id=eq.${run.id}&order=created_at.desc`),
+            sbGet(`customer_voice?client_id=eq.${cid}&run_id=eq.${run.id}&order=created_at.desc`),
+            sbGet(`obstacles?client_id=eq.${cid}&run_id=eq.${run.id}&order=severity.desc`),
+            sbGet(`headline_bank?client_id=eq.${cid}&run_id=eq.${run.id}&order=created_at.asc`),
+            sbGet(`icps?client_id=eq.${cid}&order=created_at.desc`),
+            sbGet(`brand_profiles?client_id=eq.${cid}&order=created_at.desc&limit=1`)
+        ]);
+
+        const grid = document.getElementById('artifact-grid');
+        grid.innerHTML = [
+            artifactCard('ICPs', icps.length, icps.slice(0,3).map(i => i.name).join(', '), `25-creative-brief.html?client_id=${cid}`),
+            artifactCard('Brand profile', brand.length ? 1 : 0, brand[0]?.tone || '', `12-brand-profiles.html`),
+            artifactCard('Competitors', comps.length, comps.slice(0,4).map(c => c.name).join(', ')),
+            artifactCard('Customer voice', voc.length, voc.slice(0,2).map(v => `"${(v.quote||'').slice(0,80)}…"`).join('  ·  ')),
+            artifactCard('Obstacles', obs.length, obs.slice(0,3).map(o => o.obstacle).join('  ·  ')),
+            artifactCard('Test headlines', hd.length, hd.slice(0,3).map(h => h.headline).join('  ·  '))
+        ].join('');
+    }
+
+    function artifactCard(label, count, preview, openHref) {
+        const open = openHref ? `<a href="${openHref}" target="_blank" style="color:var(--orange);text-decoration:none;font-family:'Geist Mono',monospace;font-size:10px">open ↗</a>` : '';
+        return `
+            <div class="artifact-card">
+                <h3>${escapeHtml(label)} <span class="count">${count} ${open}</span></h3>
+                <div class="preview">${escapeHtml(preview || '—')}</div>
+            </div>`;
+    }
+
+    async function confirmRun() {
+        if (!activeRunId) return;
+        try {
+            await sbPatch('onboarding_runs', activeRunId, { approved_at: new Date().toISOString() });
+            // Bounce to client hub so user sees the new client
+            location.href = '23-client-hub.html';
+        } catch (e) { alert(e.message); }
+    }
+
+    function resetFlow() {
+        activeRunId = null;
+        clearInterval(pollTimer);
+        ['i-newname','i-newcode','i-url','i-context','i-offer'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('i-client').value = '';
+        document.getElementById('run-status-badge').className = 'badge queued';
+        document.getElementById('run-status-badge').textContent = 'queued';
+        ['researching','synthesizing','generating','deploying'].forEach(p => setProgress(p, 'pending'));
+        setStep('inputs');
+    }
+
+    function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    (async () => {
+        if (!(await PROPAGANDA.masterAuth.requireMaster())) return;
+        if (!ONBOARD_WEBHOOK) document.getElementById('config-warn').style.display = '';
+        await loadClients();
+    })();
+</script>
+</body>
+</html>
